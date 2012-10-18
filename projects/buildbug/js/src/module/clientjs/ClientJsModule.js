@@ -9,9 +9,12 @@
 //@Require('Class')
 
 
-// NOTE BRN: Simplifying the annotate reference.
+//-------------------------------------------------------------------------------
+// Simplify References
+//-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
+var annotation = Annotate.annotation;
 
 
 //-------------------------------------------------------------------------------
@@ -114,4 +117,4 @@ var ClientJsModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(ClientJsModule).with('@BuildModule("clientjs")');
+annotate(ClientJsModule).with(annotation("BuildModule").params("clientjs"));

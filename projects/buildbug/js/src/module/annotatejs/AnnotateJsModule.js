@@ -23,10 +23,12 @@
 var AnnotateJS = require('annotatejs');
 
 
-// NOTE BRN: This Annotate reference is dragged in by including the Annotate library in the compile from the annotatejs
-// project.
+//-------------------------------------------------------------------------------
+// Simplify References
+//-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
+var annotation = Annotate.annotation;
 
 
 //-------------------------------------------------------------------------------
@@ -158,4 +160,4 @@ var AnnotateJsModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(AnnotateJsModule).with('@BuildModule("annotatejs")');
+annotate(AnnotateJsModule).with(annotation("BuildModule").params("annotatejs"));

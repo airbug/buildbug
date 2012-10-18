@@ -12,9 +12,13 @@
 var fs = require('fs');
 var npm = require('npm');
 
-// NOTE BRN: Simplifying the annotate reference.
+
+//-------------------------------------------------------------------------------
+// Simplify References
+//-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
+var annotation = Annotate.annotation;
 
 
 //-------------------------------------------------------------------------------
@@ -144,4 +148,4 @@ var NodeJsModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(NodeJsModule).with('@BuildModule("nodejs")');
+annotate(NodeJsModule).with(annotation("BuildModule").params("nodejs"));
