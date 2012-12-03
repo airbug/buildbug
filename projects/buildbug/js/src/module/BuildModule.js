@@ -9,6 +9,20 @@
 //@Require('EventDispatcher')
 //@Require('JsonUtil')
 
+var bugpack = require('bugpack');
+
+
+//-------------------------------------------------------------------------------
+// BugPack
+//-------------------------------------------------------------------------------
+
+bugpack.declare('BuildModule');
+
+var Class = bugpack.require('Class');
+var Event = bugpack.require('Event');
+var EventDispatcher = bugpack.require('EventDispatcher');
+var JsonUtil = bugpack.require('JsonUtil');
+
 
 //-------------------------------------------------------------------------------
 // Declare Class
@@ -108,31 +122,11 @@ var BuildModule = Class.extend(EventDispatcher, {
     /**
      * @param {BuildProject} buildProject
      */
-    enableModule: function(buildProject) {
+    enable: function(buildProject) {
         if (!this.isEnabled()) {
             this.enabled = true;
             this.buildProject = buildProject;
-            this.enable();
-        }
-    },
-
-    /**
-     *
-     */
-    enable: function() {
-        // Override this function
-    },
-
-    /**
-     * @return {boolean}
-     */
-    initializeModule: function() {
-        if (!this.isInitialized() && !this.isInitializing()) {
-            this.initailizing = true;
-            var initializeComplete = this.initialize();
-            if (initializeComplete) {
-                this.initializeComplete();
-            }
+            this.enableModule();
         }
     },
 
@@ -140,14 +134,26 @@ var BuildModule = Class.extend(EventDispatcher, {
      * @return {boolean}
      */
     initialize: function() {
-        // Override this function
-        return true;
+        if (!this.isInitialized() && !this.isInitializing()) {
+            this.initailizing = true;
+            var initializeComplete = this.initializeModule();
+            if (initializeComplete) {
+                this.initializeComplete();
+            }
+        }
     },
 
 
     //-------------------------------------------------------------------------------
     // Protected Class Methods
     //-------------------------------------------------------------------------------
+
+    /**
+     * @protected
+     */
+    enableModule: function() {
+        // Override this function
+    },
 
     /**
      * @protected
@@ -168,6 +174,15 @@ var BuildModule = Class.extend(EventDispatcher, {
             this.initialized = true;
             this.dispatchEvent(new Event(BuildModule.EventTypes.MODULE_INITIALIZED));
         }
+    },
+
+    /**
+     * @protected
+     * @return {boolean}
+     */
+    initializeModule: function() {
+        // Override this function
+        return true;
     }
 });
 
@@ -179,3 +194,10 @@ var BuildModule = Class.extend(EventDispatcher, {
 BuildModule.EventTypes = {
     MODULE_INITIALIZED: "BuildModule:ModuleInitialized"
 };
+
+
+//-------------------------------------------------------------------------------
+// Exports
+//-------------------------------------------------------------------------------
+
+bugpack.export(BuildModule);

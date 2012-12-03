@@ -12,6 +12,23 @@
 //@Require('Map')
 //@Require('Set')
 
+var bugpack = require('bugpack');
+
+
+//-------------------------------------------------------------------------------
+// BugPack
+//-------------------------------------------------------------------------------
+
+bugpack.declare('BuildProject');
+
+var BuildModule = bugpack.require('BuildModule');
+var BuildTask = bugpack.require('BuildTask');
+var Class = bugpack.require('Class');
+var EventDispatcher = bugpack.require('EventDispatcher');
+var JsonUtil = bugpack.require('JsonUtil');
+var Map = bugpack.require('Map');
+var Set = bugpack.require('Set');
+
 
 //-------------------------------------------------------------------------------
 // Declare Class
@@ -342,3 +359,10 @@ var BuildProject = Class.extend(EventDispatcher, {
         return taskExecutionContext;
     }
 });
+
+
+//-------------------------------------------------------------------------------
+// Exports
+//-------------------------------------------------------------------------------
+
+bugpack.export(BuildProject);

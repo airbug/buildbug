@@ -5,8 +5,26 @@
 //@Export('ClientJsModule')
 
 //@Require('Annotate')
+//@Require('BuildBug')
 //@Require('BuildModule')
+//@Require('BuildModuleAnnotation')
 //@Require('Class')
+
+
+var bugpack = require('bugpack');
+
+
+//-------------------------------------------------------------------------------
+// BugPack
+//-------------------------------------------------------------------------------
+
+bugpack.declare('ClientJsModule', {autoload: true});
+
+var Annotate = bugpack.require('Annotate');
+var BuildBug = bugpack.require('BuildBug');
+var BuildModule = bugpack.require('BuildModule');
+var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
+var Class = bugpack.require('Class');
 
 
 //-------------------------------------------------------------------------------
@@ -14,7 +32,8 @@
 //-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
-var annotation = Annotate.annotation;
+var asyncTask = BuildBug.asyncTask;
+var buildModule = BuildModuleAnnotation.buildModule;
 
 
 //-------------------------------------------------------------------------------
@@ -93,7 +112,7 @@ var ClientJsModule = Class.extend(BuildModule, {
      * @param {string} packagePath
      */
     packPackage: function(packagePath) {
-
+        //TODO BRN:
     },
 
     /**
@@ -117,4 +136,13 @@ var ClientJsModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(ClientJsModule).with(annotation("BuildModule").params("clientjs"));
+annotate(ClientJsModule).with(
+    buildModule("clientjs")
+);
+
+
+//-------------------------------------------------------------------------------
+// Exports
+//-------------------------------------------------------------------------------
+
+bugpack.export(ClientJsModule);

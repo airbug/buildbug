@@ -4,7 +4,8 @@ afterNpmModuleInstalled(function() {
     var npm = require('npm');
 
     var requiredPackages = [
-        {name: 'annotatejs', install: 'git+ssh://git@github.com:bneisler/annotatejs.git#master'}
+        {name: "fs-extra", install: "fs-extra"},
+        {name: 'bugpack', install: 'git+ssh://git@github.com:bneisler/bugpack.git#master'}
     ];
 
     npm.load({}, function (err) {

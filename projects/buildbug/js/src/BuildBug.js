@@ -12,12 +12,25 @@
 //@Require('Map')
 //@Require('Obj')
 
-// TODO BRN: Requiring these feels a bit like a hack. Seems like we should be able to have a compile time process
-// identify other annotations and allow the compiler to drag necessary files in.
+var bugpack = require('bugpack');
+var child_process = require('child_process');
+var fs_extra = require('fs-extra');
+var path = require('path');
 
-//@Require('AnnotateJsModule')
-//@Require('ClientJsModule')
-//@Require('NodeJsModule')
+
+//-------------------------------------------------------------------------------
+// BugPack
+//-------------------------------------------------------------------------------
+
+bugpack.declare('BuildBug');
+
+var Annotate = bugpack.require('Annotate');
+var BuildModule = bugpack.require('BuildModule');
+var BuildProject = bugpack.require('BuildProject');
+var BuildTask = bugpack.require('BuildTask');
+var Class = bugpack.require('Class');
+var Map = bugpack.require('Map');
+var Obj = bugpack.require('Obj');
 
 
 //-------------------------------------------------------------------------------
@@ -32,7 +45,6 @@ var BuildBug = Class.extend(Obj, {});
 //-------------------------------------------------------------------------------
 
 /**
- * @private
  * @type {BuildProject}
  */
 BuildBug.buildProject = new BuildProject();
@@ -79,7 +91,7 @@ BuildBug.enableModule = function(moduleName) {
 /**
  * @param {Object} properties
  */
-BuildBug.updateProperties = function(properties) {
+BuildBug.properties = function(properties) {
     BuildBug.buildProject.updateProperties(properties);
 };
 
@@ -101,24 +113,65 @@ BuildBug.registerModule = function(moduleName, buildModuleClass) {
  * @private
  */
 BuildBug.bootstrap = function() {
-    Annotate.registerAnnotationProcessor('BuildModule', function(annotation) {
-        BuildBug.registerModule(annotation.getParamList().getAt(0), annotation.getReference());
-    });
+    var buildModuleAnnotations = Annotate.getAnnotationsByType("BuildModule");
+    if (buildModuleAnnotations) {
+        buildModuleAnnotations.forEach(function(annotation) {
+            var buildModuleClass = annotation.getReference();
+            var buildModuleName = annotation.getName();
+            BuildBug.registerModule(buildModuleClass, buildModuleName);
+        });
+    }
 
-    // NOTE BRN: By using a setTimeout here we allow the buildbug script to declare all of its tasks and perform all
-    // of its setup before we begin executing the build.
+    //TODO BRN: Clean up this code using FlowBug
+    var currentDir = process.cwd();
+    var child = child_process.exec('npm link buildbug', {cwd: currentDir, env: process.env},
+        function (error, stdout, stderr) {
+            console.log('stdout: ' + stdout);
+            console.log('stderr: ' + stderr);
+            if (error !== null) {
+                console.log(error);
+                console.log(error.stack);
+                process.exit(1);
+                return;
+            }
 
-    setTimeout(function() {
-        var targetTaskName = "";
-        if (process.argv.length >= 2) {
-            targetTaskName = process.argv[2];
+            if (fs_extra.existsSync(currentDir +  path.sep + "buildbug.js")) {
+
+                require(currentDir +  path.sep + "buildbug.js");
+
+                // NOTE BRN: By using a setTimeout here we allow the buildbug script to declare all of its tasks and perform all
+                // of its setup before we begin executing the build.
+
+                setTimeout(function() {
+                    var targetTaskName = "";
+                    if (process.argv.length >= 2) {
+                        targetTaskName = process.argv[2];
+                    }
+                    var targetTask = BuildBug.getTask(targetTaskName);
+                    if (targetTask) {
+                        BuildBug.buildProject.setTargetTask(targetTask);
+                    }
+                    BuildBug.buildProject.startBuild();
+                }, 0);
+
+
+            } else {
+                throw new Error("no buildbug.js file in this dir");
+            }
         }
-        var targetTask = BuildBug.getTask(targetTaskName);
-        if (targetTask) {
-            BuildBug.buildProject.setTargetTask(targetTask);
-        }
-        BuildBug.buildProject.startBuild();
-    }, 0);
+    );
 };
 
 BuildBug.bootstrap();
+
+
+//-------------------------------------------------------------------------------
+// Exports
+//-------------------------------------------------------------------------------
+
+bugpack.export(BuildBug);
+
+// NOTE BRN: This file is the entry point for the node js module. So we also export this file as a node js module here
+// so that users can simple 'require('buildbug') in their build scripts.
+
+module.exports = BuildBug;

@@ -5,9 +5,28 @@
 //@Export('NodeJsModule')
 
 //@Require('Annotate')
-//@Require('BuildModule')
+//@Require('BuildBug')
+//@Require('BuildModuleAnnotation')
 //@Require('Class')
 
+var bugpack = require('bugpack');
+
+
+//-------------------------------------------------------------------------------
+// BugPack
+//-------------------------------------------------------------------------------
+
+bugpack.declare('NodeJsModule', {autoload: true});
+
+var Annotate = bugpack.require('Annotate');
+var BuildBug = bugpack.require('BuildBug');
+var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
+var Class = bugpack.require('Class');
+
+
+//-------------------------------------------------------------------------------
+// Node JS
+//-------------------------------------------------------------------------------
 
 var fs = require('fs');
 var npm = require('npm');
@@ -18,7 +37,8 @@ var npm = require('npm');
 //-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
-var annotation = Annotate.annotation;
+var asyncTask = BuildBug.asyncTask;
+var buildModule = BuildModuleAnnotation.buildModule;
 
 
 //-------------------------------------------------------------------------------
@@ -52,7 +72,25 @@ var NodeJsModule = Class.extend(BuildModule, {
     // BuildModule Implementation
     //-------------------------------------------------------------------------------
 
-    initialize: function() {
+    /**
+     * @protected
+     */
+    enableModule: function() {
+        this._super();
+
+        asyncTask('createNodePackage', function(properties) {
+            var _this = this;
+            this.createNodePackage(properties, function() {
+                _this.complete();
+            });
+        });
+    },
+
+    /**
+     * @protected
+     * @return {boolean}
+     */
+    initializeModule: function() {
         this._super();
         this.loadNPM();
         return false;
@@ -70,21 +108,23 @@ var NodeJsModule = Class.extend(BuildModule, {
      *       version: string,
      *       main: string,
      *       dependencies: Object
-     *   },
-     *   sourcePaths: Array<string>
-     * }} properties
+     *   }
+     *   packagePath: string
+     * }} properties,
+     * @param {function()} callback
      */
-    createPackage: function(properties) {
+    createNodePackage: function(properties, callback) {
+        var _this = this;
         var props = this.generateProperties(properties);
+        var packagePath = props.packagePath;
         this.validatePackageJson(props.packageJson);
-        var packageName = props.packageJson.name;
-        var packagePath = props.buildPath + "/" + packageName;
-        this.writePackageJson(packagePath, props.packageJson);
-        this.packPackage(packagePath, function() {
-            var packageFileName = props.packageJson.name + "-" + props.packageJson.version + ".tgz";
-            var packageFilePath = process.cwd() + "/" + packageFileName;
-            var packageDistPath = props.distPath + "/" + packageFileName;
-            fs.rename(packageFilePath, packageDistPath);
+        this.writePackageJson(packagePath, props.packageJson, function() {
+            _this.packPackage(packagePath, function() {
+                var packageFileName = props.packageJson.name + "-" + props.packageJson.version + ".tgz";
+                var packageFilePath = process.cwd() + "/" + packageFileName;
+                var packageDistPath = props.distPath + "/" + packageFileName;
+                fs.rename(packageFilePath, packageDistPath, callback);
+            });
         });
     },
 
@@ -115,6 +155,7 @@ var NodeJsModule = Class.extend(BuildModule, {
     /**
      * @private
      * @param {string} packagePath
+     * @param {function()} callback
      */
     packPackage: function(packagePath, callback) {
         npm.commands.pack([packagePath], function (err, data) {
@@ -142,10 +183,19 @@ var NodeJsModule = Class.extend(BuildModule, {
      * @param {string} packagePath
      * @param {Object} packageJson
      */
-    writePackageJson: function(packagePath, packageJson) {
+    writePackageJson: function(packagePath, packageJson, callback) {
         var packageJsonPath = packagePath + '/package.json';
-        fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson));
+        fs.writeFile(packageJsonPath, JSON.stringify(packageJson), callback);
     }
 });
 
-annotate(NodeJsModule).with(annotation("BuildModule").params("nodejs"));
+annotate(NodeJsModule).with(
+    buildModule("nodejs")
+);
+
+
+//-------------------------------------------------------------------------------
+// Exports
+//-------------------------------------------------------------------------------
+
+bugpack.export(NodeJsModule);

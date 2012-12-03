@@ -5,8 +5,25 @@
 //@Export('AnnotateJsModule')
 
 //@Require('Annotate')
+//@Require('BuildBug')
 //@Require('BuildModule')
+//@Require('BuildModuleAnnotation')
 //@Require('Class')
+
+var bugpack = require('bugpack');
+
+
+//-------------------------------------------------------------------------------
+// BugPack
+//-------------------------------------------------------------------------------
+
+bugpack.declare('AnnotateJsModule', {autoload: true});
+
+var Annotate = bugpack.require('Annotate');
+var BuildBug = bugpack.require('BuildBug');
+var BuildModule = bugpack.require('BuildModule');
+var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
+var Class = bugpack.require('Class');
 
 
 //-------------------------------------------------------------------------------
@@ -28,7 +45,8 @@ var AnnotateJS = require('annotatejs');
 //-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
-var annotation = Annotate.annotation;
+var asyncTask = BuildBug.asyncTask;
+var buildModule = BuildModuleAnnotation.buildModule;
 
 
 //-------------------------------------------------------------------------------
@@ -38,59 +56,28 @@ var annotation = Annotate.annotation;
 var AnnotateJsModule = Class.extend(BuildModule, {
 
     //-------------------------------------------------------------------------------
-    // Constructor
-    //-------------------------------------------------------------------------------
-
-    _constructor: function() {
-
-        this._super();
-
-
-        //-------------------------------------------------------------------------------
-        // Declare Variables
-        //-------------------------------------------------------------------------------
-
-        /**
-         * @private
-         * @type {string}
-         */
-        this.buildPath = "";
-
-        /**
-         * @private
-         * @type {ClientJsModule}
-         */
-        this.clientjs = null;
-
-        /**
-         * @private
-         * @type {NodeJsModule}
-         */
-        this.nodejs = null;
-    },
-
-
-    //-------------------------------------------------------------------------------
     // BuildModule Implementation
     //-------------------------------------------------------------------------------
 
     /**
-     *
+     * @protected
      */
-    enable: function() {
+    enableModule: function() {
         this._super();
-        // NOTE BRN: This module requires both the nodejs module and the clientjs module to be enabled
 
-        this.clientjs = this.buildProject.enableModule("clientjs");
-        this.nodejs = this.buildProject.enableModule("nodejs");
-    },
+        asyncTask('compileNodeApp', function(properties) {
+            var _this = this;
+            this.compileNodeApp(properties, function() {
+                _this.complete();
+            });
+        });
 
-    /**
-     * @return {boolean}
-     */
-    initialize: function() {
-        this._super();
-        return true;
+        asyncTask('compileClientApp', function(properties) {
+            var _this = this;
+            this.compileClientApp(properties, function() {
+                _this.complete();
+            });
+        });
     },
 
 
@@ -100,21 +87,17 @@ var AnnotateJsModule = Class.extend(BuildModule, {
 
     /**
      * @param {{
-     *   packageJson: {
-     *       name: string,
-     *       version: string,
-     *       main: string,
-     *       dependencies: Object
-     *   },
+     *   packageName: string,
      *   sourcePaths: Array<string>
      * }} properties
+     * @param {function()} callback
      */
-    createNodeJsPackage: function(properties) {
+    compileNodeApp: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var packageName = props.packageJson.name;
+        var sourcePaths = props.sourcePaths;
+        var packageName = props.packageName;
         var packagePath = props.buildPath + "/" + packageName;
-        this.compileNodeJs(props.sourcePaths, packagePath);
-        this.nodejs.createPackage(properties);
+        AnnotateJS.compileNodeJs(sourcePaths, packagePath, callback);
     },
 
     /**
@@ -125,39 +108,25 @@ var AnnotateJsModule = Class.extend(BuildModule, {
      *        version: string
      *    }
      * }} properties
+     * @param {function()} callback
      */
-    createClientJsPackage: function(properties) {
+    compileClientApp: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var clientName = props.clientJson.name;
+        var sourcePaths = props.sourcePaths;
+        var clientName = props.clientName;
         var clientFileName = clientName + ".js";
         var clientBuildPath = props.buildPath + "/" + clientName;
-        this.compileClientJs(props.sourcePaths, clientBuildPath, clientFileName);
-        this.clientjs.createPackage(properties);
-    },
-
-
-    //-------------------------------------------------------------------------------
-    // Private Class Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @private
-     * @param {Array<string>} sourcePaths
-     * @param {string} outputPath
-     */
-    compileNodeJs: function(sourcePaths, outputPath) {
-        AnnotateJS.compileNodeJs(sourcePaths, outputPath);
-    },
-
-    /**
-     * @private
-     * @param {Array<string>} sourcePaths
-     * @param {string} outputPath
-     * @param {string} outputFileName
-     */
-    compileClientJs: function(sourcePaths, outputPath, outputFileName) {
-        AnnotateJS.compileClientJs(sourcePaths, outputPath, outputFileName);
+        AnnotateJS.compileClientJs(sourcePaths, clientBuildPath, clientFileName, callback);
     }
 });
 
-annotate(AnnotateJsModule).with(annotation("BuildModule").params("annotatejs"));
+annotate(AnnotateJsModule).with(
+    buildModule("annotatejs")
+);
+
+
+//-------------------------------------------------------------------------------
+// Exports
+//-------------------------------------------------------------------------------
+
+bugpack.export(AnnotateJsModule);
