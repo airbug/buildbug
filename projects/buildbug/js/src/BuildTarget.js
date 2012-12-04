@@ -2,7 +2,7 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-//@Export('BuildTask')
+//@Export('BuildTarget')
 
 //@Require('Class')
 //@Require('List')
@@ -16,26 +16,25 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildTask');
+bugpack.declare('BuildTarget');
 
 var Class = bugpack.require('Class');
-var List = bugpack.require('List');
-var Task = bugpack.require('Task');
+var Obj = bugpack.require('Obj');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildTask = Class.extend(Task, {
+var BuildTarget = Class.extend(Obj, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(name, taskMethod, callback) {
+    _constructor: function(name) {
 
-        this._super(taskMethod, callback);
+        this._super();
 
 
         //-------------------------------------------------------------------------------
@@ -47,6 +46,12 @@ var BuildTask = Class.extend(Task, {
          * @type {string}
          */
         this.name = name;
+
+        /**
+         * @private
+         * @type {boolean}
+         */
+        this._default = false;
     },
 
 
@@ -61,30 +66,42 @@ var BuildTask = Class.extend(Task, {
         return this.name;
     },
 
+    /**
+     * @return {boolean}
+     */
+    isDefault: function() {
+        return this._default;
+    },
+
 
     //-------------------------------------------------------------------------------
     // Class Methods
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {Object} taskExecutionContext
+     *
+     * @return {BuildTarget}
      */
-    execute: function(taskExecutionContext) {
-        console.log("Executing task " + this.name);
-
-        console.log("Completed task " + this.name);
+    buildFlow: function() {
+        //TODO BRN:
+        return this;
     },
 
     /**
-     * @param {string} taskName
+     *
      */
-    dependsOn: function(taskName) {
-        if (!this.dependentTaskNames.contains(taskName)) {
-            this.dependentTaskNames.add(taskName);
+    execute: function() {
+        console.log("Executing target " + this.name);
 
-            //TODO BRN: Validate that there are no circular dependencies.
+        console.log("Completed target " + this.name);
+    },
 
-        }
+    /**
+     *
+     */
+    makeDefault: function() {
+        this._default = true;
+        return this;
     }
 });
 
@@ -93,4 +110,4 @@ var BuildTask = Class.extend(Task, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTask);
+bugpack.export(BuildTarget);

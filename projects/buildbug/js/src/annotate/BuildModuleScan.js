@@ -2,12 +2,11 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-//@Export('BuildTask')
+//@Export('BuildModuleScan')
 
+//@Require('Annotate')
 //@Require('Class')
-//@Require('List')
 //@Require('Obj')
-
 
 var bugpack = require('bugpack');
 
@@ -16,26 +15,26 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildTask');
+bugpack.declare('BuildModuleScan');
 
+var Annotate = bugpack.require('Annotate');
 var Class = bugpack.require('Class');
-var List = bugpack.require('List');
-var Task = bugpack.require('Task');
+var Obj = bugpack.require('Obj');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildTask = Class.extend(Task, {
+var BuildModuleScan = Class.extend(Obj, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(name, taskMethod, callback) {
+    _constructor: function(buildProject) {
 
-        this._super(taskMethod, callback);
+        this._super();
 
 
         //-------------------------------------------------------------------------------
@@ -44,46 +43,29 @@ var BuildTask = Class.extend(Task, {
 
         /**
          * @private
-         * @type {string}
+         * @type {BuildProject}
          */
-        this.name = name;
+        this.buildProject = buildProject;
     },
 
 
     //-------------------------------------------------------------------------------
-    // Getters and Setters
+    // Public Class Methods
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {string}
+     *
      */
-    getName: function() {
-        return this.name;
-    },
-
-
-    //-------------------------------------------------------------------------------
-    // Class Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @param {Object} taskExecutionContext
-     */
-    execute: function(taskExecutionContext) {
-        console.log("Executing task " + this.name);
-
-        console.log("Completed task " + this.name);
-    },
-
-    /**
-     * @param {string} taskName
-     */
-    dependsOn: function(taskName) {
-        if (!this.dependentTaskNames.contains(taskName)) {
-            this.dependentTaskNames.add(taskName);
-
-            //TODO BRN: Validate that there are no circular dependencies.
-
+    scan: function() {
+        var _this = this;
+        var buildModuleAnnotations = Annotate.getAnnotationsByType("BuildModule");
+        if (buildModuleAnnotations) {
+            buildModuleAnnotations.forEach(function(annotation) {
+                var buildModuleClass = annotation.getReference();
+                var buildModuleName = annotation.getName();
+                var buildModule = new buildModuleClass();
+                _this.buildProject.registerModule(buildModuleName, buildModule);
+            });
         }
     }
 });
@@ -93,4 +75,4 @@ var BuildTask = Class.extend(Task, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTask);
+bugpack.export(BuildModuleScan);

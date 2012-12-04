@@ -2,12 +2,13 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-//@Export('BuildTask')
+//@Export('BugPackModule')
 
+//@Require('Annotate')
+//@Require('BuildBug')
+//@Require('BuildModule')
+//@Require('BuildModuleAnnotation')
 //@Require('Class')
-//@Require('List')
-//@Require('Obj')
-
 
 var bugpack = require('bugpack');
 
@@ -16,49 +17,59 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildTask');
+bugpack.declare('BugPackModule', {autoload: true});
 
+var Annotate = bugpack.require('Annotate');
+var BuildBug = bugpack.require('BuildBug');
+var BuildModule = bugpack.require('BuildModule');
+var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
-var List = bugpack.require('List');
-var Task = bugpack.require('Task');
+
+
+//-------------------------------------------------------------------------------
+// Simplify References
+//-------------------------------------------------------------------------------
+
+var annotate = Annotate.annotate;
+var buildModule = BuildModuleAnnotation.buildModule;
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildTask = Class.extend(Task, {
+var BugPackModule = Class.extend(BuildModule, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(name, taskMethod, callback) {
+    _constructor: function() {
 
-        this._super(taskMethod, callback);
+        this._super();
 
 
         //-------------------------------------------------------------------------------
         // Declare Variables
         //-------------------------------------------------------------------------------
 
-        /**
-         * @private
-         * @type {string}
-         */
-        this.name = name;
+
     },
 
 
     //-------------------------------------------------------------------------------
-    // Getters and Setters
+    // BuildModule Implementation
     //-------------------------------------------------------------------------------
-
     /**
-     * @return {string}
+     * @protected
      */
-    getName: function() {
-        return this.name;
+    enableModule: function() {
+        this._super();
+    },
+
+    initializeModule: function() {
+        this._super();
+        return true;
     },
 
 
@@ -67,30 +78,21 @@ var BuildTask = Class.extend(Task, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {Object} taskExecutionContext
+     * @param {string} packagePath
+     * @param {Object} clientJson
      */
-    execute: function(taskExecutionContext) {
-        console.log("Executing task " + this.name);
+    createPackage: function(packagePath, clientJson) {
 
-        console.log("Completed task " + this.name);
-    },
-
-    /**
-     * @param {string} taskName
-     */
-    dependsOn: function(taskName) {
-        if (!this.dependentTaskNames.contains(taskName)) {
-            this.dependentTaskNames.add(taskName);
-
-            //TODO BRN: Validate that there are no circular dependencies.
-
-        }
     }
 });
+
+annotate(BugPackModule).with(
+    buildModule("bugpack")
+);
 
 
 //-------------------------------------------------------------------------------
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTask);
+bugpack.export(BugPackModule);

@@ -5,7 +5,6 @@
 //@Export('BuildBug')
 
 //@Require('Annotate')
-//@Require('BuildModule')
 //@Require('BuildProject')
 //@Require('BuildTask')
 //@Require('Class')
@@ -25,8 +24,9 @@ var path = require('path');
 bugpack.declare('BuildBug');
 
 var Annotate = bugpack.require('Annotate');
-var BuildModule = bugpack.require('BuildModule');
+var BuildModuleScan = bugpack.require('BuildModuleScan');
 var BuildProject = bugpack.require('BuildProject');
+var BuildTarget = bugpack.require('BuildTarget');
 var BuildTask = bugpack.require('BuildTask');
 var Class = bugpack.require('Class');
 var Map = bugpack.require('Map');
@@ -55,14 +55,32 @@ BuildBug.buildProject = new BuildProject();
 //-------------------------------------------------------------------------------
 
 /**
+ * @param {string} targetName
+ * @return {BuildTarget}
+ */
+BuildBug.buildTarget = function(targetName) {
+    var buildTarget = new BuildTarget(targetName);
+    BuildBug.buildProject.registerTarget(buildTarget);
+    return buildTarget;
+};
+
+/**
  * @param {string} taskName
  * @param {function()} taskFunction
  * @return {BuildTask}
  */
-BuildBug.addTask = function(taskName, taskFunction) {
+BuildBug.buildTask = function(taskName, taskFunction) {
     var buildTask = new BuildTask(taskName, taskFunction);
-    BuildBug.buildProject.addTask(buildTask);
+    BuildBug.buildProject.registerTask(buildTask);
     return buildTask;
+};
+
+/**
+ * @param {string} targetName
+ * @return {BuildTask}
+ */
+BuildBug.getTarget = function(targetName) {
+    return BuildBug.buildProject.getTarget(targetName);
 };
 
 /**
@@ -71,14 +89,6 @@ BuildBug.addTask = function(taskName, taskFunction) {
  */
 BuildBug.getTask = function(taskName) {
     return BuildBug.buildProject.getTask(taskName);
-};
-
-/**
- * @param {string} taskName
- */
-BuildBug.defaultTask = function(taskName) {
-    var buildTask = BuildBug.buildProject.getTask(taskName);
-    BuildBug.buildProject.setDefaultTask(buildTask);
 };
 
 /**
@@ -102,25 +112,10 @@ BuildBug.properties = function(properties) {
 
 /**
  * @private
- * @param {string} moduleName
- * @param {Class} buildModuleClass
- */
-BuildBug.registerModule = function(moduleName, buildModuleClass) {
-    BuildBug.buildProject.registerModule(moduleName, buildModuleClass);
-};
-
-/**
- * @private
  */
 BuildBug.bootstrap = function() {
-    var buildModuleAnnotations = Annotate.getAnnotationsByType("BuildModule");
-    if (buildModuleAnnotations) {
-        buildModuleAnnotations.forEach(function(annotation) {
-            var buildModuleClass = annotation.getReference();
-            var buildModuleName = annotation.getName();
-            BuildBug.registerModule(buildModuleClass, buildModuleName);
-        });
-    }
+    var buildModuleScan = new BuildModuleScan(this.buildProject);
+    buildModuleScan.scan();
 
     //TODO BRN: Clean up this code using FlowBug
     var currentDir = process.cwd();
@@ -136,25 +131,14 @@ BuildBug.bootstrap = function() {
             }
 
             if (fs_extra.existsSync(currentDir +  path.sep + "buildbug.js")) {
-
                 require(currentDir +  path.sep + "buildbug.js");
 
                 // NOTE BRN: By using a setTimeout here we allow the buildbug script to declare all of its tasks and perform all
                 // of its setup before we begin executing the build.
 
                 setTimeout(function() {
-                    var targetTaskName = "";
-                    if (process.argv.length >= 2) {
-                        targetTaskName = process.argv[2];
-                    }
-                    var targetTask = BuildBug.getTask(targetTaskName);
-                    if (targetTask) {
-                        BuildBug.buildProject.setTargetTask(targetTask);
-                    }
                     BuildBug.buildProject.startBuild();
                 }, 0);
-
-
             } else {
                 throw new Error("no buildbug.js file in this dir");
             }
@@ -162,7 +146,14 @@ BuildBug.bootstrap = function() {
     );
 };
 
-BuildBug.bootstrap();
+/**
+ * @private
+ * @param {string} moduleName
+ * @param {BuildModule} buildModule
+ */
+BuildBug.registerModule = function(moduleName, buildModule) {
+    BuildBug.buildProject.registerModule(moduleName, buildModule);
+};
 
 
 //-------------------------------------------------------------------------------

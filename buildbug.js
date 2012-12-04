@@ -19,14 +19,18 @@ npm.load({}, function (err) {
     }
 
     var outputDirPath = './.buildbug/build/buildbug';
+    var outputLibPath = outputDirPath + path.sep + 'lib'
     var sourcePaths = [
         '../bugjs/projects/bugjs/js/src',
         '../bugjs/projects/annotate/js/src',
+        '../bugjs/projects/bugflow/js/src',
         './projects/buildbug/js/src'
     ];
+    var libDirPath = './projects/buildbug/lib';
     var resourceDirPath = './projects/buildbug/resources';
 
-    copySourcePathsToDir(sourcePaths, outputDirPath + '/lib');
+    copySourcePathsToDir(sourcePaths, outputLibPath);
+
     copyDirContentsToDir(resourceDirPath, outputDirPath, function(err) {
         if (err) {
             throw err;
@@ -35,11 +39,12 @@ npm.load({}, function (err) {
             if (err) {
                 throw err;
             }
+
             writeBugpackRegistryJson(outputDirPath, bugpackRegistry);
             writePackageJson(outputDirPath, {
                 name: "buildbug",
                 version: "0.0.1",
-                main: "./lib/BuildBug.js",
+                main: "./lib/buildbug_boot.js",
                 bin: "bin/buildbug",
                 dependencies: {
                     bugpack: 'git+ssh://git@github.com:bneisler/bugpack.git#master',

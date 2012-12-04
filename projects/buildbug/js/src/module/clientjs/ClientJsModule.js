@@ -32,8 +32,8 @@ var Class = bugpack.require('Class');
 //-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
-var asyncTask = BuildBug.asyncTask;
 var buildModule = BuildModuleAnnotation.buildModule;
+var buildTask = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ var ClientJsModule = Class.extend(BuildModule, {
     // BuildModule Implementation
     //-------------------------------------------------------------------------------
 
-    initialize: function() {
+    initializeModule: function() {
         this._super();
         return true;
     },

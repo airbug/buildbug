@@ -22,6 +22,7 @@ var bugpack = require('bugpack');
 bugpack.declare('BuildProject');
 
 var BuildModule = bugpack.require('BuildModule');
+var BuildTarget = bugpack.require('BuildTarget');
 var BuildTask = bugpack.require('BuildTask');
 var Class = bugpack.require('Class');
 var EventDispatcher = bugpack.require('EventDispatcher');
@@ -51,39 +52,39 @@ var BuildProject = Class.extend(EventDispatcher, {
 
         /**
          * @private
+         * @type {Set<BuildModule>}
+         */
+        this.buildModuleSet = new Set();
+
+        /**
+         * @private
+         * @type {Set<BuildTarget>}
+         */
+        this.buildTargetSet = new Set();
+
+        /**
+         * @private
+         * @type {Set<BuildTask>}
+         */
+        this.buildTaskSet = new Set();
+
+        /**
+         * @private
          * @type {string}
          */
         this.homePath = process.cwd() + "/.buildbug";
 
         /**
          * @private
-         * @type {Set<Class>}
+         * @type {Map<string, BuildModule>}
          */
-        this.buildModuleClassSet = new Set();
+        this.moduleNameToBuildModuleMap = new Map();
 
         /**
          * @private
-         * @type {Map<Class, BuildModule>}
+         * @type {number}
          */
-        this.buildModuleClassToEnabledBuildModuleMap = new Map();
-
-        /**
-         * @private
-         * @type {BuildTask}
-         */
-        this.defaultTask = null;
-
-        /**
-         * @private
-         * @type {Set<Class>}
-         */
-        this.enabledBuildModuleClassSet = new Set();
-
-        /**
-         * @private
-         * @type {Map<string, Class>}
-         */
-        this.moduleNameToBuildModuleClassMap = new Map();
+        this.numberEnabledModules = 0;
 
         /**
          * @private
@@ -108,9 +109,9 @@ var BuildProject = Class.extend(EventDispatcher, {
 
         /**
          * @private
-         * @type {BuildTask}
+         * @type {Map<string, BuildTarget>}
          */
-        this.targetTask = null;
+        this.targetNameToBuildTargetMap = new Map();
 
         /**
          * @private
@@ -123,20 +124,6 @@ var BuildProject = Class.extend(EventDispatcher, {
     //-------------------------------------------------------------------------------
     // Getters and Setters
     //-------------------------------------------------------------------------------
-
-    /**
-     * @return {BuildTask}
-     */
-    getDefaultTask: function() {
-        return this.defaultTask;
-    },
-
-    /**
-     * @param {BuildTask} buildTask
-     */
-    setDefaultTask: function(buildTask) {
-        this.defaultTask = buildTask;
-    },
 
     /**
      * @return {string}
@@ -160,20 +147,6 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
-     * @return {BuildTask}
-     */
-    getTargetTask: function() {
-        return this.targetTask;
-    },
-
-    /**
-     * @param {BuildTask} targetTask
-     */
-    setTargetTask: function(targetTask) {
-        this.targetTask = targetTask;
-    },
-
-    /**
      * @return {boolean}
      */
     isStarted: function() {
@@ -186,10 +159,47 @@ var BuildProject = Class.extend(EventDispatcher, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {BuildTask} buildTask
+     * @param {string} moduleName
+     * @return {BuildModule}
      */
-    addTask: function(buildTask) {
-        this.taskNameToBuildTaskMap.put(buildTask.getName(), buildTask);
+    enableModule: function(moduleName) {
+        if (this.moduleNameToBuildModuleMap.containsKey(moduleName)) {
+            var buildModule = this.moduleNameToBuildModuleMap.get(moduleName);
+            if (!buildModule.isEnabled()) {
+                this.numberEnabledModules++;
+                buildModule.setParentDispatcher(this);
+                buildModule.enable(this);
+                buildModule.initialize();
+            }
+
+            // NOTE BRN: It's very possible that a module might try to be enabled multiple times. Thus, we don't throw an
+            // error here since that's expected behavior.
+
+            return buildModule;
+        } else {
+            throw new Error("Build module by the name of '" + moduleName + "' does not exist");
+        }
+    },
+
+    /**
+     * @return {Array<BuildTarget>}
+     */
+    getDefaultTargets: function() {
+        var defaultTargetArray = [];
+        this.buildTargetSet.forEach(function(buildTarget) {
+            if (buildTarget.isDefault()) {
+                defaultTargetArray.push(buildTarget);
+            }
+        });
+        return defaultTargetArray;
+    },
+
+    /**
+     * @param {string} targetName
+     * @return {BuildTarget}
+     */
+    getTarget: function(targetName) {
+        return this.targetNameToBuildTargetMap.get(targetName);
     },
 
     /**
@@ -201,13 +211,17 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
-     * @param {Class} buildModuleClass
+     * @param {string} moduleName
+     * @param {BuildModule} buildModule
      */
-    registerModule: function(moduleName, buildModuleClass) {
-        if (!this.moduleNameToBuildModuleClassMap.containsKey(moduleName)) {
-            if (!this.buildModuleClassSet.contains(buildModuleClass)) {
-                this.moduleNameToBuildModuleClassMap.put(moduleName, buildModuleClass);
-                this.buildModuleClassSet.add(buildModuleClass);
+    registerModule: function(moduleName, buildModule) {
+        if (!Class.doesExtend(buildModule, BuildModule)) {
+            throw new Error("Build modules must extend the BuildModule class");
+        }
+        if (!this.moduleNameToBuildModuleMap.containsKey(moduleName)) {
+            if (!this.buildModuleSet.contains(buildModule)) {
+                this.moduleNameToBuildModuleMap.put(moduleName, buildModule);
+                this.buildModuleSet.add(buildModule);
             } else {
                 throw new Error("Each build module can only be registered once");
             }
@@ -217,30 +231,40 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
-     * @param {string} moduleName
-     * @return {BuildModule}
+     * @param {BuildTarget} buildTarget
      */
-    enableModule: function(moduleName) {
-        if (this.moduleNameToBuildModuleClassMap.containsKey(moduleName)) {
-            var buildModuleClass = this.moduleNameToBuildModuleClassMap.get(moduleName);
-            if (!this.enabledBuildModuleClassSet.contains(buildModuleClass)) {
-                this.enabledBuildModuleClassSet.add(buildModuleClass);
-                var buildModule = new buildModuleClass();
-                if (!Class.doesExtend(buildModule, BuildModule)) {
-                    throw new Error("Build modules must extend the BuildModule class");
-                }
-                this.buildModuleClassToEnabledBuildModuleMap.put(buildModuleClass, buildModule);
-                buildModule.setParentDispatcher(this);
-                buildModule.enableModule(this);
-                buildModule.initializeModule();
+    registerTarget: function(buildTarget) {
+        if (!Class.doesExtend(buildTarget, BuildTarget)) {
+            throw new Error("Build targets must extend the BuildTarget class");
+        }
+        if (!this.targetNameToBuildTargetMap.containsKey(buildTarget.getName())) {
+            if (!this.buildTargetSet.contains(buildTarget)) {
+                this.targetNameToBuildTargetMap.put(buildTarget.getName(), buildTarget);
+                this.buildTargetSet.add(buildTarget);
+            } else {
+                throw new Error("Each build target can only be registered once");
             }
-
-            // NOTE BRN: It's very possible that a module might try to be enabled multiple times. Thus, we don't throw an
-            // error here since that's expected behavior.
-
-            return this.buildModuleClassToEnabledBuildModuleMap.get(buildModuleClass);
         } else {
-            throw new Error("Build module by the name of '" + moduleName + "' does not exist");
+            throw new Error("Target by the name of '" + buildTarget.getName() + "' already exists");
+        }
+    },
+
+    /**
+     * @param {BuildTask} buildTask
+     */
+    registerTask: function(buildTask) {
+        if (!Class.doesExtend(buildTask, BuildTask)) {
+            throw new Error("Build tasks must extend the BuildTask class");
+        }
+        if (!this.taskNameToBuildTaskMap.containsKey(buildTask.getName())) {
+            if (!this.buildTaskSet.contains(buildTask)) {
+                this.taskNameToBuildTaskMap.put(buildTask.getName(), buildTask);
+                this.buildTaskSet.add(buildTask);
+            } else {
+                throw new Error("Each build task can only be registered once");
+            }
+        } else {
+            throw new Error("Task by the name of '" + buildTask.getName() + "' already exists");
         }
     },
 
@@ -251,16 +275,17 @@ var BuildProject = Class.extend(EventDispatcher, {
         if (!this.isStarted()) {
             this.started = true;
             var _this = this;
-            this.buildModuleClassToEnabledBuildModuleMap.forEach(function(buildModule) {
-                if (buildModule.isInitialized()) {
-                    _this.numberInitializedModules++;
-                } else {
-                    buildModule.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
+            this.buildModuleSet.forEach(function(buildModule) {
+                if (buildModule.isEnabled()) {
+                    if (buildModule.isInitialized()) {
                         _this.numberInitializedModules++;
-                    });
+                    } else {
+                        buildModule.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
+                            _this.numberInitializedModules++;
+                        });
+                    }
                 }
             });
-
             if (this.checkModulesReady()) {
                 this.executeBuild();
             } else {
@@ -273,13 +298,6 @@ var BuildProject = Class.extend(EventDispatcher, {
         }
     },
 
-    /**
-     * @param {Object} properties
-     */
-    updateProperties: function(properties) {
-        JsonUtil.merge(properties, this.properties);
-    },
-
 
     //-------------------------------------------------------------------------------
     // Protected Class Methods
@@ -289,74 +307,44 @@ var BuildProject = Class.extend(EventDispatcher, {
      * @return {boolean}
      */
     checkModulesReady: function() {
-        if (this.numberInitializedModules === this.buildModuleClassToEnabledBuildModuleMap.getCount()) {
-            return true;
-        }
-        return false;
+        return (this.numberInitializedModules === this.numberEnabledModules);
     },
 
     /**
      * @private
      */
     executeBuild: function() {
-        var firstTask = this.targetTask ? this.targetTask : this.defaultTask;
-        if (firstTask) {
-            this.executeTask(firstTask);
-        } else {
-            throw new Error("No build task specified for execution.");
+        var targetName = null;
+        var targetArray = [];
+        if (process.argv.length >= 2) {
+            targetName = process.argv[2];
         }
-    },
-
-    /**
-     * @private
-     * @param {BuildTask} buildTask
-     */
-    executeTask: function(buildTask) {
-
-        // TODO BRN: This check doesn't seem quite right. This would prevent a task from being able to be run more than once
-        // which would be problematic if you were, for instance, wanting to run more than one compile.
-
-        if (!buildTask.hasExecuted()) {
-            var _this = this;
-            var dependentTaskNames = buildTask.getDependentTaskNames();
-            dependentTaskNames.forEach(function(dependentTaskName) {
-                var dependentTask = this.getTask(dependentTaskName);
-                _this.executeTask(dependentTask);
-            });
-            buildTask.execute(this.getTaskExecutionContext());
-        }
-    },
-
-    /**
-     * @private
-     * @return {Object}
-     */
-    getTaskExecutionContext: function() {
-
-        //TODO BRN: This could be sped up if we cached this method
-
-        var taskExecutionContext = {};
-        var _this = this;
-
-        //TEST
-        console.log("getTaskExecutionContext - this.moduleNameToBuildModuleClassMap.getCount():" + this.moduleNameToBuildModuleClassMap.getCount());
-
-        this.moduleNameToBuildModuleClassMap.getKeyArray().forEach(function(moduleName) {
-
-            //TEST
-            console.log("moduleName:" + moduleName);
-
-            var buildModuleClass = _this.moduleNameToBuildModuleClassMap.get(moduleName);
-            var buildModule = _this.buildModuleClassToEnabledBuildModuleMap.get(buildModuleClass);
-            if (buildModule.isEnabled()) {
-                taskExecutionContext[moduleName] = buildModule;
+        if (targetName) {
+            var specifiedTarget = this.getTarget(targetName);
+            if (specifiedTarget) {
+                targetArray.push(specifiedTarget);
+            } else {
+                throw new Error("No target found by the name '" + targetName + "'");
             }
+        } else {
+            targetArray = this.getDefaultTargets();
+        }
+
+        if (targetArray.length > 0) {
+            this.executeTargets(targetArray);
+        } else {
+            throw new Error("No build target specified and no default targets found.");
+        }
+    },
+
+    /**
+     * @private
+     * @param {Array<BuildTarget>} targetArray
+     */
+    executeTargets: function(targetArray) {
+        targetArray.forEach(function(target) {
+            target.execute();
         });
-
-        //TEST
-        console.log(taskExecutionContext);
-
-        return taskExecutionContext;
     }
 });
 

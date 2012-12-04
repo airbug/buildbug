@@ -37,7 +37,7 @@ var Class = bugpack.require('Class');
 // buildbug project (included as a bugjar). We have to update annotatejs to be written in annotatejs before that's
 // possible though
 
-var AnnotateJS = require('annotatejs');
+//var AnnotateJS = require('annotatejs');
 
 
 //-------------------------------------------------------------------------------
@@ -45,7 +45,6 @@ var AnnotateJS = require('annotatejs');
 //-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
-var asyncTask = BuildBug.asyncTask;
 var buildModule = BuildModuleAnnotation.buildModule;
 
 
@@ -65,7 +64,7 @@ var AnnotateJsModule = Class.extend(BuildModule, {
     enableModule: function() {
         this._super();
 
-        asyncTask('compileNodeApp', function(properties) {
+        /*asyncTask('compileNodeApp', function(properties) {
             var _this = this;
             this.compileNodeApp(properties, function() {
                 _this.complete();
@@ -77,7 +76,7 @@ var AnnotateJsModule = Class.extend(BuildModule, {
             this.compileClientApp(properties, function() {
                 _this.complete();
             });
-        });
+        });*/
     },
 
 

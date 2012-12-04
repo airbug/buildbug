@@ -6,6 +6,7 @@
 
 //@Require('Annotate')
 //@Require('BuildBug')
+//@Require('BuildModule')
 //@Require('BuildModuleAnnotation')
 //@Require('Class')
 
@@ -20,6 +21,7 @@ bugpack.declare('NodeJsModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
 var BuildBug = bugpack.require('BuildBug');
+var BuildModule = bugpack.require('BuildModule');
 var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
 
@@ -37,8 +39,8 @@ var npm = require('npm');
 //-------------------------------------------------------------------------------
 
 var annotate = Annotate.annotate;
-var asyncTask = BuildBug.asyncTask;
 var buildModule = BuildModuleAnnotation.buildModule;
+var buildTask = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -77,10 +79,10 @@ var NodeJsModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-
-        asyncTask('createNodePackage', function(properties) {
+        var nodejs = this;
+        buildTask('createNodePackage', function(properties) {
             var _this = this;
-            this.createNodePackage(properties, function() {
+            nodejs.createNodePackage(properties, function() {
                 _this.complete();
             });
         });
