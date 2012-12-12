@@ -1,11 +1,11 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Dependencies
 //-------------------------------------------------------------------------------
 
-//@Export('BuildTask')
+//@Export('BuildSeries')
 
 //@Require('Class')
-//@Require('Task')
+//@Require('Flow')
 
 var bugpack = require('bugpack');
 
@@ -14,23 +14,24 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildTask');
+bugpack.declare('BuildSeries');
 
+var BuildFlow = bugpack.require('BuildFlow');
 var Class = bugpack.require('Class');
-var Obj = bugpack.require('Obj');
+var Series = bugpack.require('Series');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildTask = Class.extend(Obj, {
+var BuildSeries = Class.extend(BuildFlow, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(taskName, taskMethod) {
+    _constructor: function(buildFlowArray) {
 
         this._super();
 
@@ -41,40 +42,32 @@ var BuildTask = Class.extend(Obj, {
 
         /**
          * @private
-         * @type {string}
+         * @type {*}
          */
-        this.taskName = taskName;
-
-        /**
-         * @private
-         * @type {function()}
-         */
-        this.taskMethod = taskMethod;
+        this.buildFlowArray = buildFlowArray;
     },
 
 
     //-------------------------------------------------------------------------------
-    // Getters and Setters
+    // BuildFlow Extensions
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {string}
+     * @param {BuildProject} buildProject
+     * @return {Flow}
      */
-    getName: function() {
-        return this.taskName;
-    },
-
-    /**
-     * @return {function()}
-     */
-    getTaskMethod: function() {
-        return this.taskMethod;
+    generateFlow: function(buildProject) {
+        var flowArray = [];
+        this.buildFlowArray.forEach(function(buildFlow) {
+            flowArray.push(buildFlow.generateFlow(buildProject));
+        });
+        return new Series(flowArray);
     }
 });
 
 
 //-------------------------------------------------------------------------------
-// Exports
+// Export
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTask);
+bugpack.export(BuildSeries);

@@ -25,12 +25,15 @@ bugpack.declare('BuildBug');
 
 var Annotate = bugpack.require('Annotate');
 var BuildModuleScan = bugpack.require('BuildModuleScan');
+var BuildParallel = bugpack.require('BuildParallel');
 var BuildProject = bugpack.require('BuildProject');
+var BuildSeries = bugpack.require('BuildSeries');
 var BuildTarget = bugpack.require('BuildTarget');
 var BuildTask = bugpack.require('BuildTask');
 var Class = bugpack.require('Class');
 var Map = bugpack.require('Map');
 var Obj = bugpack.require('Obj');
+var TargetTask = bugpack.require('TargetTask');
 
 
 //-------------------------------------------------------------------------------
@@ -55,6 +58,13 @@ BuildBug.buildProject = new BuildProject();
 //-------------------------------------------------------------------------------
 
 /**
+ * @param {Object} properties
+ */
+BuildBug.buildProperties = function(properties) {
+    BuildBug.buildProject.updateProperties(properties);
+};
+
+/**
  * @param {string} targetName
  * @return {BuildTarget}
  */
@@ -76,6 +86,13 @@ BuildBug.buildTask = function(taskName, taskFunction) {
 };
 
 /**
+ * @param {string} moduleName
+ */
+BuildBug.enableModule = function(moduleName) {
+    BuildBug.buildProject.enableModule(moduleName);
+};
+
+/**
  * @param {string} targetName
  * @return {BuildTask}
  */
@@ -92,17 +109,28 @@ BuildBug.getTask = function(taskName) {
 };
 
 /**
- * @param {string} moduleName
+ * @param {Array<(function()|Task)>} tasksArray
+ * @param {function()} callback
+ * @return {BuildParallel}
  */
-BuildBug.enableModule = function(moduleName) {
-    BuildBug.buildProject.enableModule(moduleName);
+BuildBug.parallel = function(tasksArray, callback) {
+    return new BuildParallel(tasksArray, callback);
 };
 
 /**
- * @param {Object} properties
+ * @param {Array<(function()|Task)>} tasksArray
+ * @return {BuildSeries}
  */
-BuildBug.properties = function(properties) {
-    BuildBug.buildProject.updateProperties(properties);
+BuildBug.series = function(tasksArray) {
+    return new BuildSeries(tasksArray);
+};
+
+/**
+ * @param {function()} taskName
+ * @return {TargetTask}
+ */
+BuildBug.targetTask = function(taskName) {
+    return new TargetTask(taskName);
 };
 
 

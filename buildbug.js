@@ -19,11 +19,13 @@ npm.load({}, function (err) {
     }
 
     var outputDirPath = './.buildbug/build/buildbug';
-    var outputLibPath = outputDirPath + path.sep + 'lib'
+    var outputLibPath = outputDirPath + path.sep + 'lib';
     var sourcePaths = [
         '../bugjs/projects/bugjs/js/src',
         '../bugjs/projects/annotate/js/src',
+        '../bugjs/projects/bugboil/js/src',
         '../bugjs/projects/bugflow/js/src',
+        '../bugjs/projects/bugfs/js/src',
         './projects/buildbug/js/src'
     ];
     var libDirPath = './projects/buildbug/lib';

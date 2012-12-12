@@ -2,10 +2,12 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-//@Export('BuildTask')
+//@Export('ExecuteTarget')
 
 //@Require('Class')
+//@Require('List')
 //@Require('Task')
+
 
 var bugpack = require('bugpack');
 
@@ -14,25 +16,27 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildTask');
+bugpack.declare('ExecuteTarget');
 
+var BuildFlow = bugpack.require('BuildFlow');
 var Class = bugpack.require('Class');
-var Obj = bugpack.require('Obj');
+var JsonUtil = bugpack.require('JsonUtil');
+var Task = bugpack.require('Task');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildTask = Class.extend(Obj, {
+var ExecuteTarget = Class.extend(Task, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(taskName, taskMethod) {
+    _constructor: function(buildTask, taskProperties, taskInitMethod) {
 
-        this._super();
+        this._super(buildTask.getTaskMethod());
 
 
         //-------------------------------------------------------------------------------
@@ -40,35 +44,59 @@ var BuildTask = Class.extend(Obj, {
         //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {string}
+         * @prvate
+         * @type {BuildTask}
          */
-        this.taskName = taskName;
+        this.buildTask = buildTask;
 
         /**
          * @private
          * @type {function()}
          */
-        this.taskMethod = taskMethod;
+        this.taskInitMethod = taskInitMethod;
+
+        /**
+         * @private
+         * @type {Object}
+         */
+        this.taskProperties = taskProperties || {};
     },
 
 
     //-------------------------------------------------------------------------------
-    // Getters and Setters
+    // Flow Extensions
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {string}
+     * @protected
      */
-    getName: function() {
-        return this.taskName;
+    completeFlow: function() {
+        console.log("Completed task '" + this.buildTask.getName() + "'");
+        this._super();
     },
 
     /**
-     * @return {function()}
+     * @param {BuildProject} buildProject
      */
-    getTaskMethod: function() {
-        return this.taskMethod;
+    executeFlow: function(buildProject) {
+        console.log("Running task " + this.buildTask.getName());
+        if (this.taskInitMethod) {
+            this.taskInitMethod(this, buildProject, this.taskProperties);
+        }
+        this._super(buildProject, this.taskProperties);
+    },
+
+
+    //-------------------------------------------------------------------------------
+    // Class Methods
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @param {Object} properties
+     */
+    properties: function(properties) {
+        JsonUtil.munge(properties, this.taskProperties);
+        return this;
     }
 });
 
@@ -77,4 +105,4 @@ var BuildTask = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTask);
+bugpack.export(TargetTask);

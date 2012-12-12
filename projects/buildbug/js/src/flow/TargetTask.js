@@ -2,11 +2,11 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-//@Export('BuildTarget')
+//@Export('TargetTask')
 
 //@Require('Class')
 //@Require('List')
-//@Require('Obj')
+//@Require('Task')
 
 
 var bugpack = require('bugpack');
@@ -16,24 +16,26 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildTarget');
+bugpack.declare('TargetTask');
 
+var BuildFlow = bugpack.require('BuildFlow');
 var Class = bugpack.require('Class');
-var Flow = bugpack.require('Flow');
-var Obj = bugpack.require('Obj');
+var ExecuteTarget = bugpack.require('ExecuteTarget');
+var JsonUtil = bugpack.require('JsonUtil');
+var Task = bugpack.require('Task');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildTarget = Class.extend(Obj, {
+var TargetTask = Class.extend(BuildFlow, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(name) {
+    _constructor: function(targetTaskName, proto) {
 
         this._super();
 
@@ -44,21 +46,21 @@ var BuildTarget = Class.extend(Obj, {
 
         /**
          * @private
-         * @type {BuildFlow}
+         * @type {function()}
          */
-        this.buildTargetFlow = null;
+        this.targetTaskInitMethod = proto ? proto.init : null;
 
         /**
          * @private
          * @type {string}
          */
-        this.name = name;
+        this.targetTaskName = targetTaskName;
 
         /**
          * @private
-         * @type {boolean}
+         * @type {Object}
          */
-        this._default = false;
+        this.targetTaskProperties = proto ? proto.properties : {};
     },
 
 
@@ -66,67 +68,25 @@ var BuildTarget = Class.extend(Obj, {
     // Getters and Setters
     //-------------------------------------------------------------------------------
 
-    /**
-     * @return {string}
-     */
-    getName: function() {
-        return this.name;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDefault: function() {
-        return this._default;
-    },
-
 
     //-------------------------------------------------------------------------------
     // Class Methods
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {BuildFlow} buildTargetFlow
-     * @return {BuildTarget}
-     */
-    buildFlow: function(buildTargetFlow) {
-        this.buildTargetFlow = buildTargetFlow;
-        return this;
-    },
-
-    /**
      * @param {BuildProject} buildProject
+     * @return {ExecuteTarget}
      */
-    execute: function(buildProject) {
-        var _this = this;
-        if (this.buildTargetFlow) {
-            console.log("Executing target " + this.name);
-            var flow = this.buildTargetFlow.generateFlow(buildProject);
-            flow.execute([buildProject], function(err) {
-
-                //TODO BRN: Should we just exit the program here if there's an error or should we send this back up the chain further?
-
-                if (err) {
-                    console.log(err);
-                    console.log(err.stack);
-                    process.exit(1);
-                    return;
-                } else {
-                    console.log("Completed target " + _this.name);
-                }
-            });
-        } else {
-            throw new Error("You must specify a buildFlow for each build target. Do this by calling the buildFlow " +
-                "method and passing in a BuildFlow");
-        }
+    generateFlow: function(buildProject) {
+        var buildTask = buildProject.getTask(this.targetTaskName);
+        return new ExecuteTarget(buildTask, this.targetTaskProperties, this.targetTaskInitMethod);
     },
 
     /**
-     *
+     * @param {Object} properties
      */
-    makeDefault: function() {
-        this._default = true;
-        return this;
+    updateProperties: function(properties) {
+        JsonUtil.munge(properties, this.targetTaskProperties);
     }
 });
 
@@ -135,4 +95,4 @@ var BuildTarget = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTarget);
+bugpack.export(TargetTask);

@@ -342,8 +342,9 @@ var BuildProject = Class.extend(EventDispatcher, {
      * @param {Array<BuildTarget>} targetArray
      */
     executeTargets: function(targetArray) {
+        var _this = this;
         targetArray.forEach(function(target) {
-            target.execute();
+            target.execute(_this);
         });
     }
 });

@@ -2,7 +2,7 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-//@Export('AnnotateJsModule')
+//@Export('CoreModule')
 
 //@Require('Annotate')
 //@Require('BuildBug')
@@ -17,7 +17,7 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('AnnotateJsModule', {autoload: true});
+bugpack.declare('CoreModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
 var BuildBug = bugpack.require('BuildBug');
@@ -30,14 +30,7 @@ var Class = bugpack.require('Class');
 // Node JS
 //-------------------------------------------------------------------------------
 
-// NOTE BRN: This is a node js MODULE dependency, not an annotatejs class dependency. Any modules that are specifically
-// required by this code still need to be included in the normal fashion.
-
-// TODO BRN: This specific include would make more sense as the compiler being included in the source path of the
-// buildbug project (included as a bugjar). We have to update annotatejs to be written in annotatejs before that's
-// possible though
-
-//var AnnotateJS = require('annotatejs');
+var fs = require('fs');
 
 
 //-------------------------------------------------------------------------------
@@ -46,13 +39,29 @@ var Class = bugpack.require('Class');
 
 var annotate = Annotate.annotate;
 var buildModule = BuildModuleAnnotation.buildModule;
+var buildTask = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var AnnotateJsModule = Class.extend(BuildModule, {
+var CoreModule = Class.extend(BuildModule, {
+
+    //-------------------------------------------------------------------------------
+    // Constructor
+    //-------------------------------------------------------------------------------
+
+    _constructor: function() {
+
+        this._super();
+
+
+        //-------------------------------------------------------------------------------
+        // Declare Variables
+        //-------------------------------------------------------------------------------
+    },
+
 
     //-------------------------------------------------------------------------------
     // BuildModule Implementation
@@ -63,62 +72,59 @@ var AnnotateJsModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-
-        /*asyncTask('compileNodeApp', function(task, properties) {
-            this.compileNodeApp(properties, function() {
+        var core = this;
+        buildTask('clean', function(task, buildProject, properties) {
+            core.clean(properties, function() {
                 task.complete();
             });
         });
-
-        asyncTask('compileClientApp', function(task, properties) {
-            this.compileClientApp(properties, function() {
-                task.complete();
-            });
-        });*/
     },
 
 
     //-------------------------------------------------------------------------------
-    // Build Methods
+    // Class Methods
     //-------------------------------------------------------------------------------
 
     /**
      * @param {{
-     *   packageName: string,
-     *   sourcePaths: Array<string>
-     * }} properties
+        *   packageJson: {
+     *       name: string,
+     *       version: string,
+     *       main: string,
+     *       dependencies: Object
+     *   }
+     *   packagePath: string
+     * }} properties,
      * @param {function()} callback
      */
-    compileNodeApp: function(properties, callback) {
+    clean: function(properties, callback) {
+        var _this = this;
         var props = this.generateProperties(properties);
-        var sourcePaths = props.sourcePaths;
-        var packageName = props.packageName;
-        var packagePath = props.buildPath + "/" + packageName;
-        AnnotateJS.compileNodeJs(sourcePaths, packagePath, callback);
-    },
-
-    /**
-     * @param {{
-     *    sourcePaths: {Array<string>},
-     *    clientJson: {
-     *        name: string,
-     *        version: string
-     *    }
-     * }} properties
-     * @param {function()} callback
-     */
-    compileClientApp: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var sourcePaths = props.sourcePaths;
-        var clientName = props.clientName;
-        var clientFileName = clientName + ".js";
-        var clientBuildPath = props.buildPath + "/" + clientName;
-        AnnotateJS.compileClientJs(sourcePaths, clientBuildPath, clientFileName, callback);
+        var buildPath = props.buildPath;
+        fs.exists(buildPath, function(exists) {
+            if (exists) {
+                fs.rmdir(buildPath, function(err) {
+                    if (err) {
+                        console.log(err);
+                        console.log(err.stack);
+                        process.exit(1);
+                        return;
+                    }
+                    callback();
+                });
+            }
+        });
     }
+
+
+    //-------------------------------------------------------------------------------
+    // Private Class Methods
+    //-------------------------------------------------------------------------------
+
 });
 
-annotate(AnnotateJsModule).with(
-    buildModule("annotatejs")
+annotate(CoreModule).with(
+    buildModule("core")
 );
 
 
@@ -126,4 +132,4 @@ annotate(AnnotateJsModule).with(
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(AnnotateJsModule);
+bugpack.export(CoreModule);
