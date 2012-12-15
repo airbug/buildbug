@@ -14,8 +14,6 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildSeries');
-
 var BuildFlow = bugpack.require('BuildFlow');
 var Class = bugpack.require('Class');
 var Series = bugpack.require('Series');

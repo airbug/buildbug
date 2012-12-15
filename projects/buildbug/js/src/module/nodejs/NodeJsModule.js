@@ -3,6 +3,7 @@
 //-------------------------------------------------------------------------------
 
 //@Export('NodeJsModule')
+//@Autoload
 
 //@Require('Annotate')
 //@Require('BuildBug')
@@ -16,8 +17,6 @@ var bugpack = require('bugpack');
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
-
-bugpack.declare('NodeJsModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
 var BugFs = bugpack.require('BugFs');

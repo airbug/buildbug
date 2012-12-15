@@ -21,8 +21,6 @@ var path = require('path');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildBug');
-
 var Annotate = bugpack.require('Annotate');
 var BuildModuleScan = bugpack.require('BuildModuleScan');
 var BuildParallel = bugpack.require('BuildParallel');

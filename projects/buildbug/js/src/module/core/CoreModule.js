@@ -3,6 +3,7 @@
 //-------------------------------------------------------------------------------
 
 //@Export('CoreModule')
+//@Autoload
 
 //@Require('Annotate')
 //@Require('BuildBug')
@@ -16,8 +17,6 @@ var bugpack = require('bugpack');
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
-
-bugpack.declare('CoreModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
 var BugFs = bugpack.require('BugFs');

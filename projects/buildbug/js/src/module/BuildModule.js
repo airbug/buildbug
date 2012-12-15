@@ -16,8 +16,6 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildModule');
-
 var Class = bugpack.require('Class');
 var Event = bugpack.require('Event');
 var EventDispatcher = bugpack.require('EventDispatcher');

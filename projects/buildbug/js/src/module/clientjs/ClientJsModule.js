@@ -3,6 +3,7 @@
 //-------------------------------------------------------------------------------
 
 //@Export('ClientJsModule')
+//@Autoload
 
 //@Require('Annotate')
 //@Require('BuildBug')
@@ -17,8 +18,6 @@ var bugpack = require('bugpack');
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
-
-bugpack.declare('ClientJsModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
 var BuildBug = bugpack.require('BuildBug');

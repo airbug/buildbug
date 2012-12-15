@@ -18,8 +18,6 @@ var path = require('path');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('NodePackage');
-
 var BugBoil = bugpack.require('BugBoil');
 var BugFlow = bugpack.require('BugFlow');
 var BugFs = bugpack.require('BugFs');

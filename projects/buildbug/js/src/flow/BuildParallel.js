@@ -14,8 +14,6 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildParallel');
-
 var BuildFlow = bugpack.require('BuildFlow');
 var Class = bugpack.require('Class');
 var Parallel = bugpack.require('Parallel');

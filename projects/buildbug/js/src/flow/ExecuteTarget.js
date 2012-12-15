@@ -16,8 +16,6 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('ExecuteTarget');
-
 var BuildFlow = bugpack.require('BuildFlow');
 var Class = bugpack.require('Class');
 var JsonUtil = bugpack.require('JsonUtil');

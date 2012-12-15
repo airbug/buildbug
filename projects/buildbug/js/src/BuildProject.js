@@ -19,8 +19,6 @@ var bugpack = require('bugpack');
 // BugPack
 //-------------------------------------------------------------------------------
 
-bugpack.declare('BuildProject');
-
 var BuildModule = bugpack.require('BuildModule');
 var BuildTarget = bugpack.require('BuildTarget');
 var BuildTask = bugpack.require('BuildTask');

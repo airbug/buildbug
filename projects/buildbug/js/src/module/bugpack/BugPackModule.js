@@ -3,6 +3,7 @@
 //-------------------------------------------------------------------------------
 
 //@Export('BugPackModule')
+//@Autoload
 
 //@Require('Annotate')
 //@Require('BuildBug')
@@ -17,8 +18,6 @@ var path = require('path');
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
-
-bugpack.declare('BugPackModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
 var BugFs = bugpack.require('BugFs');
@@ -131,10 +130,11 @@ var BugPackModule = Class.extend(BuildModule, {
      * @private
      * @param {Path} outputDirPath
      * @param {Object} bugpackRegistryObject
+     * @param {function(Error)} callback
      */
-    writeBugpackRegistryJson: function(outputDirPath, bugpackRegistryObject) {
+    writeBugpackRegistryJson: function(outputDirPath, bugpackRegistryObject, callback) {
         var bugpackRegistryPath = outputDirPath.getAbsolutePath() + path.sep + 'bugpack-registry.json';
-        BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistryObject, null, '\t'));
+        BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistryObject, null, '\t'), callback);
     }
 });
 
