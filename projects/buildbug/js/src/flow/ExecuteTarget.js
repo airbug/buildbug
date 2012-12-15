@@ -76,14 +76,15 @@ var ExecuteTarget = Class.extend(Task, {
     },
 
     /**
-     * @param {BuildProject} buildProject
+     * @param {Array<*>} args
      */
-    executeFlow: function(buildProject) {
-        console.log("Running task " + this.buildTask.getName());
+    executeFlow: function(args) {
+        console.log("Running task '" + this.buildTask.getName()) + "'";
         if (this.taskInitMethod) {
+            var buildProject = args[0];
             this.taskInitMethod(this, buildProject, this.taskProperties);
         }
-        this._super(buildProject, this.taskProperties);
+        this._super([buildProject, this.taskProperties]);
     },
 
 
@@ -94,7 +95,7 @@ var ExecuteTarget = Class.extend(Task, {
     /**
      * @param {Object} properties
      */
-    properties: function(properties) {
+    updateProperties: function(properties) {
         JsonUtil.munge(properties, this.taskProperties);
         return this;
     }
@@ -105,4 +106,4 @@ var ExecuteTarget = Class.extend(Task, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(TargetTask);
+bugpack.export(ExecuteTarget);

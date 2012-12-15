@@ -102,13 +102,14 @@ var BuildTarget = Class.extend(Obj, {
         if (this.buildTargetFlow) {
             console.log("Executing target " + this.name);
             var flow = this.buildTargetFlow.generateFlow(buildProject);
-            flow.execute([buildProject], function(err) {
+            flow.execute([buildProject], function(error) {
 
                 //TODO BRN: Should we just exit the program here if there's an error or should we send this back up the chain further?
 
-                if (err) {
-                    console.log(err);
-                    console.log(err.stack);
+                if (error) {
+                    console.log("An error occurred during the build.");
+                    console.log(error);
+                    console.log(error.stack);
                     process.exit(1);
                     return;
                 } else {

@@ -87,9 +87,10 @@ BuildBug.buildTask = function(taskName, taskFunction) {
 
 /**
  * @param {string} moduleName
+ * @return {BuildModule}
  */
 BuildBug.enableModule = function(moduleName) {
-    BuildBug.buildProject.enableModule(moduleName);
+    return BuildBug.buildProject.enableModule(moduleName);
 };
 
 /**
@@ -127,10 +128,11 @@ BuildBug.series = function(tasksArray) {
 
 /**
  * @param {function()} taskName
+ * @param {Object} proto
  * @return {TargetTask}
  */
-BuildBug.targetTask = function(taskName) {
-    return new TargetTask(taskName);
+BuildBug.targetTask = function(taskName, proto) {
+    return new TargetTask(taskName, proto);
 };
 
 
@@ -149,9 +151,9 @@ BuildBug.bootstrap = function() {
     var currentDir = process.cwd();
     var child = child_process.exec('npm link buildbug', {cwd: currentDir, env: process.env},
         function (error, stdout, stderr) {
-            console.log('stdout: ' + stdout);
-            console.log('stderr: ' + stderr);
             if (error !== null) {
+                console.log('stdout: ' + stdout);
+                console.log('stderr: ' + stderr);
                 console.log(error);
                 console.log(error.stack);
                 process.exit(1);

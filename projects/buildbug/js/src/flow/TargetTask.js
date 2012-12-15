@@ -78,8 +78,12 @@ var TargetTask = Class.extend(BuildFlow, {
      * @return {ExecuteTarget}
      */
     generateFlow: function(buildProject) {
-        var buildTask = buildProject.getTask(this.targetTaskName);
-        return new ExecuteTarget(buildTask, this.targetTaskProperties, this.targetTaskInitMethod);
+        if (buildProject.hasTask(this.targetTaskName)) {
+            var buildTask = buildProject.getTask(this.targetTaskName);
+            return new ExecuteTarget(buildTask, this.targetTaskProperties, this.targetTaskInitMethod);
+        } else {
+            throw new Error("Cannot find build task by the name of '" + this.targetTaskName + "'");
+        }
     },
 
     /**

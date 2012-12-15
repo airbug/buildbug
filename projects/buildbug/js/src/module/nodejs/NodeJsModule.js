@@ -89,22 +89,14 @@ var NodeJsModule = Class.extend(BuildModule, {
     enableModule: function() {
         this._super();
         var nodejs = this;
-        buildTask('createNodePackage', function(task, buildProject, properties) {
+        buildTask('createNodePackage', function(flow, buildProject, properties) {
             nodejs.createNodePackageTask(properties, function(error) {
-                if (!error) {
-                    task.complete();
-                } else {
-                    task.error(error);
-                }
+                flow.complete(error);
             });
         });
-        buildTask('packNodePackage', function(task, buildProject, properties) {
+        buildTask('packNodePackage', function(flow, buildProject, properties) {
             nodejs.packNodePackageTask(properties, function(error) {
-                if (!error) {
-                    task.complete();
-                } else {
-                    task.error(error);
-                }
+                flow.complete(error);
             });
         });
     },
@@ -134,7 +126,7 @@ var NodeJsModule = Class.extend(BuildModule, {
      *   }
      *   packagePath: string
      * }} properties,
-     * @param {function()} callback
+     * @param {function(Error)} callback
      */
     createNodePackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
@@ -156,10 +148,9 @@ var NodeJsModule = Class.extend(BuildModule, {
      *   }
      *   packagePath: string
      * }} properties,
-     * @param {function()} callback
+     * @param {function(Error)} callback
      */
     packNodePackageTask: function(properties, callback) {
-        var _this = this;
         var props = this.generateProperties(properties);
         var packageName = props.packageName;
         var nodePackage = this.findNodePackage(packageName);
@@ -195,7 +186,9 @@ var NodeJsModule = Class.extend(BuildModule, {
      * @return {NodePackage}
      */
     generateNodePackage: function(packageJson, buildPath) {
-        return new NodePackage(packageJson, buildPath);
+        var nodePackage = new NodePackage(packageJson, buildPath);
+        this.packageNameToNodePackageMap.put(nodePackage.getName(), nodePackage);
+        return nodePackage;
     },
 
     /**

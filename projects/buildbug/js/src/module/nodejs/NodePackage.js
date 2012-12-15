@@ -20,16 +20,19 @@ var path = require('path');
 
 bugpack.declare('NodePackage');
 
+var BugBoil = bugpack.require('BugBoil');
 var BugFlow = bugpack.require('BugFlow');
 var BugFs = bugpack.require('BugFs');
 var Class = bugpack.require('Class');
 var Obj = bugpack.require('Obj');
+var Path = bugpack.require('Path');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
+var each = BugBoil.each;
 var series = BugFlow.series;
 var task = BugFlow.task;
 
@@ -44,7 +47,7 @@ var NodePackage = Class.extend(Obj, {
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(packageJson, baseBuildPath) {
+    _constructor: function(packageJson, baseBuildPathString) {
 
         this._super();
 
@@ -57,7 +60,19 @@ var NodePackage = Class.extend(Obj, {
          * @private
          * @type {string}
          */
-        this.baseBuildPath = baseBuildPath;
+        this.baseBuildPathString = baseBuildPathString;
+
+        /**
+         * @private
+         * @type {Path}
+         */
+        this.buildPath = null;
+
+        /**
+         * @private
+         * @type {Path}
+         */
+        this.libPath = null;
 
         /**
          * @private
@@ -77,10 +92,10 @@ var NodePackage = Class.extend(Obj, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {string}
+     * @return {Path}
      */
     getBuildPath: function() {
-        return this.baseBuildPath + path.sep + this.getName() + path.sep + this.getVersion();
+        return this.buildPath;
     },
 
     /**
@@ -88,6 +103,13 @@ var NodePackage = Class.extend(Obj, {
      */
     getDistFileName: function() {
         return this.packageJson.name + "-" + this.packageJson.version + ".tgz";
+    },
+
+    /**
+     * @return {Path}
+     */
+    getLibPath: function() {
+        return this.libPath;
     },
 
     /**
@@ -122,7 +144,7 @@ var NodePackage = Class.extend(Obj, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {Array<string>} sourcePaths
+     * @param {Array<(string|Path)>} sourcePaths
      * @param {function(Error)} callback
      */
     buildPackage: function(sourcePaths, callback) {
@@ -130,29 +152,25 @@ var NodePackage = Class.extend(Obj, {
         this.validatePackageJson();
         series([
             task(function(_task) {
-                _this.generateBuildPath(function(error) {
-                    if (!error) {
-                        _task.complete();
-                    } else {
-                        _task.error(error);
-                    }
+                _this.createPackageBuildPaths(function(error) {
+                    _task.complete(error);
                 });
             }),
             task(function(_task) {
-                // TODO BRN: copy all source files in source paths to the package lib path
+                each(sourcePaths, function(boil, sourcePath) {
+                    BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), function(error) {
+                        boil.bubble(error);
+                    });
+                }).execute(function(error) {
+                    _task.complete(error);
+                });
             }),
             task(function(_task) {
                 _this.writePackageJson(function(error) {
-                    if (!error) {
-                        _task.complete();
-                    } else {
-                        _task.error(error);
-                    }
+                    _task.complete(error);
                 });
             })
-        ]).execute(function(error) {
-            callback(error);
-        });
+        ]).execute(callback);
     },
 
     /**
@@ -160,9 +178,10 @@ var NodePackage = Class.extend(Obj, {
      * @param {function(Error)} callback
      */
     packPackage: function(distPath, callback) {
-        this.packNodePackage(distPath, function(error) {
+        var _this = this
+        this.packNodePackage(function(error) {
             if (!error) {
-                var npmPackageFilePath = process.cwd() + "/" + this.getDistFileName();
+                var npmPackageFilePath = process.cwd() + path.sep + _this.getDistFileName();
                 BugFs.move(npmPackageFilePath, distPath, callback);
             } else {
                 callback(error);
@@ -194,21 +213,39 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @private
-     * @param {function(Error)} callback
+     * @param {function(Error)
      */
-    generateBuildPath: function(callback) {
-        BugFs.createDirectory(this.getBuildPath(), callback);
+    createPackageBuildPaths: function(callback) {
+        var _this = this;
+        this.buildPath = new Path(this.baseBuildPathString + path.sep + this.getName() + path.sep + this.getVersion());
+        this.libPath = new Path(this.buildPath.getAbsolutePath() + path.sep + "lib");
+        series([
+            task(function(_task) {
+                BugFs.createDirectory(_this.getBuildPath(), function(error) {
+                    _task.complete(error);
+                });
+            }),
+            task(function(_task) {
+                BugFs.createDirectory(_this.getLibPath(), function(error) {
+                    _task.complete(error);
+                });
+            })
+        ]).execute([], callback);
     },
 
     /**
      * @private
-     * @param {string} distPath
      * @param {function()} callback
      */
-    packNodePackage: function(distPath, callback) {
-        npm.commands.pack([packagePath], function (err, data) {
-            console.log("Packed up node package '" + packagePath + "'");
-            callback();
+    packNodePackage: function(callback) {
+        var packagePath = this.buildPath.getAbsolutePath();
+        npm.commands.pack([packagePath], function (error, data) {
+            if (!error) {
+                console.log("Packed up node package '" + packagePath + "'");
+                callback();
+            } else {
+                callback(error);
+            }
         });
     },
 
@@ -255,7 +292,7 @@ var NodePackage = Class.extend(Obj, {
      * @param {function(Error)} callback
      */
     writePackageJson: function(callback) {
-        var packagePath = this.buildPath;
+        var packagePath = this.buildPath.getAbsolutePath();
         var packageJson = this.packageJson;
         var packageJsonPath = packagePath + path.sep + 'package.json';
         BugFs.createFile(packageJsonPath, function(error) {

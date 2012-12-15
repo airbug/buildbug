@@ -166,6 +166,7 @@ var BuildProject = Class.extend(EventDispatcher, {
         if (this.moduleNameToBuildModuleMap.containsKey(moduleName)) {
             var buildModule = this.moduleNameToBuildModuleMap.get(moduleName);
             if (!buildModule.isEnabled()) {
+                console.log("Enabling module '" + moduleName + "'");
                 this.numberEnabledModules++;
                 buildModule.setParentDispatcher(this);
                 buildModule.enable(this);
@@ -211,6 +212,14 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
+     * @param {string} taskName
+     * @return {boolean}
+     */
+    hasTask: function(taskName) {
+        return this.taskNameToBuildTaskMap.containsKey(taskName);
+    },
+
+    /**
      * @param {string} moduleName
      * @param {BuildModule} buildModule
      */
@@ -220,6 +229,7 @@ var BuildProject = Class.extend(EventDispatcher, {
         }
         if (!this.moduleNameToBuildModuleMap.containsKey(moduleName)) {
             if (!this.buildModuleSet.contains(buildModule)) {
+                console.log("Registering build module '" + moduleName + "'");
                 this.moduleNameToBuildModuleMap.put(moduleName, buildModule);
                 this.buildModuleSet.add(buildModule);
             } else {
@@ -239,6 +249,7 @@ var BuildProject = Class.extend(EventDispatcher, {
         }
         if (!this.targetNameToBuildTargetMap.containsKey(buildTarget.getName())) {
             if (!this.buildTargetSet.contains(buildTarget)) {
+                console.log("Registering build target '" + buildTarget.getName() + "'");
                 this.targetNameToBuildTargetMap.put(buildTarget.getName(), buildTarget);
                 this.buildTargetSet.add(buildTarget);
             } else {
@@ -258,6 +269,7 @@ var BuildProject = Class.extend(EventDispatcher, {
         }
         if (!this.taskNameToBuildTaskMap.containsKey(buildTask.getName())) {
             if (!this.buildTaskSet.contains(buildTask)) {
+                console.log("Registering build task '" + buildTask.getName() + "'");
                 this.taskNameToBuildTaskMap.put(buildTask.getName(), buildTask);
                 this.buildTaskSet.add(buildTask);
             } else {
@@ -314,6 +326,7 @@ var BuildProject = Class.extend(EventDispatcher, {
      * @private
      */
     executeBuild: function() {
+        console.log("Starting build");
         var targetName = null;
         var targetArray = [];
         if (process.argv.length >= 2) {

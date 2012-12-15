@@ -20,17 +20,11 @@ var bugpack = require('bugpack');
 bugpack.declare('CoreModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
+var BugFs = bugpack.require('BugFs');
 var BuildBug = bugpack.require('BuildBug');
 var BuildModule = bugpack.require('BuildModule');
 var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
-
-
-//-------------------------------------------------------------------------------
-// Node JS
-//-------------------------------------------------------------------------------
-
-var fs = require('fs');
 
 
 //-------------------------------------------------------------------------------
@@ -74,8 +68,8 @@ var CoreModule = Class.extend(BuildModule, {
         this._super();
         var core = this;
         buildTask('clean', function(task, buildProject, properties) {
-            core.clean(properties, function() {
-                task.complete();
+            core.clean(properties, function(error) {
+                task.complete(error);
             });
         });
     },
@@ -98,21 +92,10 @@ var CoreModule = Class.extend(BuildModule, {
      * @param {function()} callback
      */
     clean: function(properties, callback) {
-        var _this = this;
         var props = this.generateProperties(properties);
         var buildPath = props.buildPath;
-        fs.exists(buildPath, function(exists) {
-            if (exists) {
-                fs.rmdir(buildPath, function(err) {
-                    if (err) {
-                        console.log(err);
-                        console.log(err.stack);
-                        process.exit(1);
-                        return;
-                    }
-                    callback();
-                });
-            }
+        BugFs.deleteDirectory(buildPath, function(error) {
+            callback(error);
         });
     }
 

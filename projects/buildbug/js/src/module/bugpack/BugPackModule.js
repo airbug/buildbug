@@ -11,6 +11,7 @@
 //@Require('Class')
 
 var bugpack = require('bugpack');
+var path = require('path');
 
 
 //-------------------------------------------------------------------------------
@@ -20,10 +21,13 @@ var bugpack = require('bugpack');
 bugpack.declare('BugPackModule', {autoload: true});
 
 var Annotate = bugpack.require('Annotate');
+var BugFs = bugpack.require('BugFs');
 var BuildBug = bugpack.require('BuildBug');
 var BuildModule = bugpack.require('BuildModule');
 var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
+var Path = bugpack.require('Path');
+var TypeUtil = bugpack.require('TypeUtil');
 
 
 //-------------------------------------------------------------------------------
@@ -32,6 +36,7 @@ var Class = bugpack.require('Class');
 
 var annotate = Annotate.annotate;
 var buildModule = BuildModuleAnnotation.buildModule;
+var buildTask = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -60,13 +65,24 @@ var BugPackModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
     // BuildModule Implementation
     //-------------------------------------------------------------------------------
+
     /**
      * @protected
      */
     enableModule: function() {
         this._super();
+        var bugPack = this;
+        buildTask('generateBugPackRegistry', function(flow, buildProject, properties) {
+            bugPack.generateBugPackRegistryTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
     },
 
+    /**
+     * @protected
+     * @return {boolean}
+     */
     initializeModule: function() {
         this._super();
         return true;
@@ -74,15 +90,51 @@ var BugPackModule = Class.extend(BuildModule, {
 
 
     //-------------------------------------------------------------------------------
-    // Class Methods
+    // Build Task Methods
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {string} packagePath
-     * @param {Object} clientJson
+     * @param {{
+     *   sourceRoot: [string]
+     * }} properties,
+     * @param {function(Error)} callback
      */
-    createPackage: function(packagePath, clientJson) {
+    generateBugPackRegistryTask: function(properties, callback) {
+        var props = this.generateProperties(properties);
+        var sourceRoot = props.sourceRoot;
+        this.generateBugPackRegistry(sourceRoot, callback);
+    },
 
+
+    //-------------------------------------------------------------------------------
+    // Private Class Methods
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @private
+     * @param {(string|Path)} sourceRoot
+     * @param {function(Error)} callback
+     */
+    generateBugPackRegistry: function(sourceRoot, callback) {
+        var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
+        var _this = this;
+        bugpack.buildRegistry(sourceRootPath.getAbsolutePath(), function(error, bugpackRegistry) {
+            if (!error) {
+                _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
+            } else {
+                callback(error);
+            }
+        });
+    },
+
+    /**
+     * @private
+     * @param {Path} outputDirPath
+     * @param {Object} bugpackRegistryObject
+     */
+    writeBugpackRegistryJson: function(outputDirPath, bugpackRegistryObject) {
+        var bugpackRegistryPath = outputDirPath.getAbsolutePath() + path.sep + 'bugpack-registry.json';
+        BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistryObject, null, '\t'));
     }
 });
 
