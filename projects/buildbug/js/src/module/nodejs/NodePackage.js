@@ -30,9 +30,9 @@ var Path = bugpack.require('Path');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var each = BugBoil.each;
-var series = BugFlow.series;
-var task = BugFlow.task;
+var $foreach = BugBoil.$foreach;
+var $series = BugFlow.$series;
+var $task = BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
@@ -148,24 +148,24 @@ var NodePackage = Class.extend(Obj, {
     buildPackage: function(sourcePaths, callback) {
         var _this = this;
         this.validatePackageJson();
-        series([
-            task(function(_task) {
+        $series([
+            $task(function(flow) {
                 _this.createPackageBuildPaths(function(error) {
-                    _task.complete(error);
+                    flow.complete(error);
                 });
             }),
-            task(function(_task) {
-                each(sourcePaths, function(boil, sourcePath) {
+            $task(function(flow) {
+                $foreach(sourcePaths, function(boil, sourcePath) {
                     BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), function(error) {
                         boil.bubble(error);
                     });
                 }).execute(function(error) {
-                    _task.complete(error);
+                    flow.complete(error);
                 });
             }),
-            task(function(_task) {
+            $task(function(flow) {
                 _this.writePackageJson(function(error) {
-                    _task.complete(error);
+                    flow.complete(error);
                 });
             })
         ]).execute(callback);
@@ -176,7 +176,7 @@ var NodePackage = Class.extend(Obj, {
      * @param {function(Error)} callback
      */
     packPackage: function(distPath, callback) {
-        var _this = this
+        var _this = this;
         this.packNodePackage(function(error) {
             if (!error) {
                 var npmPackageFilePath = process.cwd() + path.sep + _this.getDistFileName();
