@@ -156,7 +156,7 @@ var NodePackage = Class.extend(Obj, {
             }),
             $task(function(flow) {
                 $foreach(sourcePaths, function(boil, sourcePath) {
-                    BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), function(error) {
+                    BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                         boil.bubble(error);
                     });
                 }).execute(function(error) {
@@ -180,7 +180,7 @@ var NodePackage = Class.extend(Obj, {
         this.packNodePackage(function(error) {
             if (!error) {
                 var npmPackageFilePath = process.cwd() + path.sep + _this.getDistFileName();
-                BugFs.move(npmPackageFilePath, distPath, callback);
+                BugFs.move(npmPackageFilePath, distPath, Path.SyncMode.MERGE_REPLACE, callback);
             } else {
                 callback(error);
             }
@@ -204,7 +204,7 @@ var NodePackage = Class.extend(Obj, {
             sourceFilePathsArray.forEach(function(sourceFilePath) {
                 var relativePath = path.relative(sourcePath, sourceFilePath);
                 var outputFilePath = outputDirPath + "/" + relativePath;
-                BugFs.copySync(sourceFilePath, outputFilePath);
+                BugFs.copySync(sourceFilePath, outputFilePath, true, Path.SyncMode.MERGE_REPLACE);
             });
         });
     },
@@ -217,15 +217,15 @@ var NodePackage = Class.extend(Obj, {
         var _this = this;
         this.buildPath = new Path(this.baseBuildPathString + path.sep + this.getName() + path.sep + this.getVersion());
         this.libPath = new Path(this.buildPath.getAbsolutePath() + path.sep + "lib");
-        series([
-            task(function(_task) {
+        $series([
+            $task(function(flow) {
                 BugFs.createDirectory(_this.getBuildPath(), function(error) {
-                    _task.complete(error);
+                    flow.complete(error);
                 });
             }),
-            task(function(_task) {
+            $task(function(flow) {
                 BugFs.createDirectory(_this.getLibPath(), function(error) {
-                    _task.complete(error);
+                    flow.complete(error);
                 });
             })
         ]).execute([], callback);

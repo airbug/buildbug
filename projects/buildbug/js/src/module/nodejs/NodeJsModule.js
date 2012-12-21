@@ -153,7 +153,8 @@ var NodeJsModule = Class.extend(BuildModule, {
         var props = this.generateProperties(properties);
         var packageName = props.packageName;
         var nodePackage = this.findNodePackage(packageName);
-        nodePackage.packPackage(callback);
+        var distPath = props.distPath;
+        nodePackage.packPackage(distPath, callback);
     },
 
 
