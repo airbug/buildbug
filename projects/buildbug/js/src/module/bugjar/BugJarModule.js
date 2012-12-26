@@ -2,7 +2,7 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-//@Export('NodeJsModule')
+//@Export('BugJarModule')
 //@Autoload
 
 //@Require('Annotate')
@@ -12,6 +12,7 @@
 //@Require('Class')
 
 var bugpack = require('bugpack');
+var path = require('path');
 
 
 //-------------------------------------------------------------------------------
@@ -24,16 +25,8 @@ var BuildBug = bugpack.require('BuildBug');
 var BuildModule = bugpack.require('BuildModule');
 var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
-var Map = bugpack.require('Map');
-var NodePackage = bugpack.require('NodePackage');
-
-
-//-------------------------------------------------------------------------------
-// Node JS
-//-------------------------------------------------------------------------------
-
-var fs = require('fs');
-var npm = require('npm');
+var Path = bugpack.require('Path');
+var TypeUtil = bugpack.require('TypeUtil');
 
 
 //-------------------------------------------------------------------------------
@@ -49,7 +42,7 @@ var buildTask = BuildBug.buildTask;
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var NodeJsModule = Class.extend(BuildModule, {
+var BugJarModule = Class.extend(BuildModule, {
 
     //-------------------------------------------------------------------------------
     // Constructor
@@ -64,17 +57,7 @@ var NodeJsModule = Class.extend(BuildModule, {
         // Declare Variables
         //-------------------------------------------------------------------------------
 
-        /**
-         * @private
-         * @type {boolean}
-         */
-        this.npmLoaded = false;
 
-        /**
-         * @private
-         * @type {Map<string, NodePackage>}
-         */
-        this.packageNameToNodePackageMap = new Map();
     },
 
 
@@ -87,14 +70,9 @@ var NodeJsModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var nodejs = this;
-        buildTask('createNodePackage', function(flow, buildProject, properties) {
-            nodejs.createNodePackageTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('packNodePackage', function(flow, buildProject, properties) {
-            nodejs.packNodePackageTask(properties, function(error) {
+        var bugPack = this;
+        buildTask('createBugJar', function(flow, buildProject, properties) {
+            bugPack.createBugJarTask(properties, function(error) {
                 flow.complete(error);
             });
         });
@@ -106,8 +84,7 @@ var NodeJsModule = Class.extend(BuildModule, {
      */
     initializeModule: function() {
         this._super();
-        this.loadNPM();
-        return false;
+        return true;
     },
 
 
@@ -117,30 +94,28 @@ var NodeJsModule = Class.extend(BuildModule, {
 
     /**
      * @param {{
-     *   sourcePaths: Array.<string>,
-     *   packageJson: {
+     *   bugjarJson: {
      *       name: string,
      *       version: string,
-     *       main: string,
      *       dependencies: Object
-     *   },
-     *   buildPath: string
-     * }} properties
+     *   }
+     *   packagePath: string
+     * }} properties,
      * @param {function(Error)} callback
      */
-    createNodePackageTask: function(properties, callback) {
+    createBugJarTask: function(properties, callback) {
         var props = this.generateProperties(properties);
         var sourcePaths = props.sourcePaths;
-        var packageJson = props.packageJson;
+        var bugjarJson = props.bugjarJson;
         var buildPath = props.buildPath;
-        var nodePackage = this.generateNodePackage(packageJson, buildPath);
+        var nodePackage = this.generateBugJar(bugjarJson, buildPath);
 
         nodePackage.buildPackage(sourcePaths, callback);
     },
 
     /**
      * @param {{
-     *   packageJson: {
+     *   bugjarJson: {
      *       name: string,
      *       version: string,
      *       main: string,
@@ -150,7 +125,7 @@ var NodeJsModule = Class.extend(BuildModule, {
      * }} properties,
      * @param {function(Error)} callback
      */
-    packNodePackageTask: function(properties, callback) {
+    closeBugJarTask: function(properties, callback) {
         var props = this.generateProperties(properties);
         var packageName = props.packageName;
         var nodePackage = this.findNodePackage(packageName);
@@ -158,62 +133,41 @@ var NodeJsModule = Class.extend(BuildModule, {
         nodePackage.packPackage(distPath, callback);
     },
 
-
-    //-------------------------------------------------------------------------------
-    // Class Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @param {string} packageName
-     */
-    findNodePackage: function(packageName) {
-        return this.packageNameToNodePackageMap.get(packageName);
-    },
-
-
     //-------------------------------------------------------------------------------
     // Private Class Methods
     //-------------------------------------------------------------------------------
 
     /**
      * @private
-     * @param {{
-     *       name: string,
-     *       version: string,
-     *       main: string,
-     *       dependencies: Object
-     *   }} packageJson
-     * @param {string} buildPath
-     * @return {NodePackage}
+     * @param {(string|Path)} sourceRoot
+     * @param {function(Error)} callback
      */
-    generateNodePackage: function(packageJson, buildPath) {
-        var nodePackage = new NodePackage(packageJson, buildPath);
-        this.packageNameToNodePackageMap.put(nodePackage.getName(), nodePackage);
-        return nodePackage;
+    generateBugPackRegistry: function(sourceRoot, callback) {
+        var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
+        var _this = this;
+        bugpack.buildRegistry(sourceRootPath.getAbsolutePath(), function(error, bugpackRegistry) {
+            if (!error) {
+                _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
+            } else {
+                callback(error);
+            }
+        });
     },
 
     /**
      * @private
+     * @param {Path} outputDirPath
+     * @param {Object} bugpackRegistryObject
+     * @param {function(Error)} callback
      */
-    loadNPM: function() {
-        var _this = this;
-        if (!this.npmLoaded) {
-            this.npmLoaded = true;
-            npm.load({}, function (err) {
-                if (err) {
-                    console.log(err);
-                    console.log(err.stack);
-                    process.exit(1);
-                    return;
-                }
-                _this.initializeComplete();
-            });
-        }
+    writeBugpackRegistryJson: function(outputDirPath, bugpackRegistryObject, callback) {
+        var bugpackRegistryPath = outputDirPath.getAbsolutePath() + path.sep + 'bugpack-registry.json';
+        BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistryObject, null, '\t'), callback);
     }
 });
 
-annotate(NodeJsModule).with(
-    buildModule("nodejs")
+annotate(BugJarModule).with(
+    buildModule("bugjar")
 );
 
 
@@ -221,4 +175,4 @@ annotate(NodeJsModule).with(
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(NodeJsModule);
+bugpack.export(BugJarModule);
