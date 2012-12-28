@@ -30,7 +30,7 @@ var Path = bugpack.require('Path');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $foreach = BugBoil.$foreach;
+var $foreachSeries = BugBoil.$foreachSeries;
 var $series = BugFlow.$series;
 var $task = BugFlow.$task;
 
@@ -155,7 +155,7 @@ var NodePackage = Class.extend(Obj, {
                 });
             }),
             $task(function(flow) {
-                $foreach(sourcePaths, function(boil, sourcePath) {
+                $foreachSeries(sourcePaths, function(boil, sourcePath) {
                     BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                         boil.bubble(error);
                     });

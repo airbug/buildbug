@@ -49,8 +49,8 @@ npm.load({}, function (err) {
                 main: "./lib/buildbug_boot.js",
                 bin: "bin/buildbug",
                 dependencies: {
-                    bugpack: 'git+ssh://git@github.com:bneisler/bugpack.git#master',
-                    "fs-extra": '0.3.x',
+                    bugjar: 'git+ssh://git@github.com:airbug/bugjar.git#master',
+                    bugpack: 'git+ssh://git@github.com:airbug/bugpack.git#master',
                     npm: '1.1.x'
                 }
             });

@@ -4,16 +4,19 @@
 
 //@Export('BuildBug')
 
-//@Require('Annotate')
+//@Require('BuildModuleScan')
+//@Require('BuildParallel')
 //@Require('BuildProject')
+//@Require('BuildSeries')
+//@Require('BuildTarget')
 //@Require('BuildTask')
 //@Require('Class')
 //@Require('Map')
 //@Require('Obj')
+//@Require('TargetTask')
 
 var bugpack = require('bugpack');
 var child_process = require('child_process');
-var fs_extra = require('fs-extra');
 var path = require('path');
 
 
@@ -21,7 +24,7 @@ var path = require('path');
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Annotate = bugpack.require('Annotate');
+var BugFs = bugpack.require('BugFs');
 var BuildModuleScan = bugpack.require('BuildModuleScan');
 var BuildParallel = bugpack.require('BuildParallel');
 var BuildProject = bugpack.require('BuildProject');
@@ -158,8 +161,16 @@ BuildBug.bootstrap = function() {
                 return;
             }
 
-            if (fs_extra.existsSync(currentDir +  path.sep + "buildbug.js")) {
-                require(currentDir +  path.sep + "buildbug.js");
+            var propertiesPathString = currentDir + path.sep + "buildbug.json";
+            if (BugFs.existsSync(propertiesPathString)) {
+                var propertiesJson = BugFs.readFileSync(propertiesPathString, 'utf8');
+                var properties = JSON.parse(propertiesJson);
+                BuildBug.buildProperties(properties);
+            }
+
+            var buildFilePathString = currentDir +  path.sep + "buildbug.js";
+            if (BugFs.existsSync(buildFilePathString)) {
+                require(buildFilePathString);
 
                 // NOTE BRN: By using a setTimeout here we allow the buildbug script to declare all of its tasks and perform all
                 // of its setup before we begin executing the build.
@@ -189,8 +200,3 @@ BuildBug.registerModule = function(moduleName, buildModule) {
 //-------------------------------------------------------------------------------
 
 bugpack.export(BuildBug);
-
-// NOTE BRN: This file is the entry point for the node js module. So we also export this file as a node js module here
-// so that users can simple 'require('buildbug') in their build scripts.
-
-module.exports = BuildBug;

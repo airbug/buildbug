@@ -12,7 +12,7 @@
 //@Require('Class')
 
 var bugpack = require('bugpack');
-var path = require('path');
+var bugjar = require('bugjar');
 
 
 //-------------------------------------------------------------------------------
@@ -20,13 +20,10 @@ var path = require('path');
 //-------------------------------------------------------------------------------
 
 var Annotate = bugpack.require('Annotate');
-var BugFs = bugpack.require('BugFs');
 var BuildBug = bugpack.require('BuildBug');
 var BuildModule = bugpack.require('BuildModule');
 var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
-var Path = bugpack.require('Path');
-var TypeUtil = bugpack.require('TypeUtil');
 
 
 //-------------------------------------------------------------------------------
@@ -57,7 +54,6 @@ var BugJarModule = Class.extend(BuildModule, {
         // Declare Variables
         //-------------------------------------------------------------------------------
 
-
     },
 
 
@@ -73,6 +69,46 @@ var BugJarModule = Class.extend(BuildModule, {
         var bugPack = this;
         buildTask('createBugJar', function(flow, buildProject, properties) {
             bugPack.createBugJarTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('deleteBugJar', function(flow, buildProject, properties) {
+            bugPack.deleteBugJarTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('emptyBugJar', function(flow, buildProject, properties) {
+            bugPack.emptyBugJarTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('fillBugJar', function(flow, buildProject, properties) {
+            bugPack.fillBugJarTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('getBugJarFromShelf', function(flow, buildProject, properties) {
+            bugPack.getBugJarFromShelfTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('putBugJarOnShelf', function(flow, buildProject, properties) {
+            bugPack.putBugJarOnShelfTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('removeBugJarFromShelf', function(flow, buildProject, properties) {
+            bugPack.removeBugJarFromShelfTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('createShelf', function(flow, buildProject, properties) {
+            bugPack.createShelfTask(properties, function(error) {
+                flow.complete(error);
+            });
+        });
+        buildTask('deleteShelf', function(flow, buildProject, properties) {
+            bugPack.deleteShelfTask(properties, function(error) {
                 flow.complete(error);
             });
         });
@@ -98,8 +134,8 @@ var BugJarModule = Class.extend(BuildModule, {
      *       name: string,
      *       version: string,
      *       dependencies: Object
-     *   }
-     *   packagePath: string
+     *   },
+     *   sourcePaths: Array.<string>
      * }} properties,
      * @param {function(Error)} callback
      */
@@ -107,63 +143,18 @@ var BugJarModule = Class.extend(BuildModule, {
         var props = this.generateProperties(properties);
         var sourcePaths = props.sourcePaths;
         var bugjarJson = props.bugjarJson;
-        var buildPath = props.buildPath;
-        var nodePackage = this.generateBugJar(bugjarJson, buildPath);
+        var linkSources = props.linkSources;
 
         nodePackage.buildPackage(sourcePaths, callback);
     },
 
-    /**
-     * @param {{
-     *   bugjarJson: {
-     *       name: string,
-     *       version: string,
-     *       main: string,
-     *       dependencies: Object
-     *   }
-     *   packagePath: string
-     * }} properties,
-     * @param {function(Error)} callback
-     */
-    closeBugJarTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var packageName = props.packageName;
-        var nodePackage = this.findNodePackage(packageName);
-        var distPath = props.distPath;
-        nodePackage.packPackage(distPath, callback);
-    },
+
 
     //-------------------------------------------------------------------------------
     // Private Class Methods
     //-------------------------------------------------------------------------------
 
-    /**
-     * @private
-     * @param {(string|Path)} sourceRoot
-     * @param {function(Error)} callback
-     */
-    generateBugPackRegistry: function(sourceRoot, callback) {
-        var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
-        var _this = this;
-        bugpack.buildRegistry(sourceRootPath.getAbsolutePath(), function(error, bugpackRegistry) {
-            if (!error) {
-                _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
-            } else {
-                callback(error);
-            }
-        });
-    },
 
-    /**
-     * @private
-     * @param {Path} outputDirPath
-     * @param {Object} bugpackRegistryObject
-     * @param {function(Error)} callback
-     */
-    writeBugpackRegistryJson: function(outputDirPath, bugpackRegistryObject, callback) {
-        var bugpackRegistryPath = outputDirPath.getAbsolutePath() + path.sep + 'bugpack-registry.json';
-        BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistryObject, null, '\t'), callback);
-    }
 });
 
 annotate(BugJarModule).with(
