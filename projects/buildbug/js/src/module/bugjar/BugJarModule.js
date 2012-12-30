@@ -3,7 +3,6 @@
 //-------------------------------------------------------------------------------
 
 //@Export('BugJarModule')
-//@Autoload
 
 //@Require('Annotate')
 //@Require('BuildBug')
@@ -147,7 +146,6 @@ var BugJarModule = Class.extend(BuildModule, {
 
         nodePackage.buildPackage(sourcePaths, callback);
     },
-
 
 
     //-------------------------------------------------------------------------------

@@ -23,6 +23,7 @@ var BugFlow = bugpack.require('BugFlow');
 var BugFs = bugpack.require('BugFs');
 var Class = bugpack.require('Class');
 var Obj = bugpack.require('Obj');
+var PackedNodePackage = bugpack.require('PackedNodePackage');
 var Path = bugpack.require('Path');
 
 
@@ -97,13 +98,6 @@ var NodePackage = Class.extend(Obj, {
     },
 
     /**
-     * @return {string}
-     */
-    getDistFileName: function() {
-        return this.packageJson.name + "-" + this.packageJson.version + ".tgz";
-    },
-
-    /**
      * @return {Path}
      */
     getLibPath: function() {
@@ -173,14 +167,21 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @param {string} distPath
-     * @param {function(Error)} callback
+     * @param {function(Error, PackedNodePackage)} callback
      */
     packPackage: function(distPath, callback) {
         var _this = this;
+        var packedNodePackage = new PackedNodePackage(this, distPath);
         this.packNodePackage(function(error) {
             if (!error) {
-                var npmPackageFilePath = process.cwd() + path.sep + _this.getDistFileName();
-                BugFs.move(npmPackageFilePath, distPath, Path.SyncMode.MERGE_REPLACE, callback);
+                var npmPackageFilePath = process.cwd() + path.sep + packedNodePackage.getFileName();
+                BugFs.move(npmPackageFilePath, distPath, Path.SyncMode.MERGE_REPLACE, function(error) {
+                    if (!error) {
+                        callback(null, packedNodePackage);
+                    } else {
+                        callback(error);
+                    }
+                });
             } else {
                 callback(error);
             }
@@ -295,7 +296,7 @@ var NodePackage = Class.extend(Obj, {
         var packageJsonPath = packagePath + path.sep + 'package.json';
         BugFs.createFile(packageJsonPath, function(error) {
             if (!error) {
-                BugFs.writeFile(packageJsonPath, JSON.stringify(packageJson), callback);
+                BugFs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, '\t'), callback);
             } else {
                 callback(error);
             }

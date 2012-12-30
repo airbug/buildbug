@@ -49,8 +49,9 @@ npm.load({}, function (err) {
                 main: "./lib/buildbug_boot.js",
                 bin: "bin/buildbug",
                 dependencies: {
-                    bugjar: 'git+ssh://git@github.com:airbug/bugjar.git#master',
-                    bugpack: 'git+ssh://git@github.com:airbug/bugpack.git#master',
+                    "aws-sdk": "0.9.x",
+                    bugjar: 'https://s3.amazonaws.com/bugjars/bugjar-0.0.1.tgz',
+                    bugpack: 'https://s3.amazonaws.com/node_modules/bugpack-0.0.2.tgz',
                     npm: '1.1.x'
                 }
             });

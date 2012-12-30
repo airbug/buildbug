@@ -72,9 +72,15 @@ var NodeJsModule = Class.extend(BuildModule, {
 
         /**
          * @private
-         * @type {Map<string, NodePackage>}
+         * @type {Map.<string, NodePackage>}
          */
-        this.packageNameToNodePackageMap = new Map();
+        this.packageKeyToNodePackageMap = new Map();
+
+        /**
+         * @private
+         * @type {Map.<string, PackedNodePackage>}
+         */
+        this.packageKeyToPackedNodePackageMap = new Map();
     },
 
 
@@ -153,9 +159,27 @@ var NodeJsModule = Class.extend(BuildModule, {
     packNodePackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
         var packageName = props.packageName;
-        var nodePackage = this.findNodePackage(packageName);
+        var packageVersion = props.packageVersion;
         var distPath = props.distPath;
-        nodePackage.packPackage(distPath, callback);
+        var nodePackage = this.findNodePackage(packageName, packageVersion);
+
+        var _this = this;
+
+        if (nodePackage) {
+            nodePackage.packPackage(distPath, function(error, packedNodePackage) {
+                if (!error) {
+                    var nodePackageKey = _this.generatePackageKey(packedNodePackage.getName(),
+                        packedNodePackage.getVersion());
+                    _this.packageKeyToPackedNodePackageMap.put(nodePackageKey, packedNodePackage);
+                    callback(null);
+                } else {
+                    callback(error);
+                }
+            });
+        } else {
+            throw new Error("Cannot pack package. Package '" + packageName + "' and version '" + packageVersion + "' " +
+                "cannot be found.");
+        }
     },
 
 
@@ -165,9 +189,20 @@ var NodeJsModule = Class.extend(BuildModule, {
 
     /**
      * @param {string} packageName
+     * @param {string} packageVersion
      */
-    findNodePackage: function(packageName) {
-        return this.packageNameToNodePackageMap.get(packageName);
+    findNodePackage: function(packageName, packageVersion) {
+        var packageKey = this.generatePackageKey(packageName, packageVersion);
+        return this.packageKeyToNodePackageMap.get(packageKey);
+    },
+
+    /**
+     * @param {string} packageName
+     * @param {string} packageVersion
+     */
+    findPackedNodePackage: function(packageName, packageVersion) {
+        var packageKey = this.generatePackageKey(packageName, packageVersion);
+        return this.packageKeyToPackedNodePackageMap.get(packageKey);
     },
 
 
@@ -188,8 +223,18 @@ var NodeJsModule = Class.extend(BuildModule, {
      */
     generateNodePackage: function(packageJson, buildPath) {
         var nodePackage = new NodePackage(packageJson, buildPath);
-        this.packageNameToNodePackageMap.put(nodePackage.getName(), nodePackage);
+        var packageKey = this.generatePackageKey(nodePackage.getName(), nodePackage.getVersion());
+        this.packageKeyToNodePackageMap.put(packageKey, nodePackage);
         return nodePackage;
+    },
+
+    /**
+     * @private
+     * @param {string} packageName
+     * @param {string} packageVersion
+     */
+    generatePackageKey: function(packageName, packageVersion) {
+        return packageName + '_' + packageVersion;
     },
 
     /**
