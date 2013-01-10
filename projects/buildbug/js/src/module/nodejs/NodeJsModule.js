@@ -12,6 +12,8 @@
 //@Require('Class')
 
 var bugpack = require('bugpack');
+var fs = require('fs');
+var npm = require('npm');
 
 
 //-------------------------------------------------------------------------------
@@ -26,14 +28,6 @@ var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
 var Map = bugpack.require('Map');
 var NodePackage = bugpack.require('NodePackage');
-
-
-//-------------------------------------------------------------------------------
-// Node JS
-//-------------------------------------------------------------------------------
-
-var fs = require('fs');
-var npm = require('npm');
 
 
 //-------------------------------------------------------------------------------
@@ -137,11 +131,18 @@ var NodeJsModule = Class.extend(BuildModule, {
     createNodePackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
         var sourcePaths = props.sourcePaths;
+        var testPaths = props.testPaths;
+        var scriptPaths = props.scriptPaths;
         var packageJson = props.packageJson;
         var buildPath = props.buildPath;
         var nodePackage = this.generateNodePackage(packageJson, buildPath);
 
-        nodePackage.buildPackage(sourcePaths, callback);
+        var params = {
+            sourcePaths: sourcePaths,
+            testPaths: testPaths,
+            scriptPaths: scriptPaths
+        };
+        nodePackage.buildPackage(params, callback);
     },
 
     /**
@@ -177,8 +178,8 @@ var NodeJsModule = Class.extend(BuildModule, {
                 }
             });
         } else {
-            throw new Error("Cannot pack package. Package '" + packageName + "' and version '" + packageVersion + "' " +
-                "cannot be found.");
+            callback(new Error("Cannot pack package. Package '" + packageName + "' and version '" + packageVersion +
+                "' cannot be found."));
         }
     },
 

@@ -12,6 +12,7 @@
 //@Require('Class')
 
 var bugpack = require('bugpack');
+var bugpack_registry = require('bugpack-registry');
 var path = require('path');
 
 
@@ -70,9 +71,9 @@ var BugPackModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var bugPack = this;
+        var bugPackModule = this;
         buildTask('generateBugPackRegistry', function(flow, buildProject, properties) {
-            bugPack.generateBugPackRegistryTask(properties, function(error) {
+            bugPackModule.generateBugPackRegistryTask(properties, function(error) {
                 flow.complete(error);
             });
         });
@@ -117,7 +118,7 @@ var BugPackModule = Class.extend(BuildModule, {
     generateBugPackRegistry: function(sourceRoot, callback) {
         var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
         var _this = this;
-        bugpack.buildRegistry(sourceRootPath.getAbsolutePath(), function(error, bugpackRegistry) {
+        bugpack_registry.buildRegistry(sourceRootPath.getAbsolutePath(), function(error, bugpackRegistry) {
             if (!error) {
                 _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
             } else {

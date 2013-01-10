@@ -248,7 +248,7 @@ var AwsModule = Class.extend(BuildModule, {
             },
             $series([
                 $task(function(flow) {
-                    filePath.readFile('utf8', function(error, data) {
+                    filePath.readFile(function(error, data) {
                         if (!error) {
                             fileData = data;
                             flow.complete();
@@ -266,11 +266,17 @@ var AwsModule = Class.extend(BuildModule, {
                     if (options) {
                         JsonUtil.munge(options, params);
                     }
+                    if (!params.ContentType) {
+                        params.ContentType = _this.autoDiscoverContentType(filePath);
+                    }
                     _this.putObject(params, function(error, response) {
-                        //TEST
-                        console.log(response);
-
-                        flow.complete(error);
+                        if (!error) {
+                            console.log("Successfully uploaded file to S3 'https://s3.amazonaws.com/" + params.Bucket +
+                                "/" + params.Key);
+                            flow.complete();
+                        } else {
+                            flow.error(error);
+                        }
                     });
                 })
             ])
@@ -288,8 +294,22 @@ var AwsModule = Class.extend(BuildModule, {
 
     /**
      * @private
+     * @param {Path} filePath
+     * @return {string}
+     */
+    autoDiscoverContentType: function(filePath) {
+        var extName = filePath.getExtName();
+        var contentType = AwsModule.extToContentType[extName];
+        if (!contentType) {
+            contentType = 'binary/octet-stream';
+        }
+        return contentType;
+    },
+
+    /**
+     * @private
      * @param {{
-        *       accessKeyId: string,
+     *       accessKeyId: string,
      *       region: string,
      *       secretAccessKey: string
      * }} configObject
@@ -364,6 +384,18 @@ var AwsModule = Class.extend(BuildModule, {
 annotate(AwsModule).with(
     buildModule("aws")
 );
+
+
+//-------------------------------------------------------------------------------
+// Static Variables
+//-------------------------------------------------------------------------------
+
+/**
+ * @type {Object}
+ */
+AwsModule.extToContentType = {
+    '.tgz': 'application/x-compressed'
+};
 
 
 //-------------------------------------------------------------------------------

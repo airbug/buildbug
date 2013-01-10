@@ -5,7 +5,8 @@ afterNpmModuleInstalled(function() {
 
     var requiredPackages = [
         {name: "fs-extra", install: "fs-extra"},
-        {name: 'bugpack', install: 'git+ssh://git@github.com:airbug/bugpack.git#master'}
+        {name: "bugpack", install: "https://s3.amazonaws.com/node_modules/bugpack-0.0.2.tgz"}
+        //{name: 'bugpack', install: 'git+ssh://git@github.com:airbug/bugpack.git#master'}
     ];
 
     npm.load({}, function (err) {
