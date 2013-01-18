@@ -2,16 +2,19 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('NodeJsModule')
 //@Autoload
 
-//@Require('Annotate')
-//@Require('BuildBug')
-//@Require('BuildModule')
-//@Require('BuildModuleAnnotation')
 //@Require('Class')
+//@Require('annotate.Annotate')
+//@Require('buildbug.BuildBug')
+//@Require('buildbug.BuildModule')
+//@Require('buildbug.BuildModuleAnnotation')
 
-var bugpack = require('bugpack');
+
+var bugpack = require('bugpack').context();
 var fs = require('fs');
 var npm = require('npm');
 
@@ -20,14 +23,14 @@ var npm = require('npm');
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Annotate = bugpack.require('Annotate');
-var BugFs = bugpack.require('BugFs');
-var BuildBug = bugpack.require('BuildBug');
-var BuildModule = bugpack.require('BuildModule');
-var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
-var Class = bugpack.require('Class');
-var Map = bugpack.require('Map');
-var NodePackage = bugpack.require('NodePackage');
+var Class =                 bugpack.require('Class');
+var Map =                   bugpack.require('Map');
+var Annotate =              bugpack.require('annotate.Annotate');
+var BugFs =                 bugpack.require('bugfs.BugFs');
+var BuildBug =              bugpack.require('buildbug.BuildBug');
+var BuildModule =           bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+var NodePackage =           bugpack.require('buildbug.NodePackage');
 
 
 //-------------------------------------------------------------------------------
@@ -118,6 +121,9 @@ var NodeJsModule = Class.extend(BuildModule, {
     /**
      * @param {{
      *   sourcePaths: Array.<string>,
+     *   testPaths: Array.<string>,
+     *   scriptPaths: Array.<string>,
+     *   binPaths: Array.<string>,
      *   packageJson: {
      *       name: string,
      *       version: string,
@@ -133,6 +139,7 @@ var NodeJsModule = Class.extend(BuildModule, {
         var sourcePaths = props.sourcePaths;
         var testPaths = props.testPaths;
         var scriptPaths = props.scriptPaths;
+        var binPaths = props.binPaths;
         var packageJson = props.packageJson;
         var buildPath = props.buildPath;
         var nodePackage = this.generateNodePackage(packageJson, buildPath);
@@ -140,7 +147,8 @@ var NodeJsModule = Class.extend(BuildModule, {
         var params = {
             sourcePaths: sourcePaths,
             testPaths: testPaths,
-            scriptPaths: scriptPaths
+            scriptPaths: scriptPaths,
+            binPaths: binPaths
         };
         nodePackage.buildPackage(params, callback);
     },
@@ -267,4 +275,4 @@ annotate(NodeJsModule).with(
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(NodeJsModule);
+bugpack.export('buildbug.NodeJsModule', NodeJsModule);

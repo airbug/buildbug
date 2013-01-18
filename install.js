@@ -23,6 +23,9 @@ afterNpmModuleInstalled(function() {
         requiredPackages.forEach(function(requiredPackage) {
             console.log("Installing " + requiredPackage.name);
             npm.commands.install([requiredPackage.install], function (err, data) {
+
+                //TEST
+                console.log(data);
                 console.log("Finished installing " + requiredPackage.name);
             });
         });

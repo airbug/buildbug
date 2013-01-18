@@ -2,6 +2,8 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildModule')
 
 //@Require('Class')
@@ -9,7 +11,7 @@
 //@Require('EventDispatcher')
 //@Require('JsonUtil')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
@@ -198,4 +200,4 @@ BuildModule.EventTypes = {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildModule);
+bugpack.export('buildbug.BuildModule', BuildModule);

@@ -2,22 +2,24 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildModuleScan')
 
-//@Require('Annotate')
 //@Require('Class')
 //@Require('Obj')
+//@Require('annotate.Annotate')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Annotate = bugpack.require('Annotate');
 var Class = bugpack.require('Class');
 var Obj = bugpack.require('Obj');
+var Annotate = bugpack.require('annotate.Annotate');
 
 
 //-------------------------------------------------------------------------------
@@ -73,4 +75,4 @@ var BuildModuleScan = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildModuleScan);
+bugpack.export('buildbug.BuildModuleScan', BuildModuleScan);

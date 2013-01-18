@@ -2,12 +2,14 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildTask')
 
 //@Require('Class')
-//@Require('Task')
+//@Require('Obj')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
@@ -75,4 +77,4 @@ var BuildTask = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTask);
+bugpack.export('buildbug.BuildTask', BuildTask);

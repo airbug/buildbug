@@ -2,34 +2,38 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('AwsModule')
 //@Autoload
 
-//@Require('Annotate')
-//@Require('BuildBug')
-//@Require('BuildModule')
-//@Require('BuildModuleAnnotation')
 //@Require('Class')
+//@Require('annotate.Annotate')
+//@Require('bugflow.BugFlow')
+//@Require('bugfs.BugFs')
+//@Require('buildbug.BuildBug')
+//@Require('buildbug.BuildModule')
+//@Require('buildbug.BuildModuleAnnotation')
 
 var AWS = require('aws-sdk');
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Annotate = bugpack.require('Annotate');
-var AwsConfig = bugpack.require('AwsConfig');
-var BugFlow = bugpack.require('BugFlow');
-var BugFs = bugpack.require('BugFs');
-var BuildBug = bugpack.require('BuildBug');
-var BuildModule = bugpack.require('BuildModule');
-var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
-var Class = bugpack.require('Class');
-var JsonUtil = bugpack.require('JsonUtil');
-var Obj = bugpack.require('Obj');
-var TypeUtil = bugpack.require('TypeUtil');
+var Class =                     bugpack.require('Class');
+var JsonUtil =                  bugpack.require('JsonUtil');
+var Obj =                       bugpack.require('Obj');
+var TypeUtil =                  bugpack.require('TypeUtil');
+var Annotate =                  bugpack.require('annotate.Annotate');
+var BugFlow =                   bugpack.require('bugflow.BugFlow');
+var BugFs =                     bugpack.require('bugfs.BugFs');
+var AwsConfig =                 bugpack.require('buildbug.AwsConfig');
+var BuildBug =                  bugpack.require('buildbug.BuildBug');
+var BuildModule =               bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation =     bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
@@ -402,4 +406,4 @@ AwsModule.extToContentType = {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(AwsModule);
+bugpack.export('buildbug.AwsModule', AwsModule);

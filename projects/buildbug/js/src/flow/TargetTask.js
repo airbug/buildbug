@@ -2,25 +2,28 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('TargetTask')
 
 //@Require('Class')
-//@Require('List')
-//@Require('Task')
+//@Require('JsonUtil')
+//@Require('bugflow.Task')
+//@Require('buildbug.BuildFlow')
+//@Require('buildbug.ExecuteTarget');
 
-
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BuildFlow = bugpack.require('BuildFlow');
-var Class = bugpack.require('Class');
-var ExecuteTarget = bugpack.require('ExecuteTarget');
-var JsonUtil = bugpack.require('JsonUtil');
-var Task = bugpack.require('Task');
+var Class =         bugpack.require('Class');
+var JsonUtil =      bugpack.require('JsonUtil');
+var Task =          bugpack.require('bugflow.Task');
+var BuildFlow =     bugpack.require('buildbug.BuildFlow');
+var ExecuteTarget = bugpack.require('buildbug.ExecuteTarget');
 
 
 //-------------------------------------------------------------------------------
@@ -97,4 +100,4 @@ var TargetTask = Class.extend(BuildFlow, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(TargetTask);
+bugpack.export('buildbug.TargetTask', TargetTask);

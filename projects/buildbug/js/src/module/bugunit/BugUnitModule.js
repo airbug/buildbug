@@ -4,18 +4,21 @@
 
 //@Package('buildbug')
 
-//@Export('CoreModule')
+//@Export('BugUnitModule')
 //@Autoload
 
 //@Require('Class')
+//@Require('TypeUtil')
 //@Require('annotate.Annotate')
 //@Require('bugfs.BugFs')
+//@Require('bugfs.Path')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
 
 
 var bugpack = require('bugpack').context();
+var bugunit = require('bugunit');
 
 
 //-------------------------------------------------------------------------------
@@ -23,8 +26,10 @@ var bugpack = require('bugpack').context();
 //-------------------------------------------------------------------------------
 
 var Class =                 bugpack.require('Class');
+var TypeUtil =              bugpack.require('TypeUtil');
 var Annotate =              bugpack.require('annotate.Annotate');
 var BugFs =                 bugpack.require('bugfs.BugFs');
+var Path =                  bugpack.require('bugfs.Path');
 var BuildBug =              bugpack.require('buildbug.BuildBug');
 var BuildModule =           bugpack.require('buildbug.BuildModule');
 var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
@@ -43,7 +48,7 @@ var buildTask = BuildBug.buildTask;
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var CoreModule = Class.extend(BuildModule, {
+var BugUnitModule = Class.extend(BuildModule, {
 
     //-------------------------------------------------------------------------------
     // Constructor
@@ -57,6 +62,8 @@ var CoreModule = Class.extend(BuildModule, {
         //-------------------------------------------------------------------------------
         // Declare Variables
         //-------------------------------------------------------------------------------
+
+
     },
 
 
@@ -69,48 +76,44 @@ var CoreModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var core = this;
-        buildTask('clean', function(task, buildProject, properties) {
-            core.clean(properties, function(error) {
-                task.complete(error);
+        var bugUnitModule = this;
+        buildTask('runNodeModuleTests', function(flow, buildProject, properties) {
+            bugUnitModule.runNodeModuleTestsTask(properties, function(error) {
+                flow.complete(error);
             });
         });
     },
 
+    /**
+     * @protected
+     * @return {boolean}
+     */
+    initializeModule: function() {
+        this._super();
+        return true;
+    },
+
 
     //-------------------------------------------------------------------------------
-    // Class Methods
+    // Build Task Methods
     //-------------------------------------------------------------------------------
 
     /**
      * @param {{
-        *   packageJson: {
-     *       name: string,
-     *       version: string,
-     *       main: string,
-     *       dependencies: Object
-     *   }
-     *   packagePath: string
+     *      modulePath: string
      * }} properties,
-     * @param {function()} callback
+     * @param {function(Error)} callback
      */
-    clean: function(properties, callback) {
+    runNodeModuleTestsTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var buildPath = props.buildPath;
-        BugFs.deleteDirectory(buildPath, function(error) {
-            callback(error);
-        });
+        var modulePath = props.modulePath;
+        bugunit.loadAndScanTestFilesFromNodeModule(modulePath);
+        bugunit.runTests(true);
     }
-
-
-    //-------------------------------------------------------------------------------
-    // Private Class Methods
-    //-------------------------------------------------------------------------------
-
 });
 
-annotate(CoreModule).with(
-    buildModule("core")
+annotate(BugUnitModule).with(
+    buildModule("bugunit")
 );
 
 
@@ -118,4 +121,4 @@ annotate(CoreModule).with(
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export('buildbug.CoreModule', CoreModule);
+bugpack.export("buildbug.BugUnitModule", BugUnitModule);

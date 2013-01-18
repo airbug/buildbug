@@ -2,14 +2,16 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildTarget')
 
 //@Require('Class')
-//@Require('List')
 //@Require('Obj')
+//@Require('bugflow.Flow')
 
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
@@ -17,8 +19,8 @@ var bugpack = require('bugpack');
 //-------------------------------------------------------------------------------
 
 var Class = bugpack.require('Class');
-var Flow = bugpack.require('Flow');
 var Obj = bugpack.require('Obj');
+var Flow = bugpack.require('bugflow.Flow');
 
 
 //-------------------------------------------------------------------------------
@@ -134,4 +136,4 @@ var BuildTarget = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildTarget);
+bugpack.export('buildbug.BuildTarget', BuildTarget);

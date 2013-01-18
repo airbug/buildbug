@@ -25,6 +25,9 @@ npm-debug.log
 
 #buildbug
 .buildbug
+buildbug.json
 
 #temp
 buildbug-0.0.1.tgz
+buildbug-0.0.2.tgz
+buildbug-0.0.3.tgz

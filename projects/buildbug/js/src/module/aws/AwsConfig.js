@@ -2,12 +2,14 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('AwsConfig')
 
 //@Require('Class')
 //@Require('Obj')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
@@ -122,4 +124,4 @@ var AwsConfig = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(AwsConfig);
+bugpack.export('buildbug.AwsConfig', AwsConfig);

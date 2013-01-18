@@ -54,6 +54,7 @@ npm.load({}, function (err) {
                     //bugpack: 'git+ssh://git@github.com:airbug/bugpack.git#v0.0.1',
                     "bugpack-registry": 'https://s3.amazonaws.com/node_modules/bugpack-registry-0.0.1.tgz',
                     bugpack: 'https://s3.amazonaws.com/node_modules/bugpack-0.0.2.tgz',
+                    bugunit: 'https://s3.amazonaws.com/node_modules/bugunit-0.0.1.tgz',
                     npm: '1.1.x'
                 }
             });

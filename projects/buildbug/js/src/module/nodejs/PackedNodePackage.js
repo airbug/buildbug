@@ -2,14 +2,16 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('PackedNodePackage')
 
-//@Require('BugFs')
 //@Require('Class')
 //@Require('Obj')
+//@Require('bugfs.BugFs')
 
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 var npm = require('npm');
 var path = require('path');
 
@@ -18,9 +20,9 @@ var path = require('path');
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BugFs = bugpack.require('BugFs');
 var Class = bugpack.require('Class');
 var Obj = bugpack.require('Obj');
+var BugFs = bugpack.require('bugfs.BugFs');
 
 
 //-------------------------------------------------------------------------------
@@ -112,4 +114,4 @@ var PackedNodePackage = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(PackedNodePackage);
+bugpack.export('buildbug.PackedNodePackage', PackedNodePackage);

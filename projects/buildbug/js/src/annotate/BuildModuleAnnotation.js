@@ -2,20 +2,23 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildModuleAnnotation')
 
-//@Require('Annotation')
 //@Require('Class')
+//@Require('annotate.Annotation')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Annotation = bugpack.require('Annotation');
 var Class = bugpack.require('Class');
+
+var Annotation = bugpack.require('annotate.Annotation');
 
 
 //-------------------------------------------------------------------------------
@@ -29,7 +32,7 @@ var BuildModuleAnnotation = Class.extend(Annotation, {
     //-------------------------------------------------------------------------------
 
     _constructor: function(buildModuleName) {
-        this._super("BuildModule");
+        this._super('BuildModule');
 
 
         //-------------------------------------------------------------------------------
@@ -74,4 +77,4 @@ BuildModuleAnnotation.buildModule = function(buildModuleName) {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildModuleAnnotation);
+bugpack.export('buildbug.BuildModuleAnnotation', BuildModuleAnnotation);

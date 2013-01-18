@@ -2,27 +2,31 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('AnnotateJsModule')
 //@Autoload
 
-//@Require('Annotate')
-//@Require('BuildBug')
-//@Require('BuildModule')
-//@Require('BuildModuleAnnotation')
 //@Require('Class')
+//@Require('annotate.Annotate')
+//@Require('buildbug.BuildBug')
+//@Require('buildbug.BuildModule')
+//@Require('buildbug.BuildModuleAnnotation')
 
-var bugpack = require('bugpack');
+
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Annotate = bugpack.require('Annotate');
-var BuildBug = bugpack.require('BuildBug');
-var BuildModule = bugpack.require('BuildModule');
-var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
 var Class = bugpack.require('Class');
+var Annotate = bugpack.require('annotate.Annotate');
+var BuildBug = bugpack.require('buildbug.BuildBug');
+var BuildModule = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+
 
 
 //-------------------------------------------------------------------------------
@@ -125,4 +129,4 @@ annotate(AnnotateJsModule).with(
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(AnnotateJsModule);
+bugpack.export('buildbug.AnnotateJsModule', AnnotateJsModule);

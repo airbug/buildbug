@@ -2,12 +2,14 @@
 // Dependencies
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildFlow')
 
 //@Require('Class')
 //@Require('Obj')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
@@ -65,4 +67,4 @@ var BuildFlow = Class.extend(Obj, {
 // Export
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildFlow);
+bugpack.export('buildbug.BuildFlow', BuildFlow);

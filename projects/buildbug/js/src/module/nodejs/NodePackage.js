@@ -2,14 +2,20 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('NodePackage')
 
-//@Require('BugFs')
 //@Require('Class')
 //@Require('Obj')
+//@Require('bugboil.BugBoil')
+//@Require('bugflow.BugFlow')
+//@Require('bugfs.BugFs')
+//@Require('bugfs.Path')
+//@Require('buildbug.PackedNodePackage')
 
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 var npm = require('npm');
 var path = require('path');
 
@@ -18,13 +24,13 @@ var path = require('path');
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BugBoil = bugpack.require('BugBoil');
-var BugFlow = bugpack.require('BugFlow');
-var BugFs = bugpack.require('BugFs');
-var Class = bugpack.require('Class');
-var Obj = bugpack.require('Obj');
-var PackedNodePackage = bugpack.require('PackedNodePackage');
-var Path = bugpack.require('Path');
+var Class =             bugpack.require('Class');
+var Obj =               bugpack.require('Obj');
+var BugBoil =           bugpack.require('bugboil.BugBoil');
+var BugFlow =           bugpack.require('bugflow.BugFlow');
+var BugFs =             bugpack.require('bugfs.BugFs');
+var Path =              bugpack.require('bugfs.Path');
+var PackedNodePackage = bugpack.require('buildbug.PackedNodePackage');
 
 
 //-------------------------------------------------------------------------------
@@ -66,6 +72,12 @@ var NodePackage = Class.extend(Obj, {
          * @private
          * @type {Path}
          */
+        this.binPath = null;
+
+        /**
+         * @private
+         * @type {Path}
+         */
         this.buildPath = null;
 
         /**
@@ -102,6 +114,13 @@ var NodePackage = Class.extend(Obj, {
     //-------------------------------------------------------------------------------
     // Getters and Setters
     //-------------------------------------------------------------------------------
+
+    /**
+     * @return {Path}
+     */
+    getBinPath: function() {
+        return this.binPath;
+    },
 
     /**
      * @return {Path}
@@ -177,11 +196,25 @@ var NodePackage = Class.extend(Obj, {
         var sourcePaths = params.sourcePaths;
         var testPaths = params.testPaths;
         var scriptPaths = params.scriptPaths;
+        var binPaths = params.binPaths;
 
         this.createPackageBuildPaths();
 
         $series([
             $parallel([
+                $task(function(flow) {
+                    if (binPaths) {
+                        $foreachSeries(binPaths, function(boil, binPath) {
+                            BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
+                        }).execute(function(error) {
+                            flow.complete(error);
+                        });
+                    } else {
+                        flow.complete();
+                    }
+                }),
                 $task(function(flow) {
                     $foreachSeries(sourcePaths, function(boil, sourcePath) {
                         BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
@@ -259,6 +292,7 @@ var NodePackage = Class.extend(Obj, {
      */
     createPackageBuildPaths: function() {
         this.buildPath = BugFs.joinPaths([this.baseBuildPathString, this.getName(), this.getVersion()]);
+        this.binPath = this.buildPath.joinPaths(["bin"]);
         this.libPath = this.buildPath.joinPaths(["lib"]);
         this.testPath = this.buildPath.joinPaths(["test"]);
         this.scriptsPath = this.buildPath.joinPaths(["scripts"]);
@@ -317,4 +351,4 @@ var NodePackage = Class.extend(Obj, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(NodePackage);
+bugpack.export('buildbug.NodePackage', NodePackage);

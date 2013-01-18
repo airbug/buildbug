@@ -2,31 +2,34 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildProject')
 
-//@Require('BuildModule')
-//@Require('BuildTask')
 //@Require('Class')
 //@Require('EventDispatcher')
 //@Require('JsonUtil')
 //@Require('Map')
 //@Require('Set')
+//@Require('buildbug.BuildModule')
+//@Require('buildbug.BuildTarget')
+//@Require('buildbug.BuildTask')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BuildModule = bugpack.require('BuildModule');
-var BuildTarget = bugpack.require('BuildTarget');
-var BuildTask = bugpack.require('BuildTask');
-var Class = bugpack.require('Class');
-var EventDispatcher = bugpack.require('EventDispatcher');
-var JsonUtil = bugpack.require('JsonUtil');
-var Map = bugpack.require('Map');
-var Set = bugpack.require('Set');
+var Class =             bugpack.require('Class');
+var EventDispatcher =   bugpack.require('EventDispatcher');
+var JsonUtil =          bugpack.require('JsonUtil');
+var Map =               bugpack.require('Map');
+var Set =               bugpack.require('Set');
+var BuildModule =       bugpack.require('buildbug.BuildModule');
+var BuildTarget =       bugpack.require('buildbug.BuildTarget');
+var BuildTask =         bugpack.require('buildbug.BuildTask');
 
 
 //-------------------------------------------------------------------------------
@@ -365,4 +368,4 @@ var BuildProject = Class.extend(EventDispatcher, {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildProject);
+bugpack.export('buildbug.BuildProject', BuildProject);

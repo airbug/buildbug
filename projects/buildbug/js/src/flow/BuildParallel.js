@@ -2,21 +2,25 @@
 // Dependencies
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildParallel')
 
 //@Require('Class')
-//@Require('Flow')
+//@Require('bugflow.Parallel')
+//@Require('buildbug.BuildFlow')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BuildFlow = bugpack.require('BuildFlow');
+
 var Class = bugpack.require('Class');
-var Parallel = bugpack.require('Parallel');
+var Parallel = bugpack.require('bugflow.Parallel');
+var BuildFlow = bugpack.require('buildbug.BuildFlow');
 
 
 //-------------------------------------------------------------------------------
@@ -68,4 +72,4 @@ var BuildParallel = Class.extend(BuildFlow, {
 // Export
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildParallel);
+bugpack.export('buildbug.BuildParallel', BuildParallel);

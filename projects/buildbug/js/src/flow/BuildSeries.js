@@ -2,21 +2,24 @@
 // Dependencies
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildSeries')
 
 //@Require('Class')
-//@Require('Flow')
+//@Require('bugflow.Series')
+//@Require('buildbug.BuildFlow')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BuildFlow = bugpack.require('BuildFlow');
 var Class = bugpack.require('Class');
-var Series = bugpack.require('Series');
+var Series = bugpack.require('bugflow.Series');
+var BuildFlow = bugpack.require('buildbug.BuildFlow');
 
 
 //-------------------------------------------------------------------------------
@@ -68,4 +71,4 @@ var BuildSeries = Class.extend(BuildFlow, {
 // Export
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildSeries);
+bugpack.export('buildbug.BuildSeries', BuildSeries);

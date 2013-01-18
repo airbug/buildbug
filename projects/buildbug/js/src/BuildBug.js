@@ -2,20 +2,23 @@
 // Requires
 //-------------------------------------------------------------------------------
 
+//@Package('buildbug')
+
 //@Export('BuildBug')
 
-//@Require('BuildModuleScan')
-//@Require('BuildParallel')
-//@Require('BuildProject')
-//@Require('BuildSeries')
-//@Require('BuildTarget')
-//@Require('BuildTask')
 //@Require('Class')
 //@Require('Map')
 //@Require('Obj')
-//@Require('TargetTask')
+//@Require('bugfs.BugFs')
+//@Require('buildbug.BuildModuleScan')
+//@Require('buildbug.BuildParallel')
+//@Require('buildbug.BuildProject')
+//@Require('buildbug.BuildSeries')
+//@Require('buildbug.BuildTarget')
+//@Require('buildbug.BuildTask')
+//@Require('buildbug.TargetTask')
 
-var bugpack = require('bugpack');
+var bugpack = require('bugpack').context();
 var child_process = require('child_process');
 var path = require('path');
 
@@ -24,17 +27,17 @@ var path = require('path');
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BugFs = bugpack.require('BugFs');
-var BuildModuleScan = bugpack.require('BuildModuleScan');
-var BuildParallel = bugpack.require('BuildParallel');
-var BuildProject = bugpack.require('BuildProject');
-var BuildSeries = bugpack.require('BuildSeries');
-var BuildTarget = bugpack.require('BuildTarget');
-var BuildTask = bugpack.require('BuildTask');
-var Class = bugpack.require('Class');
-var Map = bugpack.require('Map');
-var Obj = bugpack.require('Obj');
-var TargetTask = bugpack.require('TargetTask');
+var Class =             bugpack.require('Class');
+var Map =               bugpack.require('Map');
+var Obj =               bugpack.require('Obj');
+var BugFs =             bugpack.require('bugfs.BugFs');
+var BuildModuleScan =   bugpack.require('buildbug.BuildModuleScan');
+var BuildParallel =     bugpack.require('buildbug.BuildParallel');
+var BuildProject =      bugpack.require('buildbug.BuildProject');
+var BuildSeries =       bugpack.require('buildbug.BuildSeries');
+var BuildTarget =       bugpack.require('buildbug.BuildTarget');
+var BuildTask =         bugpack.require('buildbug.BuildTask');
+var TargetTask =        bugpack.require('buildbug.TargetTask');
 
 
 //-------------------------------------------------------------------------------
@@ -199,4 +202,4 @@ BuildBug.registerModule = function(moduleName, buildModule) {
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export(BuildBug);
+bugpack.export('buildbug.BuildBug', BuildBug);
