@@ -136,12 +136,14 @@ var NodeJsModule = Class.extend(BuildModule, {
      */
     createNodePackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var sourcePaths = props.sourcePaths;
-        var testPaths = props.testPaths;
-        var scriptPaths = props.scriptPaths;
-        var binPaths = props.binPaths;
-        var packageJson = props.packageJson;
-        var buildPath = props.buildPath;
+
+
+        var sourcePaths = props.getProperty("sourcePaths");
+        var testPaths = props.getProperty("testPaths");
+        var scriptPaths = props.getProperty("scriptPaths");
+        var binPaths = props.getProperty("binPaths");
+        var packageJson = props.getProperty("packageJson");
+        var buildPath = props.getProperty("buildPath");
         var nodePackage = this.generateNodePackage(packageJson, buildPath);
 
         var params = {
@@ -167,9 +169,9 @@ var NodeJsModule = Class.extend(BuildModule, {
      */
     packNodePackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var packageName = props.packageName;
-        var packageVersion = props.packageVersion;
-        var distPath = props.distPath;
+        var packageName = props.getProperty("packageName");
+        var packageVersion = props.getProperty("packageVersion");
+        var distPath = props.getProperty("distPath");
         var nodePackage = this.findNodePackage(packageName, packageVersion);
 
         var _this = this;

@@ -8,6 +8,7 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('Obj')
 //@Require('annotate.Annotate')
 //@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
@@ -24,7 +25,6 @@ var bugpack = require('bugpack').context();
 //-------------------------------------------------------------------------------
 
 var Class =                     bugpack.require('Class');
-var JsonUtil =                  bugpack.require('JsonUtil');
 var Obj =                       bugpack.require('Obj');
 var TypeUtil =                  bugpack.require('TypeUtil');
 var Annotate =                  bugpack.require('annotate.Annotate');
@@ -120,21 +120,25 @@ var AwsModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {{
-        *   awsConfig: {
+     * Available Properties
+     * {
+     *   awsConfig: {
      *       accessKeyId: string,
      *       region: string,
      *       secretAccessKey: string
      *   },
-     *   sourcePaths: Array.<string>
-     * }} properties,
+     *   sourcePaths: Array.<string>,
+     *   bucket: string
+     * }
+     *
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
     s3EnsureBucketTask: function(properties, callback) {
         var _this = this;
         var props = this.generateProperties(properties);
-        var awsConfig = props.awsConfig;
-        var bucket = props.bucket;
+        var awsConfig = props.getProperty("awsConfig");
+        var bucket = props.getProperty("bucket");
 
         this.processAwsConfig(awsConfig);
         $if (function(flow) {
@@ -151,23 +155,26 @@ var AwsModule = Class.extend(BuildModule, {
     },
 
     /**
-     * @param {{
-     *   awsConfig: {
-     *       accessKeyId: string,
-     *       region: string,
-     *       secretAccessKey: string
-     *   },
-     *   sourcePaths: Array.<string>
-     * }} properties,
+     * Available Properties
+     * {
+     *     awsConfig: {
+     *        accessKeyId: string,
+     *        region: string,
+     *        secretAccessKey: string
+     *     },
+     *     sourcePaths: Array.<string>
+     * }
+     *
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
     s3PutFileTask: function(properties, callback) {
         var _this = this;
         var props = this.generateProperties(properties);
-        var awsConfig = props.awsConfig;
-        var filePath = TypeUtil.isString(props.file) ? BugFs.path(props.file) : props.file;
-        var bucket = props.bucket;
-        var options = props.options;
+        var awsConfig = props.getProperty("awsConfig");
+        var filePath = BugFs.path(props.getProperty("file"));
+        var bucket = props.getProperty("bucket");
+        var options = props.getProperty("options");
 
         this.processAwsConfig(awsConfig);
 
@@ -268,7 +275,7 @@ var AwsModule = Class.extend(BuildModule, {
                         Bucket: bucket
                     };
                     if (options) {
-                        JsonUtil.munge(options, params);
+                        Obj.merge(options, params);
                     }
                     if (!params.ContentType) {
                         params.ContentType = _this.autoDiscoverContentType(filePath);

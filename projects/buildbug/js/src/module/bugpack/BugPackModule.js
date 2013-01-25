@@ -22,14 +22,14 @@ var path = require('path');
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Annotate = bugpack.require('annotate.Annotate');
-var BugFs = bugpack.require('bugfs.BugFs');
-var BuildBug = bugpack.require('buildbug.BuildBug');
-var BuildModule = bugpack.require('BuildModule');
-var BuildModuleAnnotation = bugpack.require('BuildModuleAnnotation');
-var Class = bugpack.require('Class');
-var Path = bugpack.require('Path');
-var TypeUtil = bugpack.require('TypeUtil');
+var Class =                 bugpack.require('Class');
+var TypeUtil =              bugpack.require('TypeUtil');
+var Annotate =              bugpack.require('annotate.Annotate');
+var BugFs =                 bugpack.require('bugfs.BugFs');
+var Path =                  bugpack.require('bugfs.Path');
+var BuildBug =              bugpack.require('buildbug.BuildBug');
+var BuildModule =           bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ var BugPackModule = Class.extend(BuildModule, {
      */
     generateBugPackRegistryTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var sourceRoot = props.sourceRoot;
+        var sourceRoot = props.getProperty("sourceRoot");
         this.generateBugPackRegistry(sourceRoot, callback);
     },
 

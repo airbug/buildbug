@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require('../lib/buildbug_boot');
+require('../lib/buildbug-module');

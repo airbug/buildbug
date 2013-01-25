@@ -7,7 +7,7 @@
 //@Export('TargetTask')
 
 //@Require('Class')
-//@Require('JsonUtil')
+//@Require('Properties')
 //@Require('bugflow.Task')
 //@Require('buildbug.BuildFlow')
 //@Require('buildbug.ExecuteTarget');
@@ -20,7 +20,7 @@ var bugpack = require('bugpack').context();
 //-------------------------------------------------------------------------------
 
 var Class =         bugpack.require('Class');
-var JsonUtil =      bugpack.require('JsonUtil');
+var Properties =    bugpack.require('Properties');
 var Task =          bugpack.require('bugflow.Task');
 var BuildFlow =     bugpack.require('buildbug.BuildFlow');
 var ExecuteTarget = bugpack.require('buildbug.ExecuteTarget');
@@ -45,11 +45,13 @@ var TargetTask = Class.extend(BuildFlow, {
         // Declare Variables
         //-------------------------------------------------------------------------------
 
+        proto = proto ? proto : {};
+
         /**
          * @private
          * @type {function()}
          */
-        this.targetTaskInitMethod = proto ? proto.init : null;
+        this.targetTaskInitMethod = proto.init;
 
         /**
          * @private
@@ -61,7 +63,7 @@ var TargetTask = Class.extend(BuildFlow, {
          * @private
          * @type {Object}
          */
-        this.targetTaskProperties = proto ? proto.properties : {};
+        this.targetTaskProperties = new Properties(proto.properties ? proto.properties : {});
     },
 
 
@@ -88,10 +90,10 @@ var TargetTask = Class.extend(BuildFlow, {
     },
 
     /**
-     * @param {Object} properties
+     * @param {Object} propertiesObject
      */
-    updateProperties: function(properties) {
-        JsonUtil.munge(properties, this.targetTaskProperties);
+    updateProperties: function(propertiesObject) {
+        this.targetTaskProperties.updateProperties(propertiesObject);
     }
 });
 

@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -7,10 +7,14 @@
 //@Export('ExecuteTarget')
 
 //@Require('Class')
-//@Require('JsonUtil')
+//@Require('Properties')
 //@Require('bugflow.Task')
-//@Require(''buildbug.BuildFlow')
+//@Require('buildbug.BuildFlow')
 
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 
@@ -19,9 +23,9 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class = bugpack.require('Class');
-var JsonUtil = bugpack.require('JsonUtil');
-var Task = bugpack.require('bugflow.Task');
+var Class =     bugpack.require('Class');
+var Properties =  bugpack.require('Properties');
+var Task =      bugpack.require('bugflow.Task');
 var BuildFlow = bugpack.require('buildbug.BuildFlow');
 
 
@@ -58,9 +62,9 @@ var ExecuteTarget = Class.extend(Task, {
 
         /**
          * @private
-         * @type {Object}
+         * @type {Properties}
          */
-        this.taskProperties = taskProperties || {};
+        this.taskProperties = taskProperties || new Properties({});
     },
 
 
@@ -94,10 +98,10 @@ var ExecuteTarget = Class.extend(Task, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {Object} properties
+     * @param {Object} propertiesObject
      */
-    updateProperties: function(properties) {
-        JsonUtil.munge(properties, this.taskProperties);
+    updateProperties: function(propertiesObject) {
+        this.taskProperties.updateProperties(propertiesObject);
         return this;
     }
 });

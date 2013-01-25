@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -9,7 +9,12 @@
 //@Require('Class')
 //@Require('Event')
 //@Require('EventDispatcher')
-//@Require('JsonUtil')
+//@Require('Properties')
+
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 
@@ -18,10 +23,10 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class = bugpack.require('Class');
-var Event = bugpack.require('Event');
-var EventDispatcher = bugpack.require('EventDispatcher');
-var JsonUtil = bugpack.require('JsonUtil');
+var Class =             bugpack.require('Class');
+var Event =             bugpack.require('Event');
+var EventDispatcher =   bugpack.require('EventDispatcher');
+var Properties =        bugpack.require('Properties');
 
 
 //-------------------------------------------------------------------------------
@@ -69,9 +74,9 @@ var BuildModule = Class.extend(EventDispatcher, {
 
         /**
          * @private
-         * @type {Object}
+         * @type {Properties}
          */
-        this.properties = {};
+        this.properties = new Properties({});
     },
 
 
@@ -80,17 +85,17 @@ var BuildModule = Class.extend(EventDispatcher, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {string}
+     * @return {Properties}
      */
     getProperties: function() {
         return this.properties;
     },
 
     /**
-     * @param {Object} properties
+     * @param {Object} propertiesObject
      */
-    updateProperties: function(properties) {
-        JsonUtil.munge(properties, this.properties);
+    updateProperties: function(propertiesObject) {
+        this.properties.updateProperties(propertiesObject);
     },
 
     /**
@@ -157,13 +162,15 @@ var BuildModule = Class.extend(EventDispatcher, {
 
     /**
      * @protected
-     * @param {Object} properties
-     * @return {Object}
+     * @param {Properties} properties
+     * @return {Properties}
      */
     generateProperties: function(properties) {
         var projectProperties = this.buildProject.getProperties();
         var moduleProperties = this.getProperties();
-        return JsonUtil.merge(properties, moduleProperties, projectProperties);
+        var finalProperties = new Properties({});
+        finalProperties.merge([properties, moduleProperties, projectProperties]);
+        return finalProperties;
     },
 
     /**

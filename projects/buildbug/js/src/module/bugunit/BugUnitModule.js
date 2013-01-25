@@ -77,8 +77,8 @@ var BugUnitModule = Class.extend(BuildModule, {
     enableModule: function() {
         this._super();
         var bugUnitModule = this;
-        buildTask('runNodeModuleTests', function(flow, buildProject, properties) {
-            bugUnitModule.runNodeModuleTestsTask(properties, function(error) {
+        buildTask('startNodeModuleTests', function(flow, buildProject, properties) {
+            bugUnitModule.startNodeModuleTestsTask(properties, function(error) {
                 flow.complete(error);
             });
         });
@@ -100,15 +100,21 @@ var BugUnitModule = Class.extend(BuildModule, {
 
     /**
      * @param {{
-     *      modulePath: string
+     *      modulePath: (string|Path)
      * }} properties,
      * @param {function(Error)} callback
      */
-    runNodeModuleTestsTask: function(properties, callback) {
+    startNodeModuleTestsTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var modulePath = props.modulePath;
-        bugunit.loadAndScanTestFilesFromNodeModule(modulePath);
-        bugunit.runTests(true);
+        var modulePath = props.getProperty("modulePath");
+        var modulePathString = modulePath;
+
+        if (Class.doesExtend(modulePath, Path)) {
+            modulePathString = modulePath.getAbsolutePath();
+        } else if (!TypeUtil.isString(modulePathString)) {
+            callback(new Error("modulePath must be a Path or a string"));
+        }
+        bugunit.start(modulePathString, callback);
     }
 });
 

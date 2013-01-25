@@ -96,7 +96,7 @@ var CoreModule = Class.extend(BuildModule, {
      */
     clean: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var buildPath = props.buildPath;
+        var buildPath = props.getProperty("buildPath");
         BugFs.deleteDirectory(buildPath, function(error) {
             callback(error);
         });

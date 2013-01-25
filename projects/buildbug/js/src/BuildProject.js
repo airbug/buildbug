@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -8,12 +8,17 @@
 
 //@Require('Class')
 //@Require('EventDispatcher')
-//@Require('JsonUtil')
 //@Require('Map')
+//@Require('Properties')
 //@Require('Set')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildTarget')
 //@Require('buildbug.BuildTask')
+
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 
@@ -24,8 +29,8 @@ var bugpack = require('bugpack').context();
 
 var Class =             bugpack.require('Class');
 var EventDispatcher =   bugpack.require('EventDispatcher');
-var JsonUtil =          bugpack.require('JsonUtil');
 var Map =               bugpack.require('Map');
+var Properties =        bugpack.require('Properties');
 var Set =               bugpack.require('Set');
 var BuildModule =       bugpack.require('buildbug.BuildModule');
 var BuildTarget =       bugpack.require('buildbug.BuildTarget');
@@ -95,12 +100,12 @@ var BuildProject = Class.extend(EventDispatcher, {
 
         /**
          * @private
-         * @type {Object}
+         * @type {Properties}
          */
-        this.properties = {
+        this.properties = new Properties({
             buildPath: this.homePath + "/build",
             distPath: this.homePath + "/dist"
-        };
+        });
 
         /**
          * @private
@@ -134,17 +139,25 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
-     * @return {string}
+     * @return {Properties}
      */
     getProperties: function() {
         return this.properties;
     },
 
     /**
-     * @param {Object} properties
+     * @param {string} propertyName
+     * @return {*}
      */
-    updateProperties: function(properties) {
-        JsonUtil.munge(properties, this.properties);
+    getProperty: function(propertyName) {
+        return this.properties.getProperty(propertyName);
+    },
+
+    /**
+     * @param {Object} propertiesObject
+     */
+    updateProperties: function(propertiesObject) {
+        this.properties.updateProperties(propertiesObject);
     },
 
     /**

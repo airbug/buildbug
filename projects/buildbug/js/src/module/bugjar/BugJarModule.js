@@ -143,9 +143,9 @@ var BugJarModule = Class.extend(BuildModule, {
      */
     createBugJarTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var sourcePaths = props.sourcePaths;
-        var bugjarJson = props.bugjarJson;
-        var linkSources = props.linkSources;
+        var sourcePaths = props.getProperty("sourcePaths");
+        var bugjarJson = props.getProperty("bugjarJson");
+        var linkSources = props.getProperty("linkSources");
 
         nodePackage.buildPackage(sourcePaths, callback);
     }

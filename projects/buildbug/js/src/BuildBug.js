@@ -62,10 +62,10 @@ BuildBug.buildProject = new BuildProject();
 //-------------------------------------------------------------------------------
 
 /**
- * @param {Object} properties
+ * @param {Object} propertiesObject
  */
-BuildBug.buildProperties = function(properties) {
-    BuildBug.buildProject.updateProperties(properties);
+BuildBug.buildProperties = function(propertiesObject) {
+    BuildBug.buildProject.updateProperties(propertiesObject);
 };
 
 /**
