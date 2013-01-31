@@ -8,10 +8,12 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('Map')
 //@Require('annotate.Annotate')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
+//@Require('buildbug.ClientPackage')
 
 
 var bugpack = require('bugpack').context();
@@ -22,10 +24,12 @@ var bugpack = require('bugpack').context();
 //-------------------------------------------------------------------------------
 
 var Class =                 bugpack.require('Class');
+var Map =                   bugpack.require('Map');
 var Annotate =              bugpack.require('annotate.Annotate');
 var BuildBug =              bugpack.require('buildbug.BuildBug');
 var BuildModule =           bugpack.require('buildbug.BuildModule');
 var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+var ClientPackage =         bugpack.require('buildbug.ClientPackage');
 
 
 //-------------------------------------------------------------------------------
@@ -55,13 +59,6 @@ var ClientJsModule = Class.extend(BuildModule, {
         //-------------------------------------------------------------------------------
         // Declare Variables
         //-------------------------------------------------------------------------------
-		
-		//TODO
-        /**
-         * @private
-         * @type {boolean}
-         */
-        this.npmLoaded = false;
 
         /**
          * @private
@@ -100,7 +97,7 @@ var ClientJsModule = Class.extend(BuildModule, {
     initializeModule: function() {
         this._super();
         return true;
-    }
+    },
 
     //-------------------------------------------------------------------------------
     // Build Task Methods
@@ -115,9 +112,9 @@ var ClientJsModule = Class.extend(BuildModule, {
      *       name: string,
      *       version: string,
      *       staticPath: string,
-	 *		 jsPath: string,
-	 *		 templatePath: string,
-	 *		 url: string
+     *       jsPath: string,
+     *       templatePath: string,
+     *       url: string
      *   },
      *   buildPath: string
      * }} properties
@@ -135,7 +132,7 @@ var ClientJsModule = Class.extend(BuildModule, {
         var params = {
             sourcePaths: sourcePaths,
             staticPaths: staticPaths,
-			templatePath: templatePath
+            templatePath: templatePath
         };
         clientPackage.buildPackage(params, callback);
     },
@@ -146,9 +143,9 @@ var ClientJsModule = Class.extend(BuildModule, {
      *       name: string,
      *       version: string,
      *       staticPath: string,
-	 *		 jsPath: string,
-	 *		 templatePath: string,
-	 *		 url: string
+     *       jsPath: string,
+     *       templatePath: string,
+     *       url: string
      *   }
      *   packagePath: string
      * }} properties,
@@ -158,7 +155,7 @@ var ClientJsModule = Class.extend(BuildModule, {
         var props = this.generateProperties(properties);
         var packageName = props.getProperty("packageName");
         var packageVersion = props.getProperty("packageVersion");
-        var distPath = props.getProperty("distPath"); // Where is this stored?
+        var distPath = props.getProperty("distPath");
         var clientPackage = this.findClientPackage(packageName, packageVersion);
 
         var _this = this;

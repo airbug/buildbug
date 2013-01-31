@@ -17,7 +17,7 @@
 
 var bugpack = require('bugpack').context();
 var fstream = require("fstream")
-var glib = require('glib');
+var zlib = require('zlib');
 var path = require('path');
 var tar = require('tar');
 
@@ -82,9 +82,9 @@ var ClientPackage = Class.extend(Obj, {
          *      name: string,
          *      version: string,
          *      staticPath: string,
-		 *		jsPath: string,
-		 *		templatePath: string,
-		 *		url: string
+         *      jsPath: string,
+         *      templatePath: string,
+         *      url: string
          * }}
          */
         this.clientJson = clientJson;
@@ -100,8 +100,8 @@ var ClientPackage = Class.extend(Obj, {
          * @type {Path}
          */
         this.staticPath = null;
-		
-		//TODO
+        
+        //TODO
         /**   
          * @private
          * @type {Path}
@@ -127,9 +127,9 @@ var ClientPackage = Class.extend(Obj, {
      *      name: string,
      *      version: string,
      *      staticPath: string,
-	 *		jsPath: string,
-	 *		templatePath: string,
-	 *		url: string
+     *      jsPath: string,
+     *      templatePath: string,
+     *      url: string
      * }}
      */
     getClientJson: function() {
@@ -175,7 +175,7 @@ var ClientPackage = Class.extend(Obj, {
      * @return {string}
      */
     getVersion: function() {
-        return this.packageJson.version;
+        return this.clientJson.version;
     },
 
 
@@ -203,18 +203,18 @@ var ClientPackage = Class.extend(Obj, {
 
         $series([
             $parallel([
-	            $task(function(flow) {
-					if (sourcePaths){
-     	               $foreachSeries(sourcePaths, function(boil, sourcePath) {
-	                        BugFs.copyDirectoryContents(sourcePath, _this.getJsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-	                            boil.bubble(error);
-	                        });
-	                    }).execute(function(error) {
-	                        flow.complete(error);
-	                    });
-					} else {
-						flow.complete();
-					}
+                $task(function(flow) {
+                    if (sourcePaths){
+                       $foreachSeries(sourcePaths, function(boil, sourcePath) {
+                            BugFs.copyDirectoryContents(sourcePath, _this.getJsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
+                        }).execute(function(error) {
+                            flow.complete(error);
+                        });
+                    } else {
+                        flow.complete();
+                    }
                 }),
                 $task(function(flow) {
                     if (staticPaths) {
@@ -231,11 +231,11 @@ var ClientPackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (templatePath) {
-	                    BugFs.copyFile(templatePath, _this.getTemplatePath(), Path.SyncMode.REPLACE, function(error) {
-		                	flow.complete(error);
-	                    });
+                        BugFs.copyFile(templatePath, _this.getTemplatePath(), Path.SyncMode.REPLACE, function(error) {
+                            flow.complete(error);
+                        });
                     } else {
-	                    flow.complete();
+                        flow.complete();
                     }
                 })
             ]),
@@ -280,9 +280,9 @@ var ClientPackage = Class.extend(Obj, {
      */
     createPackageBuildPaths: function() {
         this.buildPath = BugFs.joinPaths([this.baseBuildPathString, this.getName(), this.getVersion()]);
-        this.staticPath = this.buildPath.joinPaths(this.clientJSON.staticPath ? [this.clientJSON.staticPath] : ["static"]);
-        this.jsPath = this.buildPath.joinPaths(this.clientJSON.jsPath ? [this.clientJSON.jsPath] : ["js"]);
-        this.templatePath = this.buildPath.joinPaths(this.clientJSON.templatePath ? [this.clientJSON.templatePath] : ["template.js"]);
+        this.staticPath = this.buildPath.joinPaths(this.clientJson.staticPath ? [this.clientJson.staticPath] : ["static"]);
+        this.jsPath = this.buildPath.joinPaths(this.clientJson.jsPath ? [this.clientJson.jsPath] : ["js"]);
+        this.templatePath = this.buildPath.joinPaths(this.clientJson.templatePath ? [this.clientJson.templatePath] : ["template.js"]);
     },
 
     /**
@@ -291,17 +291,18 @@ var ClientPackage = Class.extend(Obj, {
      */
     packClientPackage: function(callback) {
         var packagePath = this.buildPath.getAbsolutePath();
-		var gzip = zlib.createGzip();
-		var inp = fstream.Reader({path: packagePath, type: "Directory"})		
-		var out = fstream.Writer( this.getName() + '_' + this.getVersion() + '.tar.gz');
-		inp.pipe(tar.Pack()).pipe(gzip).pipe(out)
-			.on('end', function(){
-				console.log("Packed up client package '" + packagePath + "'");
-				callback();
-			})
-			.on('error', function(error){
-				callback(error);
-			});
+        var gzip = zlib.createGzip();
+        var inp = fstream.Reader({path: packagePath, type: "Directory"});        
+        var out = fstream.Writer( this.getName() + '-' + this.getVersion() + '.tgz');
+        inp.pipe(tar.Pack()).pipe(gzip)
+            .on('end', function(){
+                console.log("Packed up client package '" + packagePath + "'");
+                callback();
+            })
+            .on('error', function(error){
+                callback(error);
+            })
+            .pipe(out);
     },
 
     /**
@@ -318,9 +319,9 @@ var ClientPackage = Class.extend(Obj, {
             throw new Error("'version' is required in a client package's client.json");
         }
 
-		if (!this.clientJson.template) {
-			throw new Error("'template' is required in a client package's client.json");
-		}
+        if (!this.clientJson.template) {
+            throw new Error("'template' is required in a client package's client.json");
+        }
     },
 
     /**
