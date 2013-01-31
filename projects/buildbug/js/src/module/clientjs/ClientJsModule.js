@@ -55,7 +55,25 @@ var ClientJsModule = Class.extend(BuildModule, {
         //-------------------------------------------------------------------------------
         // Declare Variables
         //-------------------------------------------------------------------------------
+		
+		//TODO
+        /**
+         * @private
+         * @type {boolean}
+         */
+        this.npmLoaded = false;
 
+        /**
+         * @private
+         * @type {Map.<string, ClientPackage>}
+         */
+        this.packageKeyToClientPackageMap = new Map();
+
+        /**
+         * @private
+         * @type {Map.<string, PackedClientPackage>}
+         */
+        this.packageKeyToPackedClientPackageMap = new Map();
 
     },
 
@@ -90,15 +108,16 @@ var ClientJsModule = Class.extend(BuildModule, {
 
     /**
      * @param {{
-        *   sourcePaths: Array.<string>,
-     *   testPaths: Array.<string>,
-     *   scriptPaths: Array.<string>,
-     *   binPaths: Array.<string>,
-     *   packageJson: {
+     *   sourcePaths: Array.<string>,
+     *   staticPaths: Array.<string>,
+     *   templatePaths: Array.<string>, //TODO
+     *   clientJson: {
      *       name: string,
      *       version: string,
-     *       main: string,
-     *       dependencies: Object
+     *       staticPath: string,
+	 *		 jsPath: string,
+	 *		 templatePath: string,
+	 *		 url: string
      *   },
      *   buildPath: string
      * }} properties
@@ -106,28 +125,30 @@ var ClientJsModule = Class.extend(BuildModule, {
      */
     createClientPackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-
-
         var sourcePaths = props.getProperty("sourcePaths");
         var staticPaths = props.getProperty("staticPaths");
+        var templatePath = props.getProperty("templatePath");
         var clientJson = props.getProperty("clientJson");
         var buildPath = props.getProperty("buildPath");
         var clientPackage = this.generateClientPackage(clientJson, buildPath);
 
         var params = {
             sourcePaths: sourcePaths,
-            staticPaths: staticPaths
+            staticPaths: staticPaths,
+			templatePath: templatePath
         };
-        nodePackage.buildPackage(params, callback);
+        clientPackage.buildPackage(params, callback);
     },
 
     /**
      * @param {{
-        *   packageJson: {
+     *   clientJson: {
      *       name: string,
      *       version: string,
-     *       main: string,
-     *       dependencies: Object
+     *       staticPath: string,
+	 *		 jsPath: string,
+	 *		 templatePath: string,
+	 *		 url: string
      *   }
      *   packagePath: string
      * }} properties,
@@ -137,17 +158,17 @@ var ClientJsModule = Class.extend(BuildModule, {
         var props = this.generateProperties(properties);
         var packageName = props.getProperty("packageName");
         var packageVersion = props.getProperty("packageVersion");
-        var distPath = props.getProperty("distPath");
-        var nodePackage = this.findNodePackage(packageName, packageVersion);
+        var distPath = props.getProperty("distPath"); // Where is this stored?
+        var clientPackage = this.findClientPackage(packageName, packageVersion);
 
         var _this = this;
 
-        if (nodePackage) {
-            nodePackage.packPackage(distPath, function(error, packedNodePackage) {
+        if (clientPackage) {
+            clientPackage.packPackage(distPath, function(error, packedClientPackage) {
                 if (!error) {
-                    var nodePackageKey = _this.generatePackageKey(packedNodePackage.getName(),
-                        packedNodePackage.getVersion());
-                    _this.packageKeyToPackedNodePackageMap.put(nodePackageKey, packedNodePackage);
+                    var clientPackageKey = _this.generatePackageKey(packedClientPackage.getName(),
+                        packedClientPackage.getVersion());
+                    _this.packageKeyToPackedClientPackageMap.put(clientPackageKey, packedClientPackage);
                     callback(null);
                 } else {
                     callback(error);
@@ -163,12 +184,54 @@ var ClientJsModule = Class.extend(BuildModule, {
     // Class Methods
     //-------------------------------------------------------------------------------
 
+    /**
+     * @param {string} packageName
+     * @param {string} packageVersion
+     */
+    findClientPackage: function(packageName, packageVersion) {
+        var packageKey = this.generatePackageKey(packageName, packageVersion);
+        return this.packageKeyToClientPackageMap.get(packageKey);
+    },
 
+    /**
+     * @param {string} packageName
+     * @param {string} packageVersion
+     */
+    findPackedClientPackage: function(packageName, packageVersion) {
+        var packageKey = this.generatePackageKey(packageName, packageVersion);
+        return this.packageKeyToPackedClientPackageMap.get(packageKey);
+    },
 
     //-------------------------------------------------------------------------------
     // Private Class Methods
     //-------------------------------------------------------------------------------
 
+    /**
+     * @private
+     * @param {{
+     *       name: string,
+     *       version: string,
+     *       main: string,
+     *       dependencies: Object
+     *   }} packageJson
+     * @param {string} buildPath
+     * @return {ClientPackage}
+     */
+    generateClientPackage: function(clientJson, buildPath) {
+        var clientPackage = new ClientPackage(clientJson, buildPath);
+        var packageKey = this.generatePackageKey(clientPackage.getName(), clientPackage.getVersion());
+        this.packageKeyToClientPackageMap.put(packageKey, clientPackage);
+        return clientPackage;
+    },
+
+    /**
+     * @private
+     * @param {string} packageName
+     * @param {string} packageVersion
+     */
+    generatePackageKey: function(packageName, packageVersion) {
+        return packageName + '_' + packageVersion;
+    }
 });
 
 annotate(ClientJsModule).with(
