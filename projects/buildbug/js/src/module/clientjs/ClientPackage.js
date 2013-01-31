@@ -16,7 +16,6 @@
 
 
 var bugpack = require('bugpack').context();
-var fs = require('fs')
 var fstream = require("fstream")
 var glib = require('glib');
 var path = require('path');
