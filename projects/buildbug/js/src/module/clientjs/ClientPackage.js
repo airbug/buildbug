@@ -195,7 +195,7 @@ var ClientPackage = Class.extend(Obj, {
         $series([
             $parallel([
                 $task(function(flow) {
-                    if (sourcePaths){
+                    if (sourcePaths) {
                        $foreachSeries(sourcePaths, function(boil, sourcePath) {
                             BugFs.copyDirectoryContents(sourcePath, _this.getJsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 boil.bubble(error);
@@ -221,11 +221,11 @@ var ClientPackage = Class.extend(Obj, {
                     }
                 }),
             ]),
-            $task(function)(flow) {
+            $task(function(flow) {
                 _this.validateTemplatePath(function(error) {
                     flow.complete(error);
-                })
-            },
+                });
+            }),
             $task(function(flow) {
                 _this.writeClientJson(function(error) {
                     flow.complete(error);
@@ -315,7 +315,8 @@ var ClientPackage = Class.extend(Obj, {
      * @private
      */
     validateTemplatePath: function(callback) {
-        if (!BugFs.existsSync(this.buildPath.joinPaths([this.getTemplatePath)]) {
+        var templatePath = this.buildPath.joinPaths([this.getTemplatePath()])
+        if (!BugFs.existsSync(templatePath)) {
             callback(new Error("'template' does not exist"));
         } else {
             callback();
