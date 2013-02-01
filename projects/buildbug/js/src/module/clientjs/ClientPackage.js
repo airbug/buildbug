@@ -100,13 +100,6 @@ var ClientPackage = Class.extend(Obj, {
          * @type {Path}
          */
         this.staticPath = null;
-        
-        //TODO
-        /**   
-         * @private
-         * @type {Path}
-         */
-        this.templatePath = null;
 
     },
 
@@ -161,14 +154,14 @@ var ClientPackage = Class.extend(Obj, {
      * @return {Path}
      */
     getTemplatePath: function() {
-        return this.templatePath;
+        return this.clientJson.templatePath;
     },
 
     /**
      * @return {string}
      */
     getURL: function() {
-        return this.clientJSON.url;
+        return this.clientJson.url;
     },
 
     /**
@@ -187,7 +180,6 @@ var ClientPackage = Class.extend(Obj, {
      * @param {{
      *      sourcePaths: Array.<(string|Path)>,
      *      staticPaths: Array.<(string|Path)>,
-     *      templatePath: (string|Path)
      * }} params
      * @param {function(Error)} callback
      */
@@ -197,7 +189,6 @@ var ClientPackage = Class.extend(Obj, {
 
         var sourcePaths = params.sourcePaths;
         var staticPaths = params.staticPaths;
-        var templatePath = params.tempatePath;
 
         this.createPackageBuildPaths();
 
@@ -229,16 +220,12 @@ var ClientPackage = Class.extend(Obj, {
                         flow.complete();
                     }
                 }),
-                $task(function(flow) {
-                    if (templatePath) {
-                        BugFs.copyFile(templatePath, _this.getTemplatePath(), Path.SyncMode.REPLACE, function(error) {
-                            flow.complete(error);
-                        });
-                    } else {
-                        flow.complete();
-                    }
-                })
             ]),
+            $task(function)(flow) {
+                _this.validateTemplatePath(function(error) {
+                    flow.complete(error);
+                })
+            },
             $task(function(flow) {
                 _this.writeClientJson(function(error) {
                     flow.complete(error);
@@ -282,7 +269,6 @@ var ClientPackage = Class.extend(Obj, {
         this.buildPath = BugFs.joinPaths([this.baseBuildPathString, this.getName(), this.getVersion()]);
         this.staticPath = this.buildPath.joinPaths(this.clientJson.staticPath ? [this.clientJson.staticPath] : ["static"]);
         this.jsPath = this.buildPath.joinPaths(this.clientJson.jsPath ? [this.clientJson.jsPath] : ["js"]);
-        this.templatePath = this.buildPath.joinPaths(this.clientJson.templatePath ? [this.clientJson.templatePath] : ["template.js"]);
     },
 
     /**
@@ -319,8 +305,20 @@ var ClientPackage = Class.extend(Obj, {
             throw new Error("'version' is required in a client package's client.json");
         }
 
-        if (!this.clientJson.template) {
-            throw new Error("'template' is required in a client package's client.json");
+        if (!this.clientJson.templatePath) {
+            throw new Error("'templatePath' is required in a client package's client.json");
+        }
+    },
+
+
+    /**
+     * @private
+     */
+    validateTemplatePath: function(callback) {
+        if (!BugFs.existsSync(this.buildPath.joinPaths([this.getTemplatePath)]) {
+            callback(new Error("'template' does not exist"));
+        } else {
+            callback();
         }
     },
 

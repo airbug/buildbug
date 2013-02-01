@@ -105,9 +105,7 @@ var ClientJsModule = Class.extend(BuildModule, {
 
     /**
      * @param {{
-     *   sourcePaths: Array.<string>,
-     *   staticPaths: Array.<string>,
-     *   templatePaths: Array.<string>, //TODO
+     *   buildPath: string,
      *   clientJson: {
      *       name: string,
      *       version: string,
@@ -116,23 +114,23 @@ var ClientJsModule = Class.extend(BuildModule, {
      *       templatePath: string,
      *       url: string
      *   },
-     *   buildPath: string
+     *   sourcePaths: Array.<string>,
+     *   staticPaths: Array.<string>
+
      * }} properties
      * @param {function(Error)} callback
      */
     createClientPackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
-        var sourcePaths = props.getProperty("sourcePaths");
-        var staticPaths = props.getProperty("staticPaths");
-        var templatePath = props.getProperty("templatePath");
         var clientJson = props.getProperty("clientJson");
         var buildPath = props.getProperty("buildPath");
+        var sourcePaths = props.getProperty("sourcePaths");
+        var staticPaths = props.getProperty("staticPaths");
         var clientPackage = this.generateClientPackage(clientJson, buildPath);
 
         var params = {
             sourcePaths: sourcePaths,
             staticPaths: staticPaths,
-            templatePath: templatePath
         };
         clientPackage.buildPackage(params, callback);
     },
