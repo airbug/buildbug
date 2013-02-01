@@ -111,7 +111,7 @@ var ClientJsModule = Class.extend(BuildModule, {
      *       version: string,
      *       staticPath: string,
      *       jsPath: string,
-     *       templatePath: string,
+     *       template: string,
      *       url: string
      *   },
      *   sourcePaths: Array.<string>,
@@ -142,7 +142,7 @@ var ClientJsModule = Class.extend(BuildModule, {
      *       version: string,
      *       staticPath: string,
      *       jsPath: string,
-     *       templatePath: string,
+     *       template: string,
      *       url: string
      *   }
      *   packagePath: string

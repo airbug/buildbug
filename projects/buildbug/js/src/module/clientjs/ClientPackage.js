@@ -83,7 +83,7 @@ var ClientPackage = Class.extend(Obj, {
          *      version: string,
          *      staticPath: string,
          *      jsPath: string,
-         *      templatePath: string,
+         *      template: string,
          *      url: string
          * }}
          */
@@ -121,7 +121,7 @@ var ClientPackage = Class.extend(Obj, {
      *      version: string,
      *      staticPath: string,
      *      jsPath: string,
-     *      templatePath: string,
+     *      template: string,
      *      url: string
      * }}
      */
@@ -153,8 +153,8 @@ var ClientPackage = Class.extend(Obj, {
     /**
      * @return {Path}
      */
-    getTemplatePath: function() {
-        return this.clientJson.templatePath;
+    getTemplate: function() {
+        return this.clientJson.template;
     },
 
     /**
@@ -222,7 +222,7 @@ var ClientPackage = Class.extend(Obj, {
                 }),
             ]),
             $task(function(flow) {
-                _this.validateTemplatePath(function(error) {
+                _this.validateTemplateExists(function(error) {
                     flow.complete(error);
                 });
             }),
@@ -305,18 +305,19 @@ var ClientPackage = Class.extend(Obj, {
             throw new Error("'version' is required in a client package's client.json");
         }
 
-        if (!this.clientJson.templatePath) {
-            throw new Error("'templatePath' is required in a client package's client.json");
+        if (!this.clientJson.template) {
+            throw new Error("'template' is required in a client package's client.json");
         }
     },
 
 
     /**
      * @private
+     * @param {function(Error)} callback
      */
-    validateTemplatePath: function(callback) {
-        var templatePath = this.buildPath.joinPaths([this.getTemplatePath()])
-        if (!BugFs.existsSync(templatePath)) {
+    validateTemplateExists: function(callback) {
+        var template = this.buildPath.joinPaths([this.getTemplate()])
+        if (!BugFs.existsSync(template)) {
             callback(new Error("'template' does not exist"));
         } else {
             callback();
