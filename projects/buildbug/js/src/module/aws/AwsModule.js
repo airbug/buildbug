@@ -283,7 +283,7 @@ var AwsModule = Class.extend(BuildModule, {
                     _this.putObject(params, function(error, response) {
                         if (!error) {
                             console.log("Successfully uploaded file to S3 'https://s3.amazonaws.com/" + params.Bucket +
-                                "/" + params.Key);
+                                "/" + params.Key + "'");
                             flow.complete();
                         } else {
                             flow.error(error);
