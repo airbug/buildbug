@@ -37,7 +37,7 @@ var nodejs = enableModule('nodejs');
 buildProperties({
     packageJson: {
         name: "buildbug",
-        version: "0.0.6",
+        version: "0.0.7",
         main: "./lib/buildbug-module.js",
         bin: "bin/buildbug",
         dependencies: {
@@ -46,8 +46,8 @@ buildProperties({
             "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.1.tgz',
             bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.3.tgz',
             bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.3.tgz',
-            npm: '1.1.x',
-			tar: '0.1.x',
+            npm: 'git://github.com/airbug/npm.git#master',
+			tar: 'git://github.com/airbug/node-tar.git#master',
 			fstream: '0.1.x'
         }
     },

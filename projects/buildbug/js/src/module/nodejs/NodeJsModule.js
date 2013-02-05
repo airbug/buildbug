@@ -137,20 +137,22 @@ var NodeJsModule = Class.extend(BuildModule, {
     createNodePackageTask: function(properties, callback) {
         var props = this.generateProperties(properties);
 
-
         var sourcePaths = props.getProperty("sourcePaths");
         var testPaths = props.getProperty("testPaths");
         var scriptPaths = props.getProperty("scriptPaths");
         var binPaths = props.getProperty("binPaths");
         var packageJson = props.getProperty("packageJson");
         var buildPath = props.getProperty("buildPath");
+        var symlink = props.getProperty("symlink");
+
         var nodePackage = this.generateNodePackage(packageJson, buildPath);
 
         var params = {
             sourcePaths: sourcePaths,
             testPaths: testPaths,
             scriptPaths: scriptPaths,
-            binPaths: binPaths
+            binPaths: binPaths,
+            symlink: symlink
         };
         nodePackage.buildPackage(params, callback);
     },
@@ -168,16 +170,19 @@ var NodeJsModule = Class.extend(BuildModule, {
      * @param {function(Error)} callback
      */
     packNodePackageTask: function(properties, callback) {
+        var _this = this;
         var props = this.generateProperties(properties);
         var packageName = props.getProperty("packageName");
         var packageVersion = props.getProperty("packageVersion");
-        var distPath = props.getProperty("distPath");
-        var nodePackage = this.findNodePackage(packageName, packageVersion);
 
-        var _this = this;
+        var nodePackage = this.findNodePackage(packageName, packageVersion);
+        var params = {
+            absoluteSymlinks: props.getProperty("absoluteSymlinks"),
+            distPath: props.getProperty("distPath")
+        };
 
         if (nodePackage) {
-            nodePackage.packPackage(distPath, function(error, packedNodePackage) {
+            nodePackage.packPackage(params, function(error, packedNodePackage) {
                 if (!error) {
                     var nodePackageKey = _this.generatePackageKey(packedNodePackage.getName(),
                         packedNodePackage.getVersion());

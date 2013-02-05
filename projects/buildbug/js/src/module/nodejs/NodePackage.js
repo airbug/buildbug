@@ -197,6 +197,7 @@ var NodePackage = Class.extend(Obj, {
         var testPaths = params.testPaths;
         var scriptPaths = params.scriptPaths;
         var binPaths = params.binPaths;
+        var symlink = params.symlink;
 
         this.createPackageBuildPaths();
 
@@ -205,9 +206,15 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (binPaths) {
                         $foreachSeries(binPaths, function(boil, binPath) {
-                            BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
-                            });
+                            if (symlink) {
+                                BugFs.symlinkDirectoryContentsInto(binPath, _this.getBinPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                                    boil.bubble(error);
+                                });
+                            } else {
+                                BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                    boil.bubble(error);
+                                });
+                            }
                         }).execute(function(error) {
                             flow.complete(error);
                         });
@@ -217,9 +224,15 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     $foreachSeries(sourcePaths, function(boil, sourcePath) {
-                        BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                            boil.bubble(error);
-                        });
+                        if (symlink) {
+                            BugFs.symlinkDirectoryContentsInto(sourcePath, _this.getLibPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
+                        } else {
+                            BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
+                        }
                     }).execute(function(error) {
                         flow.complete(error);
                     });
@@ -227,9 +240,15 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (testPaths) {
                         $foreachSeries(testPaths, function(boil, testPath) {
-                            BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
-                            });
+                            if (symlink) {
+                                BugFs.symlinkDirectoryContentsInto(testPath, _this.getTestPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                                    boil.bubble(error);
+                                });
+                            } else {
+                                BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                    boil.bubble(error);
+                                });
+                            }
                         }).execute(function(error) {
                             flow.complete(error);
                         });
@@ -240,9 +259,15 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (scriptPaths) {
                         $foreachSeries(scriptPaths, function(boil, scriptPath) {
-                            BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
-                            });
+                            if (symlink) {
+                                BugFs.symlinkDirectoryContentsInto(scriptPath, _this.getScriptsPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                                    boil.bubble(error);
+                                });
+                            } else {
+                                BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                    boil.bubble(error);
+                                });
+                            }
                         }).execute(function(error) {
                             flow.complete(error);
                         });
@@ -260,13 +285,15 @@ var NodePackage = Class.extend(Obj, {
     },
 
     /**
-     * @param {string} distPath
+     * @param {Object} params
      * @param {function(Error, PackedNodePackage)} callback
      */
-    packPackage: function(distPath, callback) {
+    packPackage: function(params, callback) {
         var _this = this;
+        var distPath = params.distPath;
+        var absoluteSymlinks = params.absoluteSymlinks;
         var packedNodePackage = new PackedNodePackage(this, distPath);
-        this.packNodePackage(function(error) {
+        this.packNodePackage(absoluteSymlinks, function(error) {
             if (!error) {
                 var npmPackageFilePath = process.cwd() + path.sep + packedNodePackage.getFileName();
                 BugFs.move(npmPackageFilePath, distPath, Path.SyncMode.MERGE_REPLACE, function(error) {
@@ -300,11 +327,15 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @private
+     * @param {boolean} absoluteSymlinks
      * @param {function()} callback
      */
-    packNodePackage: function(callback) {
+    packNodePackage: function(absoluteSymlinks, callback) {
         var packagePath = this.buildPath.getAbsolutePath();
-        npm.commands.pack([packagePath], function (error, data) {
+        var options = {
+            absoluteSymlinks: absoluteSymlinks
+        };
+        npm.commands.pack([packagePath], options, function (error, data) {
             if (!error) {
                 console.log("Packed up node package '" + packagePath + "'");
                 callback();
