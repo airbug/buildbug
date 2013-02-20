@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -7,11 +7,20 @@
 //@Export('BugPackModule')
 //@Autoload
 
+//@Require('Class')
+//@Require('TypeUtil')
 //@Require('annotate.Annotate')
+//@Require('bugfs.BugFs')
+//@Require('bugfs.Path')
+//@Require('bugtrace.BugTrace')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
-//@Require('Class')
+
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 var bugpack_registry = require('bugpack-registry');
@@ -27,6 +36,7 @@ var TypeUtil =              bugpack.require('TypeUtil');
 var Annotate =              bugpack.require('annotate.Annotate');
 var BugFs =                 bugpack.require('bugfs.BugFs');
 var Path =                  bugpack.require('bugfs.Path');
+var BugTrace =              bugpack.require('bugtrace.BugTrace');
 var BuildBug =              bugpack.require('buildbug.BuildBug');
 var BuildModule =           bugpack.require('buildbug.BuildModule');
 var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
@@ -39,6 +49,7 @@ var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
 var annotate = Annotate.annotate;
 var buildModule = BuildModuleAnnotation.buildModule;
 var buildTask = BuildBug.buildTask;
+var $traceWithError = BugTrace.$traceWithError;
 
 
 //-------------------------------------------------------------------------------
@@ -120,13 +131,13 @@ var BugPackModule = Class.extend(BuildModule, {
     generateBugPackRegistry: function(sourceRoot, callback) {
         var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
         var _this = this;
-        bugpack_registry.buildRegistry(sourceRootPath.getAbsolutePath(), function(error, bugpackRegistry) {
+        bugpack_registry.buildRegistry(sourceRootPath.getAbsolutePath(), $traceWithError(function(error, bugpackRegistry) {
             if (!error) {
                 _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
             } else {
                 callback(error);
             }
-        });
+        }));
     },
 
     /**
@@ -137,7 +148,13 @@ var BugPackModule = Class.extend(BuildModule, {
      */
     writeBugpackRegistryJson: function(outputDirPath, bugpackRegistryObject, callback) {
         var bugpackRegistryPath = outputDirPath.getAbsolutePath() + path.sep + 'bugpack-registry.json';
-        BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistryObject, null, '\t'), callback);
+        BugFs.createFile(bugpackRegistryPath, function(error) {
+            if (!error) {
+                BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistryObject, null, '\t'), callback);
+            } else {
+                callback(error);
+            }
+        });
     }
 });
 

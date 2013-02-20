@@ -43,7 +43,7 @@ buildProperties({
         dependencies: {
             "aws-sdk": "0.9.x",
             //bugjar: 'https://s3.amazonaws.com/bugjars/bugjar-0.0.1.tgz',
-            "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.1.tgz',
+            "bugpack-registry": 'https://s3.amazonaws.com/airbug-brian/bugpack-registry-0.0.2.tgz',
             bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.3.tgz',
             bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.3.tgz',
             npm: 'git://github.com/airbug/npm.git#master',
@@ -57,6 +57,7 @@ buildProperties({
         '../bugjs/projects/bugboil/js/src',
         '../bugjs/projects/bugflow/js/src',
         '../bugjs/projects/bugfs/js/src',
+        '../bugjs/projects/bugtrace/js/src',
         "../bugunit/projects/bugunit/js/src",
         './projects/buildbug/js/src'
     ],

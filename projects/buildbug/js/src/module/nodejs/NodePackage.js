@@ -207,7 +207,7 @@ var NodePackage = Class.extend(Obj, {
                     if (binPaths) {
                         $foreachSeries(binPaths, function(boil, binPath) {
                             if (symlink) {
-                                BugFs.symlinkDirectoryContentsInto(binPath, _this.getBinPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                                BugFs.symlinkDirectoryContentsInto(binPath, _this.getBinPath(), Path.SyncMode.REPLACE, function(error) {
                                     boil.bubble(error);
                                 });
                             } else {
@@ -225,7 +225,7 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     $foreachSeries(sourcePaths, function(boil, sourcePath) {
                         if (symlink) {
-                            BugFs.symlinkDirectoryContentsInto(sourcePath, _this.getLibPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                            BugFs.symlinkDirectoryContentsInto(sourcePath, _this.getLibPath(), Path.SyncMode.REPLACE, function(error) {
                                 boil.bubble(error);
                             });
                         } else {
@@ -241,7 +241,7 @@ var NodePackage = Class.extend(Obj, {
                     if (testPaths) {
                         $foreachSeries(testPaths, function(boil, testPath) {
                             if (symlink) {
-                                BugFs.symlinkDirectoryContentsInto(testPath, _this.getTestPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                                BugFs.symlinkDirectoryContentsInto(testPath, _this.getTestPath(), Path.SyncMode.REPLACE, function(error) {
                                     boil.bubble(error);
                                 });
                             } else {
@@ -260,7 +260,7 @@ var NodePackage = Class.extend(Obj, {
                     if (scriptPaths) {
                         $foreachSeries(scriptPaths, function(boil, scriptPath) {
                             if (symlink) {
-                                BugFs.symlinkDirectoryContentsInto(scriptPath, _this.getScriptsPath(), Path.SyncMode.MERGE_REPLACE, function(error) {
+                                BugFs.symlinkDirectoryContentsInto(scriptPath, _this.getScriptsPath(), Path.SyncMode.REPLACE, function(error) {
                                     boil.bubble(error);
                                 });
                             } else {
