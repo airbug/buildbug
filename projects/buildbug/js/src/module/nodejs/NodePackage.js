@@ -197,7 +197,6 @@ var NodePackage = Class.extend(Obj, {
         var testPaths = params.testPaths;
         var scriptPaths = params.scriptPaths;
         var binPaths = params.binPaths;
-        var symlink = params.symlink;
 
         this.createPackageBuildPaths();
 
@@ -206,15 +205,9 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (binPaths) {
                         $foreachSeries(binPaths, function(boil, binPath) {
-                            if (symlink) {
-                                BugFs.symlinkDirectoryContentsInto(binPath, _this.getBinPath(), Path.SyncMode.REPLACE, function(error) {
-                                    boil.bubble(error);
-                                });
-                            } else {
-                                BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                    boil.bubble(error);
-                                });
-                            }
+                            BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
                         }).execute(function(error) {
                             flow.complete(error);
                         });
@@ -224,15 +217,9 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     $foreachSeries(sourcePaths, function(boil, sourcePath) {
-                        if (symlink) {
-                            BugFs.symlinkDirectoryContentsInto(sourcePath, _this.getLibPath(), Path.SyncMode.REPLACE, function(error) {
-                                boil.bubble(error);
-                            });
-                        } else {
-                            BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
-                            });
-                        }
+                        BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                            boil.bubble(error);
+                        });
                     }).execute(function(error) {
                         flow.complete(error);
                     });
@@ -240,15 +227,9 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (testPaths) {
                         $foreachSeries(testPaths, function(boil, testPath) {
-                            if (symlink) {
-                                BugFs.symlinkDirectoryContentsInto(testPath, _this.getTestPath(), Path.SyncMode.REPLACE, function(error) {
-                                    boil.bubble(error);
-                                });
-                            } else {
-                                BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                    boil.bubble(error);
-                                });
-                            }
+                            BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
                         }).execute(function(error) {
                             flow.complete(error);
                         });
@@ -259,15 +240,9 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (scriptPaths) {
                         $foreachSeries(scriptPaths, function(boil, scriptPath) {
-                            if (symlink) {
-                                BugFs.symlinkDirectoryContentsInto(scriptPath, _this.getScriptsPath(), Path.SyncMode.REPLACE, function(error) {
-                                    boil.bubble(error);
-                                });
-                            } else {
-                                BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                    boil.bubble(error);
-                                });
-                            }
+                            BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
                         }).execute(function(error) {
                             flow.complete(error);
                         });
@@ -291,9 +266,8 @@ var NodePackage = Class.extend(Obj, {
     packPackage: function(params, callback) {
         var _this = this;
         var distPath = params.distPath;
-        var absoluteSymlinks = params.absoluteSymlinks;
         var packedNodePackage = new PackedNodePackage(this, distPath);
-        this.packNodePackage(absoluteSymlinks, function(error) {
+        this.packNodePackage(function(error) {
             if (!error) {
                 var npmPackageFilePath = process.cwd() + path.sep + packedNodePackage.getFileName();
                 BugFs.move(npmPackageFilePath, distPath, Path.SyncMode.MERGE_REPLACE, function(error) {

@@ -45,10 +45,11 @@ buildProperties({
             //bugjar: 'https://s3.amazonaws.com/bugjars/bugjar-0.0.1.tgz',
             "bugpack-registry": 'https://s3.amazonaws.com/airbug-brian/bugpack-registry-0.0.2.tgz',
             bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.3.tgz',
-            bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.3.tgz',
-            npm: 'git://github.com/airbug/npm.git#master',
-			tar: 'git://github.com/airbug/node-tar.git#master',
-			fstream: '0.1.x'
+            bugunit: 'https://s3.amazonaws.com/airbug-brian/bugunit-0.0.4.tgz',
+            npm: '1.2.x',
+            tar: 'git://github.com/airbug/node-tar.git#master',
+            //tar: '0.1.x',
+            fstream: '0.1.x'
         }
     },
     sourcePaths: [

@@ -143,7 +143,6 @@ var NodeJsModule = Class.extend(BuildModule, {
         var binPaths = props.getProperty("binPaths");
         var packageJson = props.getProperty("packageJson");
         var buildPath = props.getProperty("buildPath");
-        var symlink = props.getProperty("symlink");
 
         var nodePackage = this.generateNodePackage(packageJson, buildPath);
 
@@ -151,8 +150,7 @@ var NodeJsModule = Class.extend(BuildModule, {
             sourcePaths: sourcePaths,
             testPaths: testPaths,
             scriptPaths: scriptPaths,
-            binPaths: binPaths,
-            symlink: symlink
+            binPaths: binPaths
         };
         nodePackage.buildPackage(params, callback);
     },
@@ -177,7 +175,6 @@ var NodeJsModule = Class.extend(BuildModule, {
 
         var nodePackage = this.findNodePackage(packageName, packageVersion);
         var params = {
-            absoluteSymlinks: props.getProperty("absoluteSymlinks"),
             distPath: props.getProperty("distPath")
         };
 
