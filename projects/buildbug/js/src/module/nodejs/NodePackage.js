@@ -301,15 +301,11 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @private
-     * @param {boolean} absoluteSymlinks
      * @param {function()} callback
      */
-    packNodePackage: function(absoluteSymlinks, callback) {
+    packNodePackage: function(callback) {
         var packagePath = this.buildPath.getAbsolutePath();
-        var options = {
-            absoluteSymlinks: absoluteSymlinks
-        };
-        npm.commands.pack([packagePath], options, function (error, data) {
+        npm.commands.pack([packagePath], function (error, data) {
             if (!error) {
                 console.log("Packed up node package '" + packagePath + "'");
                 callback();
