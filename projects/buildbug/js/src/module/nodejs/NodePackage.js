@@ -260,11 +260,12 @@ var NodePackage = Class.extend(Obj, {
     },
 
     /**
-     * @param {string} distPath
+     * @param {Object} params
      * @param {function(Error, PackedNodePackage)} callback
      */
-    packPackage: function(distPath, callback) {
+    packPackage: function(params, callback) {
         var _this = this;
+        var distPath = params.distPath;
         var packedNodePackage = new PackedNodePackage(this, distPath);
         this.packNodePackage(function(error) {
             if (!error) {

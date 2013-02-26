@@ -52,6 +52,8 @@ var BuildBug = Class.extend(Obj, {});
 //-------------------------------------------------------------------------------
 
 /**
+ * @static
+ * @private
  * @type {BuildProject}
  */
 BuildBug.buildProject = new BuildProject();
@@ -62,6 +64,7 @@ BuildBug.buildProject = new BuildProject();
 //-------------------------------------------------------------------------------
 
 /**
+ * @static
  * @param {Object} propertiesObject
  */
 BuildBug.buildProperties = function(propertiesObject) {
@@ -69,6 +72,7 @@ BuildBug.buildProperties = function(propertiesObject) {
 };
 
 /**
+ * @static
  * @param {string} targetName
  * @return {BuildTarget}
  */
@@ -79,6 +83,7 @@ BuildBug.buildTarget = function(targetName) {
 };
 
 /**
+ * @static
  * @param {string} taskName
  * @param {function()} taskFunction
  * @return {BuildTask}
@@ -90,6 +95,7 @@ BuildBug.buildTask = function(taskName, taskFunction) {
 };
 
 /**
+ * @static
  * @param {string} moduleName
  * @return {BuildModule}
  */
@@ -98,6 +104,7 @@ BuildBug.enableModule = function(moduleName) {
 };
 
 /**
+ * @static
  * @param {string} targetName
  * @return {BuildTask}
  */
@@ -106,6 +113,7 @@ BuildBug.getTarget = function(targetName) {
 };
 
 /**
+ * @static
  * @param {string} taskName
  * @return {BuildTask}
  */
@@ -114,6 +122,7 @@ BuildBug.getTask = function(taskName) {
 };
 
 /**
+ * @static
  * @param {Array<(function()|Task)>} tasksArray
  * @param {function()} callback
  * @return {BuildParallel}
@@ -123,6 +132,7 @@ BuildBug.parallel = function(tasksArray, callback) {
 };
 
 /**
+ * @static
  * @param {Array<(function()|Task)>} tasksArray
  * @return {BuildSeries}
  */
@@ -131,6 +141,7 @@ BuildBug.series = function(tasksArray) {
 };
 
 /**
+ * @static
  * @param {function()} taskName
  * @param {Object} proto
  * @return {TargetTask}
@@ -145,6 +156,7 @@ BuildBug.targetTask = function(taskName, proto) {
 //-------------------------------------------------------------------------------
 
 /**
+ * @static
  * @private
  */
 BuildBug.bootstrap = function() {
@@ -189,6 +201,7 @@ BuildBug.bootstrap = function() {
 };
 
 /**
+ * @static
  * @private
  * @param {string} moduleName
  * @param {BuildModule} buildModule
