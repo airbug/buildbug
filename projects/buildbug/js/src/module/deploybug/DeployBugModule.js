@@ -77,7 +77,7 @@ var DeployBugModule = Class.extend(BuildModule, {
     enableModule: function() {
         this._super();
         var deployBugModule = this;
-        buildTask('registerDeployBugDescription', function(flow, buildProject, properties){
+        buildTask('registerDeployBugPackage', function(flow, buildProject, properties){
             deployBugModule.registerPackageTask(properties, function(error, data){
                 console.log(data);
                 flow.complete(error);
