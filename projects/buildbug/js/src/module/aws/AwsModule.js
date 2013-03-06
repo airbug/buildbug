@@ -81,6 +81,10 @@ var AwsModule = Class.extend(BuildModule, {
          */
         this.s3 = null;
 
+        /**
+         * @private
+         * @type {Map}
+         */
         this.filePathToURLMap = null;
     },
 
@@ -204,7 +208,7 @@ var AwsModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {(string|Path)} filePath
+     * @param {string} filePath
      * @return {string}
      */
     getURL: function(filePath){
