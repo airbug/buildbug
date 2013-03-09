@@ -22,13 +22,12 @@ var targetTask = buildbug.targetTask;
 // Enable Modules
 //-------------------------------------------------------------------------------
 
-var aws = enableModule("aws");
-var bugpack = enableModule('bugpack');
-var bugunit = enableModule('bugunit');
-var clientjs = enableModule('clientjs');
-var core = enableModule('core');
-var nodejs = enableModule('nodejs');
-
+var aws         = enableModule("aws");
+var bugpack     = enableModule('bugpack');
+var bugunit     = enableModule('bugunit');
+var clientjs    = enableModule('clientjs');
+var core        = enableModule('core');
+var nodejs      = enableModule('nodejs');
 
 //-------------------------------------------------------------------------------
 // Declare Properties
@@ -46,6 +45,7 @@ buildProperties({
             "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.2.tgz',
             bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.3.tgz',
             bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.4.tgz',
+            deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.3.tgz',
             npm: '1.2.x',
             tar: 'git://github.com/airbug/node-tar.git#master',
             //tar: '0.1.x',

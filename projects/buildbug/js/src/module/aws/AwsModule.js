@@ -26,6 +26,7 @@ var bugpack = require('bugpack').context();
 
 var Class =                     bugpack.require('Class');
 var Obj =                       bugpack.require('Obj');
+var Map =                       bugpack.require('Map');
 var TypeUtil =                  bugpack.require('TypeUtil');
 var Annotate =                  bugpack.require('annotate.Annotate');
 var BugFlow =                   bugpack.require('bugflow.BugFlow');
@@ -79,6 +80,12 @@ var AwsModule = Class.extend(BuildModule, {
          * @type {AWS.S3}
          */
         this.s3 = null;
+
+        /**
+         * @private
+         * @type {Map}
+         */
+        this.filePathToURLMap = null;
     },
 
 
@@ -201,6 +208,16 @@ var AwsModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
+     * @param {string} filePath
+     * @return {string}
+     */
+    getURL: function(filePath){
+        if(this.filePathToURLMap){
+            return this.filePathToURLMap.get(filePath);
+        }
+    },
+
+    /**
      * @param {string} bucket
      * @param {function(boolean)} callback
      */
@@ -284,6 +301,7 @@ var AwsModule = Class.extend(BuildModule, {
                         if (!error) {
                             console.log("Successfully uploaded file to S3 'https://s3.amazonaws.com/" + params.Bucket +
                                 "/" + params.Key + "'");
+                            _this.registerURL(filePath, "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key);
                             flow.complete();
                         } else {
                             flow.error(error);
@@ -315,6 +333,18 @@ var AwsModule = Class.extend(BuildModule, {
             contentType = 'binary/octet-stream';
         }
         return contentType;
+    },
+
+    /**
+     * @private
+     * @param {(Path|string)} filePath
+     */
+    registerURL: function(filePath, url){
+        if(!this.filePathToURLMap){
+            this.filePathToURLMap = new Map();
+        }
+
+        this.filePathToURLMap.put(filePath, url);
     },
 
     /**
