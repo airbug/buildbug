@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -16,6 +16,10 @@
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
 
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 var deployBugClient = require('deploybug');
@@ -209,7 +213,7 @@ var DeployBugModule = Class.extend(BuildModule, {
             serverPort: props.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key"),
+            key: props.getProperty("key")
         };
         deployBugClient.initialize(serverOptions, function(){
             console.log("deployBugClient initialized");
@@ -234,7 +238,7 @@ var DeployBugModule = Class.extend(BuildModule, {
             serverPort: props.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key"),
+            key: props.getProperty("key")
         };
         deployBugClient.initialize(serverOptions, function(){
             console.log("deployBugClient initialized");
@@ -259,7 +263,7 @@ var DeployBugModule = Class.extend(BuildModule, {
             serverPort: props.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key"),
+            key: props.getProperty("key")
         };
         deployBugClient.initialize(serverOptions, function(){
             console.log("deployBugClient initialized");

@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -16,6 +16,11 @@
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
 
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
+
 var AWS = require('aws-sdk');
 var bugpack = require('bugpack').context();
 
@@ -24,17 +29,19 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                     bugpack.require('Class');
-var Obj =                       bugpack.require('Obj');
-var Map =                       bugpack.require('Map');
-var TypeUtil =                  bugpack.require('TypeUtil');
-var Annotate =                  bugpack.require('annotate.Annotate');
-var BugFlow =                   bugpack.require('bugflow.BugFlow');
-var BugFs =                     bugpack.require('bugfs.BugFs');
-var AwsConfig =                 bugpack.require('buildbug.AwsConfig');
-var BuildBug =                  bugpack.require('buildbug.BuildBug');
-var BuildModule =               bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation =     bugpack.require('buildbug.BuildModuleAnnotation');
+var Class =                 bugpack.require('Class');
+var Obj =                   bugpack.require('Obj');
+var Map =                   bugpack.require('Map');
+var TypeUtil =              bugpack.require('TypeUtil');
+var Annotate =              bugpack.require('annotate.Annotate');
+var AwsConfig =             bugpack.require('aws.AwsConfig');
+var S3Api =                 bugpack.require('aws.S3Api');
+var S3Bucket =              bugpack.require('aws.S3Bucket');
+var BugFlow =               bugpack.require('bugflow.BugFlow');
+var BugFs =                 bugpack.require('bugfs.BugFs');
+var BuildBug =              bugpack.require('buildbug.BuildBug');
+var BuildModule =           bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
@@ -68,18 +75,6 @@ var AwsModule = Class.extend(BuildModule, {
         //-------------------------------------------------------------------------------
         // Declare Variables
         //-------------------------------------------------------------------------------
-
-        /**
-         * @private
-         * @type {AwsConfig}
-         */
-        this.awsConfig = null;
-
-        /**
-         * @private
-         * @type {AWS.S3}
-         */
-        this.s3 = null;
 
         /**
          * @private
@@ -142,23 +137,20 @@ var AwsModule = Class.extend(BuildModule, {
      * @param {function(Error)} callback
      */
     s3EnsureBucketTask: function(properties, callback) {
-        var _this = this;
         var props = this.generateProperties(properties);
-        var awsConfig = props.getProperty("awsConfig");
-        var bucket = props.getProperty("bucket");
-
-        this.processAwsConfig(awsConfig);
-        $if (function(flow) {
-                _this.doesBucketExist(bucket, function(exists) {
-                    flow.assert(!exists);
-                });
-            },
-            $task(function(flow) {
-                _this.createBucket({Bucket: bucket}, function(error, data) {
-                    flow.complete(error, data);
-                });
-            })
-        ).execute(callback);
+        var awsConfig = new AwsConfig(props.getProperty("awsConfig"));
+        var s3Bucket = new S3Bucket({
+            name: props.getProperty("bucket")
+        });
+        var s3Api = new S3Api(awsConfig);
+        s3Api.ensureBucket(s3Bucket, function(error) {
+            if (!error) {
+                console.log("Ensured bucket '" + s3Bucket.getName() + "' exists");
+                callback();
+            } else {
+                callback(error);
+            }
+        });
     },
 
     /**
@@ -178,21 +170,27 @@ var AwsModule = Class.extend(BuildModule, {
     s3PutFileTask: function(properties, callback) {
         var _this = this;
         var props = this.generateProperties(properties);
-        var awsConfig = props.getProperty("awsConfig");
+        var awsConfig = new AwsConfig(props.getProperty("awsConfig"));
         var filePath = BugFs.path(props.getProperty("file"));
-        var bucket = props.getProperty("bucket");
+        var s3Bucket = new S3Bucket({
+            name: props.getProperty("bucket")
+        });
         var options = props.getProperty("options");
-
-        this.processAwsConfig(awsConfig);
-
+        var s3Api = new S3Api(awsConfig);
         $if (function(flow) {
                 filePath.exists(function(exists) {
                     flow.assert(exists);
                 });
             },
             $task(function(flow) {
-                _this.s3PutFile(filePath, bucket, options, function(error) {
-                    flow.complete(error);
+                s3Api.putFile(filePath, s3Bucket, options, function(error, s3Object) {
+                    if (!error) {
+                        console.log("Successfully uploaded file to S3 '" + s3Api.getObjectURL(s3Object, s3Bucket) + "'");
+                        _this.registerURL(filePath, s3Api.getObjectURL(s3Object, s3Bucket));
+                        flow.complete();
+                    } else {
+                        flow.error(error);
+                    }
                 });
             })
         ).$else(
@@ -217,123 +215,10 @@ var AwsModule = Class.extend(BuildModule, {
         }
     },
 
-    /**
-     * @param {string} bucket
-     * @param {function(boolean)} callback
-     */
-    canAccessBucket: function(bucket, callback) {
-        if (!TypeUtil.isString(bucket)) {
-            throw new Error("'bucket' must be a string");
-        }
-        this.headBucket({Bucket: bucket}, function(err, data) {
-            if (err) {
-                //TODO BRN: What other codes?
-                console.log(err);
-                callback(false);
-            } else {
-                callback(true);
-            }
-        });
-    },
-
-    /**
-     * @param {string} bucket
-     * @param {function(boolean)} callback
-     */
-    doesBucketExist: function(bucket, callback) {
-        if (!TypeUtil.isString(bucket)) {
-            throw new Error("'bucket' must be a string");
-        }
-        this.headBucket({Bucket: bucket}, function(err, data) {
-            if (err) {
-                if (err.code === 'NotFound') {
-                    callback(false);
-                } else {
-                    //TODO BRN: What other codes?
-                    console.log(err);
-                    throw new Error("Something else happened.");
-                }
-            } else {
-                callback(true);
-            }
-        });
-    },
-
-    /**
-     * @param {Path} filePath
-     * @param {string} bucket
-     * @param options
-     * @param {function(Error)} callback
-     */
-    s3PutFile: function(filePath, bucket, options, callback) {
-        var _this = this;
-        var fileData = null;
-
-        $if (function(flow) {
-                _this.canAccessBucket(bucket, function(canAccess) {
-                    flow.assert(canAccess);
-                });
-            },
-            $series([
-                $task(function(flow) {
-                    filePath.readFile(function(error, data) {
-                        if (!error) {
-                            fileData = data;
-                            flow.complete();
-                        } else {
-                            flow.error(error);
-                        }
-                    });
-                }),
-                $task(function(flow) {
-                    var params = {
-                        Body: fileData,
-                        Key: filePath.getName(),
-                        Bucket: bucket
-                    };
-                    if (options) {
-                        Obj.merge(options, params);
-                    }
-                    if (!params.ContentType) {
-                        params.ContentType = _this.autoDiscoverContentType(filePath);
-                    }
-                    _this.putObject(params, function(error, response) {
-                        if (!error) {
-                            console.log("Successfully uploaded file to S3 'https://s3.amazonaws.com/" + params.Bucket +
-                                "/" + params.Key + "'");
-                            _this.registerURL(filePath, "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key);
-                            flow.complete();
-                        } else {
-                            flow.error(error);
-                        }
-                    });
-                })
-            ])
-        ).$else(
-            $task(function(flow) {
-                flow.error(new Error("Cannot access bucket '" + bucket + "'"));
-            })
-        ).execute(callback);
-    },
-
 
     //-------------------------------------------------------------------------------
     // Private Class Methods
     //-------------------------------------------------------------------------------
-
-    /**
-     * @private
-     * @param {Path} filePath
-     * @return {string}
-     */
-    autoDiscoverContentType: function(filePath) {
-        var extName = filePath.getExtName();
-        var contentType = AwsModule.extToContentType[extName];
-        if (!contentType) {
-            contentType = 'binary/octet-stream';
-        }
-        return contentType;
-    },
 
     /**
      * @private
@@ -343,100 +228,12 @@ var AwsModule = Class.extend(BuildModule, {
         if(!this.filePathToURLMap){
             this.filePathToURLMap = new Map();
         }
-
         this.filePathToURLMap.put(filePath, url);
-    },
-
-    /**
-     * @private
-     * @param {{
-     *       accessKeyId: string,
-     *       region: string,
-     *       secretAccessKey: string
-     * }} configObject
-     */
-    processAwsConfig: function(configObject) {
-        var awsConfig = new AwsConfig(configObject);
-        if (!Obj.equals(this.awsConfig, awsConfig)) {
-            this.awsConfig = awsConfig;
-            AWS.config.update(this.awsConfig.getConfigObject());
-
-            // NOTE BRN: We have to instantiate these objects AFTER the config has been updated. Otherwise the
-            // credentials are not passed to the instantiated objects.
-
-            this.s3 = new AWS.S3()
-        }
-    },
-
-
-    // SDK Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @private
-     * @param {{
-     *      Bucket: string
-     * }} params
-     * @param {function(Error, data} callback
-     */
-    createBucket: function(params, callback) {
-        this.s3.client.createBucket(params, callback)
-    },
-
-    /**
-     * @private
-     * @param {{
-     *      Bucket: string
-     * }} params
-     * @param {function(Object, Object)} callback
-     */
-    headBucket: function(params, callback) {
-        this.s3.client.headBucket(params, callback);
-    },
-
-    /**
-     * @private
-     * @param {{
-     *      Bucket: string,
-     *      Key: string,
-     *      CacheControl: ?string, Can be used to specify caching behavior along the request/reply chain.
-     *      ContentDisposition: ?string, Specifies presentational information for the object.
-     *      ContentEncoding: ?string, Specifies what content encodings have been applied to the object and thus what decoding mechanisms must be applied to obtain the media-type referenced by the Content-Type header field.
-     *      ContentType: ?string, A standard MIME type describing the format of the object data.
-     *      Expires: ?Date, The date and time at which the object is no longer cacheable.
-     *      WebsiteRedirectLocation: ?string, If the bucket is configured as a website, redirects requests for this object to another object in the same bucket or to an external URL. Amazon S3 stores the value of this header in the object metadata.
-     *      Body: ?string,
-     *      StorageClass: ?string, The type of storage to use for the object. Defaults to 'STANDARD'.
-     *      ACL: ?string, The canned ACL to apply to the object.
-     *      GrantRead: ?string, Allows grantee to read the object data and its metadata.
-     *      GrantReadACP: ?string, Allows grantee to read the object ACL.
-     *      GrantWriteACP: ?string, Allows grantee to write the ACL for the applicable object.
-     *      GrantFullControl: ?string, Gives the grantee READ, READ_ACP, and WRITE_ACP permissions on the object.
-     *      ServerSideEncryption: ?string, The Server-side encryption algorithm used when storing this object in S3.
-     *      Metadata: Object<String> A map of metadata to store with the object in S3.params
-     * }}
-     * @param {function(Object, Object)} callback
-     */
-    putObject: function(params, callback) {
-        this.s3.client.putObject(params, callback);
     }
 });
-
 annotate(AwsModule).with(
     buildModule("aws")
 );
-
-
-//-------------------------------------------------------------------------------
-// Static Variables
-//-------------------------------------------------------------------------------
-
-/**
- * @type {Object}
- */
-AwsModule.extToContentType = {
-    '.tgz': 'application/x-compressed'
-};
 
 
 //-------------------------------------------------------------------------------
