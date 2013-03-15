@@ -36,7 +36,7 @@ var nodejs      = enableModule('nodejs');
 buildProperties({
     packageJson: {
         name: "buildbug",
-        version: "0.0.8",
+        version: "0.0.9",
         main: "./lib/buildbug-module.js",
         bin: "bin/buildbug",
         dependencies: {

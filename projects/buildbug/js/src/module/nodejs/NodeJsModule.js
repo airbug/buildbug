@@ -124,6 +124,8 @@ var NodeJsModule = Class.extend(BuildModule, {
      *   testPaths: Array.<string>,
      *   scriptPaths: Array.<string>,
      *   binPaths: Array.<string>,
+     *   staticPaths: Array.<string>,
+     *   resourcePaths: Array.<string>,
      *   packageJson: {
      *       name: string,
      *       version: string,
@@ -141,6 +143,8 @@ var NodeJsModule = Class.extend(BuildModule, {
         var testPaths = props.getProperty("testPaths");
         var scriptPaths = props.getProperty("scriptPaths");
         var binPaths = props.getProperty("binPaths");
+        var staticPaths = props.getProperty("staticPaths");
+        var resourcePaths = props.getProperty("resourcePaths");
         var packageJson = props.getProperty("packageJson");
         var buildPath = props.getProperty("buildPath");
 
@@ -150,7 +154,9 @@ var NodeJsModule = Class.extend(BuildModule, {
             sourcePaths: sourcePaths,
             testPaths: testPaths,
             scriptPaths: scriptPaths,
-            binPaths: binPaths
+            binPaths: binPaths,
+            staticPaths: staticPaths,
+            resourcePaths: resourcePaths
         };
         nodePackage.buildPackage(params, callback);
     },
