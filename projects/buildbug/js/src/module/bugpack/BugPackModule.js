@@ -115,7 +115,8 @@ var BugPackModule = Class.extend(BuildModule, {
     generateBugPackRegistryTask: function(properties, callback) {
         var props = this.generateProperties(properties);
         var sourceRoot = props.getProperty("sourceRoot");
-        this.generateBugPackRegistry(sourceRoot, callback);
+        var ignore = props.getProperty("ignore");
+        this.generateBugPackRegistry(sourceRoot, ignore, callback);
     },
 
 
@@ -128,10 +129,10 @@ var BugPackModule = Class.extend(BuildModule, {
      * @param {(string|Path)} sourceRoot
      * @param {function(Error)} callback
      */
-    generateBugPackRegistry: function(sourceRoot, callback) {
+    generateBugPackRegistry: function(sourceRoot, ignore, callback) {
         var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
         var _this = this;
-        bugpack_registry.buildRegistry(sourceRootPath.getAbsolutePath(), $traceWithError(function(error, bugpackRegistry) {
+        bugpack_registry.buildRegistry(sourceRootPath.getAbsolutePath(), ignore, $traceWithError(function(error, bugpackRegistry) {
             if (!error) {
                 _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
             } else {
