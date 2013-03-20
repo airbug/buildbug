@@ -36,16 +36,16 @@ var nodejs      = enableModule('nodejs');
 buildProperties({
     packageJson: {
         name: "buildbug",
-        version: "0.0.7",
+        version: "0.0.10",
         main: "./lib/buildbug-module.js",
         bin: "bin/buildbug",
         dependencies: {
             "aws-sdk": "0.9.x",
             //bugjar: 'https://s3.amazonaws.com/bugjars/bugjar-0.0.1.tgz',
-            "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.2.tgz',
-            bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.3.tgz',
-            bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.4.tgz',
-            deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.3.tgz',
+            "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.4.tgz',
+            bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.4.tgz',
+            bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.5.tgz',
+            deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
             npm: '1.2.x',
             tar: 'git://github.com/airbug/node-tar.git#master',
             //tar: '0.1.x',
@@ -53,6 +53,7 @@ buildProperties({
         }
     },
     sourcePaths: [
+        '../bugjs/projects/aws/js/src',
         '../bugjs/projects/bugjs/js/src',
         '../bugjs/projects/annotate/js/src',
         '../bugjs/projects/bugboil/js/src',
@@ -153,7 +154,7 @@ buildTarget('local').buildFlow(
                 task.updateProperties({
                     file: packedNodePackage.getFilePath(),
                     options: {
-                        ACL: 'public-read'
+                        acl: 'public-read'
                     }
                 });
             },
@@ -223,7 +224,7 @@ buildTarget('prod').buildFlow(
                 task.updateProperties({
                     file: packedNodePackage.getFilePath(),
                     options: {
-                        ACL: 'public-read'
+                        acl: 'public-read'
                     }
                 });
             },

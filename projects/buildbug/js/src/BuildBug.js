@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -17,6 +17,11 @@
 //@Require('buildbug.BuildTarget')
 //@Require('buildbug.BuildTask')
 //@Require('buildbug.TargetTask')
+
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 var child_process = require('child_process');

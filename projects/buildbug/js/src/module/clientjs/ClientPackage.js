@@ -16,7 +16,7 @@
 
 
 var bugpack = require('bugpack').context();
-var fstream = require("fstream")
+var fstream = require("fstream");
 var zlib = require('zlib');
 var path = require('path');
 var tar = require('tar');
@@ -26,13 +26,13 @@ var tar = require('tar');
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =             bugpack.require('Class');
-var Obj =               bugpack.require('Obj');
-var BugBoil =           bugpack.require('bugboil.BugBoil');
-var BugFlow =           bugpack.require('bugflow.BugFlow');
-var BugFs =             bugpack.require('bugfs.BugFs');
-var Path =              bugpack.require('bugfs.Path');
-var PackedClientPackage = bugpack.require('buildbug.PackedClientPackage');
+var Class =                 bugpack.require('Class');
+var Obj =                   bugpack.require('Obj');
+var BugBoil =               bugpack.require('bugboil.BugBoil');
+var BugFlow =               bugpack.require('bugflow.BugFlow');
+var BugFs =                 bugpack.require('bugfs.BugFs');
+var Path =                  bugpack.require('bugfs.Path');
+var PackedClientPackage =   bugpack.require('buildbug.PackedClientPackage');
 
 
 //-------------------------------------------------------------------------------
@@ -277,10 +277,9 @@ var ClientPackage = Class.extend(Obj, {
      */
     packClientPackage: function(callback) {
         var packagePath = this.buildPath.getAbsolutePath();
-        var gzip = zlib.createGzip();
         var inp = fstream.Reader({path: packagePath, type: "Directory"});        
         var out = fstream.Writer( this.getName() + '-' + this.getVersion() + '.tgz');
-        inp.pipe(tar.Pack()).pipe(gzip)
+        inp.pipe(tar.Pack()).pipe(zlib.createGzip())
             .on('end', function(){
                 console.log("Packed up client package '" + packagePath + "'");
                 callback();

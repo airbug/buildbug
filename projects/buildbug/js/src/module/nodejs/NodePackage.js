@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -14,6 +14,10 @@
 //@Require('bugfs.Path')
 //@Require('buildbug.PackedNodePackage')
 
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 var npm = require('npm');
@@ -90,7 +94,19 @@ var NodePackage = Class.extend(Obj, {
          * @private
          * @type {Path}
          */
+        this.resourcesPath = null;
+
+        /**
+         * @private
+         * @type {Path}
+         */
         this.scriptsPath = null;
+
+        /**
+         * @private
+         * @type {Path}
+         */
+        this.staticPath = null;
 
         /**
          * @private
@@ -156,10 +172,24 @@ var NodePackage = Class.extend(Obj, {
     },
 
     /**
+     * @return {string}
+     */
+    getResourcesPath: function() {
+        return this.resourcesPath;
+    },
+
+    /**
      * @return {Path}
      */
     getScriptsPath: function() {
         return this.scriptsPath;
+    },
+
+    /**
+     * @return {Path}
+     */
+    getStaticPath: function() {
+        return this.staticPath;
     },
 
     /**
@@ -197,6 +227,8 @@ var NodePackage = Class.extend(Obj, {
         var testPaths = params.testPaths;
         var scriptPaths = params.scriptPaths;
         var binPaths = params.binPaths;
+        var staticPaths = params.staticPaths;
+        var resourcePaths = params.resourcePaths;
 
         this.createPackageBuildPaths();
 
@@ -249,6 +281,32 @@ var NodePackage = Class.extend(Obj, {
                     } else {
                         flow.complete();
                     }
+                }),
+                $task(function(flow) {
+                    if (staticPaths) {
+                        $foreachSeries(staticPaths, function(boil, staticPath) {
+                            BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
+                        }).execute(function(error) {
+                            flow.complete(error);
+                        });
+                    } else {
+                        flow.complete();
+                    }
+                }),
+                $task(function(flow) {
+                    if (resourcePaths) {
+                        $foreachSeries(resourcePaths, function(boil, resourcePath) {
+                            BugFs.copyDirectoryContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
+                                boil.bubble(error);
+                            });
+                        }).execute(function(error) {
+                                flow.complete(error);
+                            });
+                    } else {
+                        flow.complete();
+                    }
                 })
             ]),
             $task(function(flow) {
@@ -297,6 +355,8 @@ var NodePackage = Class.extend(Obj, {
         this.libPath = this.buildPath.joinPaths(["lib"]);
         this.testPath = this.buildPath.joinPaths(["test"]);
         this.scriptsPath = this.buildPath.joinPaths(["scripts"]);
+        this.staticPath = this.buildPath.joinPaths(["static"]);
+        this.resourcesPath = this.buildPath.joinPaths(["resources"]);
     },
 
     /**
