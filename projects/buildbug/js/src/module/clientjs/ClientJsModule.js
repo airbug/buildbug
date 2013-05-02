@@ -131,6 +131,7 @@ var ClientJsModule = Class.extend(BuildModule, {
         var params = {
             sourcePaths: sourcePaths,
             staticPaths: staticPaths,
+            clientJson: clientJson
         };
         clientPackage.buildPackage(params, callback);
     },
