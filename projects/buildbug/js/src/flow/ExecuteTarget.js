@@ -23,10 +23,10 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =     bugpack.require('Class');
-var Properties =  bugpack.require('Properties');
-var Task =      bugpack.require('bugflow.Task');
-var BuildFlow = bugpack.require('buildbug.BuildFlow');
+var Class =         bugpack.require('Class');
+var Properties =    bugpack.require('Properties');
+var Task =          bugpack.require('bugflow.Task');
+var BuildFlow =     bugpack.require('buildbug.BuildFlow');
 
 
 //-------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ var ExecuteTarget = Class.extend(Task, {
 
     _constructor: function(buildTask, taskProperties, taskInitMethod) {
 
-        this._super(buildTask.getTaskMethod());
+        this._super(buildTask.getTaskMethod(), buildTask.getTaskContext());
 
 
         //-------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ var ExecuteTarget = Class.extend(Task, {
      * @protected
      */
     completeFlow: function() {
-        console.log("Completed task '" + this.buildTask.getName() + "'");
+        console.log("Completed task '" + this.buildTask.getTaskName() + "'");
         this._super();
     },
 
@@ -84,12 +84,13 @@ var ExecuteTarget = Class.extend(Task, {
      * @param {Array<*>} args
      */
     executeFlow: function(args) {
-        console.log("Running task '" + this.buildTask.getName()) + "'";
+        console.log("Running task '" + this.buildTask.getTaskName() + "'");
+        var buildProject = args[0];
         if (this.taskInitMethod) {
-            var buildProject = args[0];
             this.taskInitMethod(this, buildProject, this.taskProperties);
         }
-        this._super([buildProject, this.taskProperties]);
+        var finalProperties = this.generateProperties(buildProject);
+        this.executeTargetTask(buildProject, finalProperties);
     },
 
 
@@ -103,6 +104,35 @@ var ExecuteTarget = Class.extend(Task, {
     updateProperties: function(propertiesObject) {
         this.taskProperties.updateProperties(propertiesObject);
         return this;
+    },
+
+
+    //-------------------------------------------------------------------------------
+    // Private Class Methods
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @private
+     * @param {BuildProject} buildProject
+     * @param {Properties} finalProperties
+     */
+    executeTargetTask: function(buildProject, finalProperties) {
+        var _this = this;
+        this.taskMethod.call(this.taskContext, buildProject, finalProperties, function(error) {
+            _this.complete(error);
+        });
+    },
+
+    /**
+     * @private
+     * @param {BuildProject} buildProject
+     * @return {Properties}
+     */
+    generateProperties: function(buildProject) {
+        var projectProperties = buildProject.getProperties();
+        var finalProperties = new Properties({});
+        finalProperties.merge([this.taskProperties, projectProperties]);
+        return finalProperties;
     }
 });
 

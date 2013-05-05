@@ -84,12 +84,7 @@ var BugPackModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var bugPackModule = this;
-        buildTask('generateBugPackRegistry', function(flow, buildProject, properties) {
-            bugPackModule.generateBugPackRegistryTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
+        buildTask('generateBugPackRegistry', this.generateBugPackRegistryTask, this);
     },
 
     /**
@@ -107,15 +102,17 @@ var BugPackModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *   sourceRoot: [string]
-     * }} properties,
+     * }
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    generateBugPackRegistryTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var sourceRoot = props.getProperty("sourceRoot");
-        var ignore = props.getProperty("ignore");
+    generateBugPackRegistryTask: function(buildProject, properties, callback) {
+        var sourceRoot = properties.getProperty("sourceRoot");
+        var ignore = properties.getProperty("ignore");
         this.generateBugPackRegistry(sourceRoot, ignore, callback);
     },
 

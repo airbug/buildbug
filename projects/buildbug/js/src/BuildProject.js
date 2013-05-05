@@ -11,6 +11,7 @@
 //@Require('Map')
 //@Require('Properties')
 //@Require('Set')
+//@Require('bugflow.BugFlow')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildTarget')
 //@Require('buildbug.BuildTask')
@@ -32,9 +33,17 @@ var EventDispatcher =   bugpack.require('EventDispatcher');
 var Map =               bugpack.require('Map');
 var Properties =        bugpack.require('Properties');
 var Set =               bugpack.require('Set');
+var BugFlow =           bugpack.require('bugflow.BugFlow');
 var BuildModule =       bugpack.require('buildbug.BuildModule');
 var BuildTarget =       bugpack.require('buildbug.BuildTarget');
 var BuildTask =         bugpack.require('buildbug.BuildTask');
+
+
+//-------------------------------------------------------------------------------
+// Simplify References
+//-------------------------------------------------------------------------------
+
+var $foreachParallel = BugFlow.$foreachParallel;
 
 
 //-------------------------------------------------------------------------------
@@ -281,23 +290,24 @@ var BuildProject = Class.extend(EventDispatcher, {
         if (!Class.doesExtend(buildTask, BuildTask)) {
             throw new Error("Build tasks must extend the BuildTask class");
         }
-        if (!this.taskNameToBuildTaskMap.containsKey(buildTask.getName())) {
+        if (!this.taskNameToBuildTaskMap.containsKey(buildTask.getTaskName())) {
             if (!this.buildTaskSet.contains(buildTask)) {
-                console.log("Registering build task '" + buildTask.getName() + "'");
-                this.taskNameToBuildTaskMap.put(buildTask.getName(), buildTask);
+                console.log("Registering build task '" + buildTask.getTaskName() + "'");
+                this.taskNameToBuildTaskMap.put(buildTask.getTaskName(), buildTask);
                 this.buildTaskSet.add(buildTask);
             } else {
                 throw new Error("Each build task can only be registered once");
             }
         } else {
-            throw new Error("Task by the name of '" + buildTask.getName() + "' already exists");
+            throw new Error("Task by the name of '" + buildTask.getTaskName() + "' already exists");
         }
     },
 
     /**
-     *
+     * @param {string} targetName
+     * @param {function(Error)} callback
      */
-    startBuild: function() {
+    startBuild: function(targetName, callback) {
         if (!this.isStarted()) {
             this.started = true;
             var _this = this;
@@ -313,11 +323,11 @@ var BuildProject = Class.extend(EventDispatcher, {
                 }
             });
             if (this.checkModulesReady()) {
-                this.executeBuild();
+                this.executeBuild(targetName, callback);
             } else {
                 this.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
                     if (_this.checkModulesReady()) {
-                        _this.executeBuild();
+                        _this.executeBuild(targetName, callback);
                     }
                 });
             }
@@ -338,41 +348,47 @@ var BuildProject = Class.extend(EventDispatcher, {
 
     /**
      * @private
+     * @param {string} targetName
+     * @param {function(Error)} callback
      */
-    executeBuild: function() {
+    executeBuild: function(targetName, callback) {
         console.log("Starting build");
-        var targetName = null;
+        var error = null;
         var targetArray = [];
-        if (process.argv.length >= 2) {
-            targetName = process.argv[2];
-        }
         if (targetName) {
             var specifiedTarget = this.getTarget(targetName);
             if (specifiedTarget) {
                 targetArray.push(specifiedTarget);
             } else {
-                throw new Error("No target found by the name '" + targetName + "'");
+                error = new Error("No target found by the name '" + targetName + "'");
             }
         } else {
             targetArray = this.getDefaultTargets();
         }
 
-        if (targetArray.length > 0) {
-            this.executeTargets(targetArray);
+        if (!error) {
+            if (targetArray.length > 0) {
+                this.executeTargets(targetArray, callback);
+            } else {
+                callback(new Error("No build target specified and no default targets found."));
+            }
         } else {
-            throw new Error("No build target specified and no default targets found.");
+            callback(error);
         }
     },
 
     /**
      * @private
      * @param {Array<BuildTarget>} targetArray
+     * @param {function(Error)} callback
      */
-    executeTargets: function(targetArray) {
+    executeTargets: function(targetArray, callback) {
         var _this = this;
-        targetArray.forEach(function(target) {
-            target.execute(_this);
-        });
+        $foreachParallel(targetArray, function(flow, target) {
+            target.execute(_this, function(error) {
+                flow.complete(error);
+            });
+        }).execute(callback);
     }
 });
 

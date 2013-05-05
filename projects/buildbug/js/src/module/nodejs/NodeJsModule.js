@@ -90,17 +90,8 @@ var NodeJsModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var nodejs = this;
-        buildTask('createNodePackage', function(flow, buildProject, properties) {
-            nodejs.createNodePackageTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('packNodePackage', function(flow, buildProject, properties) {
-            nodejs.packNodePackageTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
+        buildTask('createNodePackage', this.createNodePackageTask, this);
+        buildTask('packNodePackage', this.packNodePackageTask, this);
     },
 
     /**
@@ -119,7 +110,8 @@ var NodeJsModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *   sourcePaths: Array.<string>,
      *   testPaths: Array.<string>,
      *   scriptPaths: Array.<string>,
@@ -133,20 +125,20 @@ var NodeJsModule = Class.extend(BuildModule, {
      *       dependencies: Object
      *   },
      *   buildPath: string
-     * }} properties
+     * }
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    createNodePackageTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-
-        var sourcePaths = props.getProperty("sourcePaths");
-        var testPaths = props.getProperty("testPaths");
-        var scriptPaths = props.getProperty("scriptPaths");
-        var binPaths = props.getProperty("binPaths");
-        var staticPaths = props.getProperty("staticPaths");
-        var resourcePaths = props.getProperty("resourcePaths");
-        var packageJson = props.getProperty("packageJson");
-        var buildPath = props.getProperty("buildPath");
+    createNodePackageTask: function(buildProject, properties, callback) {
+        var sourcePaths = properties.getProperty("sourcePaths");
+        var testPaths = properties.getProperty("testPaths");
+        var scriptPaths = properties.getProperty("scriptPaths");
+        var binPaths = properties.getProperty("binPaths");
+        var staticPaths = properties.getProperty("staticPaths");
+        var resourcePaths = properties.getProperty("resourcePaths");
+        var packageJson = properties.getProperty("packageJson");
+        var buildPath = properties.getProperty("buildPath");
 
         var nodePackage = this.generateNodePackage(packageJson, buildPath);
 
@@ -162,7 +154,8 @@ var NodeJsModule = Class.extend(BuildModule, {
     },
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *   packageJson: {
      *       name: string,
      *       version: string,
@@ -170,18 +163,18 @@ var NodeJsModule = Class.extend(BuildModule, {
      *       dependencies: Object
      *   }
      *   packagePath: string
-     * }} properties,
+     * }
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    packNodePackageTask: function(properties, callback) {
+    packNodePackageTask: function(buildProject, properties, callback) {
         var _this = this;
-        var props = this.generateProperties(properties);
-        var packageName = props.getProperty("packageName");
-        var packageVersion = props.getProperty("packageVersion");
-
+        var packageName = properties.getProperty("packageName");
+        var packageVersion = properties.getProperty("packageVersion");
         var nodePackage = this.findNodePackage(packageName, packageVersion);
         var params = {
-            distPath: props.getProperty("distPath")
+            distPath: properties.getProperty("distPath")
         };
 
         if (nodePackage) {

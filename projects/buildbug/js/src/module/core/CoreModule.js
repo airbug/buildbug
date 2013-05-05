@@ -69,12 +69,7 @@ var CoreModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var core = this;
-        buildTask('clean', function(task, buildProject, properties) {
-            core.clean(properties, function(error) {
-                task.complete(error);
-            });
-        });
+        buildTask('clean', this.cleanTask, this);
     },
 
 
@@ -83,31 +78,32 @@ var CoreModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {{
-        *   packageJson: {
+     * Available Properties
+     * {
+     *   packageJson: {
      *       name: string,
      *       version: string,
      *       main: string,
      *       dependencies: Object
      *   }
      *   packagePath: string
-     * }} properties,
-     * @param {function()} callback
+     * }
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
      */
-    clean: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var buildPath = props.getProperty("buildPath");
+    cleanTask: function(buildProject, properties, callback) {
+        var buildPath = properties.getProperty("buildPath");
         BugFs.deleteDirectory(buildPath, function(error) {
             callback(error);
         });
     }
-
-
-    //-------------------------------------------------------------------------------
-    // Private Class Methods
-    //-------------------------------------------------------------------------------
-
 });
+
+
+//-------------------------------------------------------------------------------
+// Annotations
+//-------------------------------------------------------------------------------
 
 annotate(CoreModule).with(
     buildModule("core")

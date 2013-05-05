@@ -80,12 +80,7 @@ var BugUnitModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var bugUnitModule = this;
-        buildTask('startNodeModuleTests', function(flow, buildProject, properties) {
-            bugUnitModule.startNodeModuleTestsTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
+        buildTask('startNodeModuleTests', this.startNodeModuleTestsTask, this);
     },
 
     /**
@@ -103,14 +98,16 @@ var BugUnitModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *      modulePath: (string|Path)
-     * }} properties,
+     * }
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    startNodeModuleTestsTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var modulePath = props.getProperty("modulePath");
+    startNodeModuleTestsTask: function(buildProject, properties, callback) {
+        var modulePath = properties.getProperty("modulePath");
         var modulePathString = modulePath;
 
         if (Class.doesExtend(modulePath, Path)) {

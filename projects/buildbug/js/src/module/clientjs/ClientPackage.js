@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -8,12 +8,15 @@
 
 //@Require('Class')
 //@Require('Obj')
-//@Require('bugboil.BugBoil')
 //@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
 //@Require('buildbug.PackedClientPackage')
 
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 var fstream = require("fstream");
@@ -28,7 +31,6 @@ var tar = require('tar');
 
 var Class =                 bugpack.require('Class');
 var Obj =                   bugpack.require('Obj');
-var BugBoil =               bugpack.require('bugboil.BugBoil');
 var BugFlow =               bugpack.require('bugflow.BugFlow');
 var BugFs =                 bugpack.require('bugfs.BugFs');
 var Path =                  bugpack.require('bugfs.Path');
@@ -39,10 +41,10 @@ var PackedClientPackage =   bugpack.require('buildbug.PackedClientPackage');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $foreachSeries = BugBoil.$foreachSeries;
-var $parallel = BugFlow.$parallel;
-var $series = BugFlow.$series;
-var $task = BugFlow.$task;
+var $foreachSeries =    BugFlow.$foreachSeries;
+var $parallel =         BugFlow.$parallel;
+var $series =           BugFlow.$series;
+var $task =             BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
@@ -196,9 +198,9 @@ var ClientPackage = Class.extend(Obj, {
             $parallel([
                 $task(function(flow) {
                     if (sourcePaths) {
-                       $foreachSeries(sourcePaths, function(boil, sourcePath) {
+                       $foreachSeries(sourcePaths, function(flow, sourcePath) {
                             BugFs.copyDirectoryContents(sourcePath, _this.getJsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
+                                flow.complete(error);
                             });
                         }).execute(function(error) {
                             flow.complete(error);
@@ -209,9 +211,9 @@ var ClientPackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (staticPaths) {
-                        $foreachSeries(staticPaths, function(boil, staticPath) {
+                        $foreachSeries(staticPaths, function(flow, staticPath) {
                             BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
+                                flow.complete(error);
                             });
                         }).execute(function(error) {
                             flow.complete(error);
@@ -219,7 +221,7 @@ var ClientPackage = Class.extend(Obj, {
                     } else {
                         flow.complete();
                     }
-                }),
+                })
             ]),
             $task(function(flow) {
                 _this.validateTemplateExists(function(error) {

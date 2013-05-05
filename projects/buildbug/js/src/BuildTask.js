@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -8,6 +8,11 @@
 
 //@Require('Class')
 //@Require('Obj')
+
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 
@@ -30,7 +35,7 @@ var BuildTask = Class.extend(Obj, {
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(taskName, taskMethod) {
+    _constructor: function(taskName, taskMethod, taskContext) {
 
         this._super();
 
@@ -41,15 +46,21 @@ var BuildTask = Class.extend(Obj, {
 
         /**
          * @private
-         * @type {string}
+         * @type {Object}
          */
-        this.taskName = taskName;
+        this.taskContext = taskContext;
 
         /**
          * @private
          * @type {function()}
          */
         this.taskMethod = taskMethod;
+
+        /**
+         * @private
+         * @type {string}
+         */
+        this.taskName = taskName;
     },
 
 
@@ -58,10 +69,10 @@ var BuildTask = Class.extend(Obj, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {string}
+     * @return {Object}
      */
-    getName: function() {
-        return this.taskName;
+    getTaskContext: function() {
+        return this.taskContext;
     },
 
     /**
@@ -69,6 +80,13 @@ var BuildTask = Class.extend(Obj, {
      */
     getTaskMethod: function() {
         return this.taskMethod;
+    },
+
+    /**
+     * @return {string}
+     */
+    getTaskName: function() {
+        return this.taskName;
     }
 });
 

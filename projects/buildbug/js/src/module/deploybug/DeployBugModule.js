@@ -80,43 +80,12 @@ var DeployBugModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var deployBugModule = this;
-        buildTask('registerDeployBugPackage', function(flow, buildProject, properties){
-            deployBugModule.registerPackageTask(properties, function(error, data){
-                console.log(data);
-                flow.complete(error);
-            });
-        });
-        buildTask('updateDeployBugPackage', function(flow, buildProject, properties){
-            deployBugModule.updatePackageTask(properties, function(error, data){
-                console.log(data);
-                flow.complete(error);
-            });
-        });
-        buildTask('deployDeployBugPackage', function(flow, buildProject, properties){
-            deployBugModule.deployPackageTask(properties, function(error, data){
-                console.log(data);
-                flow.complete(error);
-            });
-        });
-        buildTask('startDeployBugPackage', function(flow, buildProject, properties){
-            deployBugModule.startPackageTask(properties, function(error, data){
-                console.log(data);
-                flow.complete(error);
-            });
-        });
-        buildTask('stopDeployBugPackage', function(flow, buildProject, properties){
-            deployBugModule.stopPackageTask(properties, function(error, data){
-                console.log(data);
-                flow.complete(error);
-            });
-        });
-        buildTask('restartDeployBugPackage', function(flow, buildProject, properties){
-            deployBugModule.deployPackageTask(properties, function(error, data){
-                console.log(data);
-                flow.complete(error);
-            });
-        });
+        buildTask('registerDeployBugPackage', this.registerDeployBugPackageTask, this);
+        buildTask('updateDeployBugPackage', this.updateDeployBugPackageTask, this);
+        buildTask('deployDeployBugPackage', this.deployDeployBugPackageTask, this);
+        buildTask('startDeployBugPackage', this.startDeployBugPackageTask, this);
+        buildTask('stopDeployBugPackage', this.stopDeployBugPackageTask, this);
+        buildTask('restartDeployBugPackage', this.restartDeployBugPackageTask, this);
     },
 
     /**
@@ -134,7 +103,8 @@ var DeployBugModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @params{{
+     * Available Propeties
+     * {
      *  key: string,
      *  descriptionJSON: {
      *      key: string,
@@ -144,20 +114,20 @@ var DeployBugModule = Class.extend(BuildModule, {
      *  },
      *  serverHostName: string,
      *  serverPort: (string|number)
-     * }} properties
+     * }
+     *
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    registerPackageTask: function(properties, callback){
-        //NOTE: SUNG It isn't intuitive that properties needs to be formatted using generateProperties 
-        //NOTE: SUNG and that getters should be used to access the properties inside
-        var props = this.generateProperties(properties);
+    registerDeployBugPackageTask: function(buildProject, properties, callback){
         var serverOptions = {
-            serverHostName: props.getProperty("serverHostName"),
-            serverPort: props.getProperty("serverPort")
+            serverHostName: properties.getProperty("serverHostName"),
+            serverPort: properties.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key"),
-            descriptionJSON: props.getProperty("descriptionJSON")
+            key: properties.getProperty("key"),
+            descriptionJSON: properties.getProperty("descriptionJSON")
         };
         console.log("RegisterPackageTask", "\n ServerOptions:", serverOptions, "\n options:", options)
         deployBugClient.initialize(serverOptions, function(){
@@ -169,22 +139,25 @@ var DeployBugModule = Class.extend(BuildModule, {
     },
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *      key: string,
      *      serverHostName: string,
      *      serverPort: (string, number)
-     * }} properties
+     * }
+     *
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    updatePackageTask: function(properties, callback){
-        var props = this.generateProperties(properties);
+    updateDeployBugPackageTask: function(buildProject, properties, callback){
         var serverOptions = {
-            serverHostName: props.getProperty("serverHostName"),
-            serverPort: props.getProperty("serverPort")
+            serverHostName: properties.getProperty("serverHostName"),
+            serverPort: properties.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key"),
-            descriptionJSON: props.getProperty("descriptionJSON")
+            key: properties.getProperty("key"),
+            descriptionJSON: properties.getProperty("descriptionJSON")
         };
         deployBugClient.initialize(serverOptions, function(){
             console.log("deployBugClient initialized");
@@ -194,26 +167,35 @@ var DeployBugModule = Class.extend(BuildModule, {
         });
     },
 
-    // registerOrUpdateDeployBugPackageTask: function(properties, callback){
-    //     registerd()  notRegistered()
-    // },
+    /**
+     * Available Properties
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    deployDeployBugPackageTask: function(buildProject, properties, callback) {
+        
+    },
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *      key: string,
      *      serverHostName: string,
      *      serverPort: (string, number)
-     * }} properties
+     * }
+     *
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    startPackageTask: function(properties, callback){
-        var props = this.generateProperties(properties);
+    startDeployBugPackageTask: function(buildProject, properties, callback){
         var serverOptions = {
-            serverHostName: props.getProperty("serverHostName"),
-            serverPort: props.getProperty("serverPort")
+            serverHostName: properties.getProperty("serverHostName"),
+            serverPort: properties.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key")
+            key: properties.getProperty("key")
         };
         deployBugClient.initialize(serverOptions, function(){
             console.log("deployBugClient initialized");
@@ -224,21 +206,24 @@ var DeployBugModule = Class.extend(BuildModule, {
     },
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *      key: string,
      *      serverHostName: string,
      *      serverPort: (string, number)
-     * }} properties
+     * }
+     *
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    stopPackageTask: function(properties, callback){
-        var props = this.generateProperties(properties);
+    stopDeployBugPackageTask: function(buildProject, properties, callback){
         var serverOptions = {
-            serverHostName: props.getProperty("serverHostName"),
-            serverPort: props.getProperty("serverPort")
+            serverHostName: properties.getProperty("serverHostName"),
+            serverPort: properties.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key")
+            key: properties.getProperty("key")
         };
         deployBugClient.initialize(serverOptions, function(){
             console.log("deployBugClient initialized");
@@ -249,21 +234,24 @@ var DeployBugModule = Class.extend(BuildModule, {
     },
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *      key: string,
      *      serverHostName: string,
      *      serverPort: (string, number)
-     * }} properties
+     * }
+     *
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    restartPackageTask: function(properties, callback){
-        var props = this.generateProperties(properties);
+    restartDeployBugPackageTask: function(buildProject, properties, callback){
         var serverOptions = {
-            serverHostName: props.getProperty("serverHostName"),
-            serverPort: props.getProperty("serverPort")
+            serverHostName: properties.getProperty("serverHostName"),
+            serverPort: properties.getProperty("serverPort")
         };
         var options = {
-            key: props.getProperty("key")
+            key: properties.getProperty("key")
         };
         deployBugClient.initialize(serverOptions, function(){
             console.log("deployBugClient initialized");
