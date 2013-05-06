@@ -47,7 +47,7 @@ buildProperties({
             bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.9.tgz',
             deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
             "uglify-js": "2.3.x",
-            npm: '1.2.x',
+            npm: '1.2.18',
             tar: 'git://github.com/airbug/node-tar.git#master',
             //tar: '0.1.x',
             fstream: '0.1.x'
