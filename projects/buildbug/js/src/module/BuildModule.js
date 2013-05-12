@@ -9,7 +9,6 @@
 //@Require('Class')
 //@Require('Event')
 //@Require('EventDispatcher')
-//@Require('Properties')
 
 
 //-------------------------------------------------------------------------------
@@ -71,32 +70,12 @@ var BuildModule = Class.extend(EventDispatcher, {
          * @type {boolean}
          */
         this.initailizing = false;
-
-        /**
-         * @private
-         * @type {Properties}
-         */
-        this.properties = new Properties({});
     },
 
 
     //-------------------------------------------------------------------------------
     // Getters and Setters
     //-------------------------------------------------------------------------------
-
-    /**
-     * @return {Properties}
-     */
-    getProperties: function() {
-        return this.properties;
-    },
-
-    /**
-     * @param {Object} propertiesObject
-     */
-    updateProperties: function(propertiesObject) {
-        this.properties.updateProperties(propertiesObject);
-    },
 
     /**
      * @return {boolean}
@@ -158,19 +137,6 @@ var BuildModule = Class.extend(EventDispatcher, {
      */
     enableModule: function() {
         // Override this function
-    },
-
-    /**
-     * @protected
-     * @param {Properties} properties
-     * @return {Properties}
-     */
-    generateProperties: function(properties) {
-        var projectProperties = this.buildProject.getProperties();
-        var moduleProperties = this.getProperties();
-        var finalProperties = new Properties({});
-        finalProperties.merge([properties, moduleProperties, projectProperties]);
-        return finalProperties;
     },
 
     /**

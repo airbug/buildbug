@@ -9,6 +9,7 @@
 //@Require('Class')
 //@Require('Map')
 //@Require('Obj')
+//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('buildbug.BuildModuleScan')
 //@Require('buildbug.BuildParallel')
@@ -25,7 +26,6 @@
 
 var bugpack = require('bugpack').context();
 var child_process = require('child_process');
-var path = require('path');
 
 
 //-------------------------------------------------------------------------------
@@ -35,6 +35,7 @@ var path = require('path');
 var Class =             bugpack.require('Class');
 var Map =               bugpack.require('Map');
 var Obj =               bugpack.require('Obj');
+var BugFlow =           bugpack.require('bugflow.BugFlow');
 var BugFs =             bugpack.require('bugfs.BugFs');
 var BuildModuleScan =   bugpack.require('buildbug.BuildModuleScan');
 var BuildParallel =     bugpack.require('buildbug.BuildParallel');
@@ -43,6 +44,14 @@ var BuildSeries =       bugpack.require('buildbug.BuildSeries');
 var BuildTarget =       bugpack.require('buildbug.BuildTarget');
 var BuildTask =         bugpack.require('buildbug.BuildTask');
 var TargetTask =        bugpack.require('buildbug.TargetTask');
+
+
+//-------------------------------------------------------------------------------
+// Simplify References
+//-------------------------------------------------------------------------------
+
+var $series = BugFlow.$series;
+var $task =     BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
@@ -91,10 +100,11 @@ BuildBug.buildTarget = function(targetName) {
  * @static
  * @param {string} taskName
  * @param {function()} taskFunction
+ * @param {Object} taskContext
  * @return {BuildTask}
  */
-BuildBug.buildTask = function(taskName, taskFunction) {
-    var buildTask = new BuildTask(taskName, taskFunction);
+BuildBug.buildTask = function(taskName, taskFunction, taskContext) {
+    var buildTask = new BuildTask(taskName, taskFunction, taskContext);
     BuildBug.buildProject.registerTask(buildTask);
     return buildTask;
 };
@@ -162,47 +172,58 @@ BuildBug.targetTask = function(taskName, proto) {
 
 /**
  * @static
- * @private
+ * @param {string} buildPath
+ * @param {string} targetName
+ * @param {function(Error)} callback
  */
-BuildBug.bootstrap = function() {
+BuildBug.build = function(buildPath, targetName, callback) {
     var buildModuleScan = new BuildModuleScan(this.buildProject);
     buildModuleScan.scan();
 
-    //TODO BRN: Clean up this code using FlowBug
-    var currentDir = process.cwd();
-    var child = child_process.exec('npm link buildbug', {cwd: currentDir, env: process.env},
-        function (error, stdout, stderr) {
-            if (error !== null) {
-                console.log('stdout: ' + stdout);
-                console.log('stderr: ' + stderr);
-                console.log(error);
-                console.log(error.stack);
-                process.exit(1);
-                return;
-            }
+    $series([
+        $task(function(flow) {
+            child_process.exec('npm link buildbug', {cwd: buildPath, env: process.env}, function (error, stdout, stderr) {
+                console.log(stderr);
+                flow.complete(error);
+            });
+        }),
+        $task(function(flow) {
+            var propertiesPath= BugFs.joinPaths([buildPath, "buildbug.json"]);
+            propertiesPath.exists(function(exists) {
+                if (exists) {
+                    propertiesPath.readFile('utf8', function(error, data) {
+                        if (!error) {
+                            var properties = JSON.parse(data);
+                            BuildBug.buildProperties(properties);
+                            flow.complete();
+                        } else {
+                            flow.error(error);
+                        }
+                    });
+                } else {
+                    flow.complete();
+                }
+            });
+        }),
+        $task(function(flow) {
+            var buildFilePath = BugFs.joinPaths([buildPath, "buildbug.js"]);
+            buildFilePath.exists(function(exists) {
+                if (exists) {
+                    require(buildFilePath.getAbsolutePath());
+                    // NOTE BRN: By using a setTimeout here we allow the buildbug script to declare all of its tasks and perform all
+                    // of its setup before we begin executing the build.
 
-            var propertiesPathString = currentDir + path.sep + "buildbug.json";
-            if (BugFs.existsSync(propertiesPathString)) {
-                var propertiesJson = BugFs.readFileSync(propertiesPathString, 'utf8');
-                var properties = JSON.parse(propertiesJson);
-                BuildBug.buildProperties(properties);
-            }
-
-            var buildFilePathString = currentDir +  path.sep + "buildbug.js";
-            if (BugFs.existsSync(buildFilePathString)) {
-                require(buildFilePathString);
-
-                // NOTE BRN: By using a setTimeout here we allow the buildbug script to declare all of its tasks and perform all
-                // of its setup before we begin executing the build.
-
-                setTimeout(function() {
-                    BuildBug.buildProject.startBuild();
-                }, 0);
-            } else {
-                throw new Error("no buildbug.js file in this dir");
-            }
-        }
-    );
+                    setTimeout(function() {
+                        BuildBug.buildProject.startBuild(targetName, function(error) {
+                            flow.complete(error);
+                        });
+                    }, 0);
+                } else {
+                    flow.error(new Error("no buildbug.js file in this dir"));
+                }
+            });
+        })
+    ]).execute(callback);
 };
 
 /**

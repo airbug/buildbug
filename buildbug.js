@@ -36,7 +36,7 @@ var nodejs      = enableModule('nodejs');
 buildProperties({
     packageJson: {
         name: "buildbug",
-        version: "0.0.13",
+        version: "0.0.14",
         main: "./lib/buildbug-module.js",
         bin: "bin/buildbug",
         dependencies: {
@@ -44,9 +44,10 @@ buildProperties({
             //bugjar: 'https://s3.amazonaws.com/bugjars/bugjar-0.0.1.tgz',
             "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.5.tgz',
             bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.5.tgz',
-            bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.8.tgz',
+            bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.9.tgz',
             deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
-            npm: '1.2.x',
+            "uglify-js": "2.3.x",
+            npm: '1.2.18',
             tar: 'git://github.com/airbug/node-tar.git#master',
             //tar: '0.1.x',
             fstream: '0.1.x'
@@ -54,19 +55,22 @@ buildProperties({
     },
     sourcePaths: [
         '../bugjs/projects/aws/js/src',
-        '../bugjs/projects/bugjs/js/src',
         '../bugjs/projects/annotate/js/src',
-        '../bugjs/projects/bugboil/js/src',
+        '../bugjs/projects/bugcli/js/src',
         '../bugjs/projects/bugflow/js/src',
         '../bugjs/projects/bugfs/js/src',
+        '../bugjs/projects/bugjs/js/src',
         '../bugjs/projects/bugtrace/js/src',
         "../bugunit/projects/bugunit/js/src",
         './projects/buildbug/js/src'
     ],
     scriptPaths: [
-        "../bugunit/projects/bugunit/js/scripts"
+        "../bugunit/projects/bugunit/js/scripts",
+        "./projects/buildbug/js/scripts"
     ],
     testPaths: [
+        "../bugjs/projects/bugcli/js/test",
+        "../bugjs/projects/bugflow/js/test",
         "../bugjs/projects/bugjs/js/test"
     ],
     binPaths: [

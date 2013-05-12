@@ -8,7 +8,6 @@
 
 //@Require('Class')
 //@Require('Obj')
-//@Require('bugboil.BugBoil')
 //@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
@@ -30,7 +29,6 @@ var path = require('path');
 
 var Class =             bugpack.require('Class');
 var Obj =               bugpack.require('Obj');
-var BugBoil =           bugpack.require('bugboil.BugBoil');
 var BugFlow =           bugpack.require('bugflow.BugFlow');
 var BugFs =             bugpack.require('bugfs.BugFs');
 var Path =              bugpack.require('bugfs.Path');
@@ -41,10 +39,10 @@ var PackedNodePackage = bugpack.require('buildbug.PackedNodePackage');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $foreachSeries = BugBoil.$foreachSeries;
-var $parallel = BugFlow.$parallel;
-var $series = BugFlow.$series;
-var $task = BugFlow.$task;
+var $foreachSeries =    BugFlow.$foreachSeries;
+var $parallel =         BugFlow.$parallel;
+var $series =           BugFlow.$series;
+var $task =             BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
@@ -236,9 +234,9 @@ var NodePackage = Class.extend(Obj, {
             $parallel([
                 $task(function(flow) {
                     if (binPaths) {
-                        $foreachSeries(binPaths, function(boil, binPath) {
+                        $foreachSeries(binPaths, function(flow, binPath) {
                             BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
+                                flow.complete(error);
                             });
                         }).execute(function(error) {
                             flow.complete(error);
@@ -248,9 +246,9 @@ var NodePackage = Class.extend(Obj, {
                     }
                 }),
                 $task(function(flow) {
-                    $foreachSeries(sourcePaths, function(boil, sourcePath) {
+                    $foreachSeries(sourcePaths, function(flow, sourcePath) {
                         BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                            boil.bubble(error);
+                            flow.complete(error);
                         });
                     }).execute(function(error) {
                         flow.complete(error);
@@ -258,9 +256,9 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (testPaths) {
-                        $foreachSeries(testPaths, function(boil, testPath) {
+                        $foreachSeries(testPaths, function(flow, testPath) {
                             BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
+                                flow.complete(error);
                             });
                         }).execute(function(error) {
                             flow.complete(error);
@@ -271,9 +269,9 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (scriptPaths) {
-                        $foreachSeries(scriptPaths, function(boil, scriptPath) {
+                        $foreachSeries(scriptPaths, function(flow, scriptPath) {
                             BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
+                                flow.complete(error);
                             });
                         }).execute(function(error) {
                             flow.complete(error);
@@ -284,9 +282,9 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (staticPaths) {
-                        $foreachSeries(staticPaths, function(boil, staticPath) {
+                        $foreachSeries(staticPaths, function(flow, staticPath) {
                             BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
+                                flow.complete(error);
                             });
                         }).execute(function(error) {
                             flow.complete(error);
@@ -297,9 +295,9 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (resourcePaths) {
-                        $foreachSeries(resourcePaths, function(boil, resourcePath) {
+                        $foreachSeries(resourcePaths, function(flow, resourcePath) {
                             BugFs.copyDirectoryContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                boil.bubble(error);
+                                flow.complete(error);
                             });
                         }).execute(function(error) {
                                 flow.complete(error);

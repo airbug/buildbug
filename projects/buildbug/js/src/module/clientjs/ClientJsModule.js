@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -15,6 +15,10 @@
 //@Require('buildbug.BuildModuleAnnotation')
 //@Require('buildbug.ClientPackage')
 
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 
@@ -36,9 +40,9 @@ var ClientPackage =         bugpack.require('buildbug.ClientPackage');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate = Annotate.annotate;
-var buildModule = BuildModuleAnnotation.buildModule;
-var buildTask = BuildBug.buildTask;
+var annotate =      Annotate.annotate;
+var buildModule =   BuildModuleAnnotation.buildModule;
+var buildTask =     BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -79,21 +83,18 @@ var ClientJsModule = Class.extend(BuildModule, {
     // BuildModule Implementation
     //-------------------------------------------------------------------------------
 
+    /**
+     * 
+     */
     enableModule: function() {
         this._super();
-        var _this = this;
-        buildTask('createClientPackage', function(flow, buildProject, properties) {
-            _this.createClientPackageTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('packClientPackage', function(flow, buildProject, properties) {
-            _this.packClientPackageTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
+        buildTask('createClientPackage', this.createClientPackageTask, this);
+        buildTask('packClientPackage', this.packClientPackageTask, this);
     },
 
+    /**
+     * @return {boolean}
+     */
     initializeModule: function() {
         this._super();
         return true;
@@ -104,7 +105,8 @@ var ClientJsModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *   buildPath: string,
      *   clientJson: {
      *       name: string,
@@ -117,15 +119,16 @@ var ClientJsModule = Class.extend(BuildModule, {
      *   sourcePaths: Array.<string>,
      *   staticPaths: Array.<string>
 
-     * }} properties
+     * }
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    createClientPackageTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var clientJson = props.getProperty("clientJson");
-        var buildPath = props.getProperty("buildPath");
-        var sourcePaths = props.getProperty("sourcePaths");
-        var staticPaths = props.getProperty("staticPaths");
+    createClientPackageTask: function(buildProject, properties, callback) {
+        var clientJson = properties.getProperty("clientJson");
+        var buildPath = properties.getProperty("buildPath");
+        var sourcePaths = properties.getProperty("sourcePaths");
+        var staticPaths = properties.getProperty("staticPaths");
         var clientPackage = this.generateClientPackage(clientJson, buildPath);
 
         var params = {
@@ -137,7 +140,8 @@ var ClientJsModule = Class.extend(BuildModule, {
     },
 
     /**
-     * @param {{
+     * Available Properties
+     * {
      *   clientJson: {
      *       name: string,
      *       version: string,
@@ -147,14 +151,15 @@ var ClientJsModule = Class.extend(BuildModule, {
      *       url: string
      *   }
      *   packagePath: string
-     * }} properties,
+     * }
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    packClientPackageTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var packageName = props.getProperty("packageName");
-        var packageVersion = props.getProperty("packageVersion");
-        var distPath = props.getProperty("distPath");
+    packClientPackageTask: function(buildProject, properties, callback) {
+        var packageName = properties.getProperty("packageName");
+        var packageVersion = properties.getProperty("packageVersion");
+        var distPath = properties.getProperty("distPath");
         var clientPackage = this.findClientPackage(packageName, packageVersion);
 
         var _this = this;

@@ -96,29 +96,24 @@ var BuildTarget = Class.extend(Obj, {
 
     /**
      * @param {BuildProject} buildProject
+     * @param {function(Error)} callback
      */
-    execute: function(buildProject) {
+    execute: function(buildProject, callback) {
         var _this = this;
         if (this.buildTargetFlow) {
             console.log("Executing target " + this.name);
             var flow = this.buildTargetFlow.generateFlow(buildProject);
             flow.execute([buildProject], function(error) {
-
-                //TODO BRN: Should we just exit the program here if there's an error or should we send this back up the chain further?
-
                 if (error) {
-                    console.log("An error occurred during the build.");
-                    console.log(error);
-                    console.log(error.stack);
-                    process.exit(1);
-                    return;
+                    console.log("An error occurred while executing target '" + _this.name + "'");
                 } else {
                     console.log("Completed target " + _this.name);
                 }
+                callback(error);
             });
         } else {
-            throw new Error("You must specify a buildFlow for each build target. Do this by calling the buildFlow " +
-                "method and passing in a BuildFlow");
+            callback(new Error("You must specify a buildFlow for each build target. Do this by calling the buildFlow " +
+                "method and passing in a BuildFlow"));
         }
     },
 

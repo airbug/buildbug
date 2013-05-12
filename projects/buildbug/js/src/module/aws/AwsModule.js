@@ -94,17 +94,8 @@ var AwsModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var awsModule = this;
-        buildTask('s3EnsureBucket', function(flow, buildProject, properties) {
-            awsModule.s3EnsureBucketTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('s3PutFile', function(flow, buildProject, properties) {
-            awsModule.s3PutFileTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
+        buildTask('s3EnsureBucket', this.s3EnsureBucketTask, this);
+        buildTask('s3PutFile', this.s3PutFileTask, this);
     },
 
     /**
@@ -132,15 +123,14 @@ var AwsModule = Class.extend(BuildModule, {
      *   sourcePaths: Array.<string>,
      *   bucket: string
      * }
-     *
+     * @param {BuildProject} buildProject
      * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    s3EnsureBucketTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var awsConfig = new AwsConfig(props.getProperty("awsConfig"));
+    s3EnsureBucketTask: function(buildProject, properties, callback) {
+        var awsConfig = new AwsConfig(properties.getProperty("awsConfig"));
         var s3Bucket = new S3Bucket({
-            name: props.getProperty("bucket")
+            name: properties.getProperty("bucket")
         });
         var s3Api = new S3Api(awsConfig);
         s3Api.ensureBucket(s3Bucket, function(error) {
@@ -163,19 +153,18 @@ var AwsModule = Class.extend(BuildModule, {
      *     },
      *     sourcePaths: Array.<string>
      * }
-     *
+     * @param {BuildProject} buildProject
      * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    s3PutFileTask: function(properties, callback) {
+    s3PutFileTask: function(buildProject, properties, callback) {
         var _this = this;
-        var props = this.generateProperties(properties);
-        var awsConfig = new AwsConfig(props.getProperty("awsConfig"));
-        var filePath = BugFs.path(props.getProperty("file"));
+        var awsConfig = new AwsConfig(properties.getProperty("awsConfig"));
+        var filePath = BugFs.path(properties.getProperty("file"));
         var s3Bucket = new S3Bucket({
-            name: props.getProperty("bucket")
+            name: properties.getProperty("bucket")
         });
-        var options = props.getProperty("options");
+        var options = properties.getProperty("options");
         var s3Api = new S3Api(awsConfig);
         $if (function(flow) {
                 filePath.exists(function(exists) {

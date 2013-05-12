@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -12,6 +12,10 @@
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
 
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 var bugjar = require('bugjar');
@@ -68,52 +72,15 @@ var BugJarModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        var bugPack = this;
-        buildTask('createBugJar', function(flow, buildProject, properties) {
-            bugPack.createBugJarTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('deleteBugJar', function(flow, buildProject, properties) {
-            bugPack.deleteBugJarTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('emptyBugJar', function(flow, buildProject, properties) {
-            bugPack.emptyBugJarTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('fillBugJar', function(flow, buildProject, properties) {
-            bugPack.fillBugJarTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('getBugJarFromShelf', function(flow, buildProject, properties) {
-            bugPack.getBugJarFromShelfTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('putBugJarOnShelf', function(flow, buildProject, properties) {
-            bugPack.putBugJarOnShelfTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('removeBugJarFromShelf', function(flow, buildProject, properties) {
-            bugPack.removeBugJarFromShelfTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('createShelf', function(flow, buildProject, properties) {
-            bugPack.createShelfTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
-        buildTask('deleteShelf', function(flow, buildProject, properties) {
-            bugPack.deleteShelfTask(properties, function(error) {
-                flow.complete(error);
-            });
-        });
+        buildTask('createBugJar', this.createBugJarTask, this);
+        buildTask('deleteBugJar', this.deleteBugJarTask, this);
+        buildTask('emptyBugJar', this.emptyBugJarTask, this);
+        buildTask('fillBugJar', this.fillBugJarTask, this);
+        buildTask('getBugJarFromShelf', this.getBugJarFromShelfTask, this);
+        buildTask('putBugJarOnShelf', this.putBugJarOnShelfTask, this);
+        buildTask('removeBugJarFromShelf', this.removeBugJarFromShelfTask, this);
+        buildTask('createShelf', this.createShelfTask, this);
+        buildTask('deleteShelf', this.deleteShelfTask, this);
     },
 
     /**
@@ -131,25 +98,88 @@ var BugJarModule = Class.extend(BuildModule, {
     //-------------------------------------------------------------------------------
 
     /**
-     * @param {{
-     *   bugjarJson: {
-     *       name: string,
-     *       version: string,
-     *       dependencies: Object
-     *   },
-     *   sourcePaths: Array.<string>
-     * }} properties,
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
      * @param {function(Error)} callback
      */
-    createBugJarTask: function(properties, callback) {
-        var props = this.generateProperties(properties);
-        var sourcePaths = props.getProperty("sourcePaths");
-        var bugjarJson = props.getProperty("bugjarJson");
-        var linkSources = props.getProperty("linkSources");
+    createBugJarTask: function(buildProject, properties, callback) {
+        var sourcePaths = properties.getProperty("sourcePaths");
+        var bugjarJson = properties.getProperty("bugjarJson");
+        var linkSources = properties.getProperty("linkSources");
 
-        nodePackage.buildPackage(sourcePaths, callback);
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    deleteBugJarTask: function(buildProject, properties, callback) {
+
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    emptyBugJarTask: function(buildProject, properties, callback) {
+
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    fillBugJarTask: function(buildProject, properties, callback) {
+
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    getBugJarFromShelfTask: function(buildProject, properties, callback) {
+
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    putBugJarOnShelfTask: function(buildProject, properties, callback) {
+
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    removeBugJarFromShelfTask: function(buildProject, properties, callback) {
+
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    createShelfTask: function(buildProject, properties, callback) {
+
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {Properties} properties
+     * @param {function(Error)} callback
+     */
+    deleteShelfTask: function(buildProject, properties, callback) {
+
     }
-
 
     //-------------------------------------------------------------------------------
     // Private Class Methods
