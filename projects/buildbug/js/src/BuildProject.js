@@ -191,7 +191,7 @@ var BuildProject = Class.extend(EventDispatcher, {
             if (!buildModule.isEnabled()) {
                 console.log("Enabling module '" + moduleName + "'");
                 this.numberEnabledModules++;
-                buildModule.setParentDispatcher(this);
+                buildModule.setParentPropagator(this);
                 buildModule.enable(this);
                 buildModule.initialize();
             }

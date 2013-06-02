@@ -33,6 +33,7 @@ var $task =     BugFlow.$task;
 // Bootstrap
 //-------------------------------------------------------------------------------
 
+var startTime = (new Date()).getTime();
 var buildBugCli = new BuildBugCli();
 $series([
     $task(function(flow) {
@@ -47,7 +48,8 @@ $series([
     })
 ]).execute(function(error) {
     if (!error) {
-        console.log("buildbug ran successfully");
+        var endTime = (new Date()).getTime();
+        console.log("buildbug ran successfully in " + (endTime - startTime) + " ms");
     } else {
         console.log(error);
         console.log(error.stack);

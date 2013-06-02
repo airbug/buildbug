@@ -29,6 +29,7 @@ var clientjs    = enableModule('clientjs');
 var core        = enableModule('core');
 var nodejs      = enableModule('nodejs');
 
+
 //-------------------------------------------------------------------------------
 // Declare Properties
 //-------------------------------------------------------------------------------
@@ -36,8 +37,8 @@ var nodejs      = enableModule('nodejs');
 buildProperties({
     packageJson: {
         name: "buildbug",
-        version: "0.0.14",
-        main: "./lib/buildbug-module.js",
+        version: "0.0.15",
+        main: "./scripts/buildbug-module.js",
         bin: "bin/buildbug",
         dependencies: {
             "aws-sdk": "0.9.x",
@@ -61,6 +62,7 @@ buildProperties({
         '../bugjs/projects/bugfs/js/src',
         '../bugjs/projects/bugjs/js/src',
         '../bugjs/projects/bugtrace/js/src',
+        "../bugunit/projects/bugdouble/js/src",
         "../bugunit/projects/bugunit/js/src",
         './projects/buildbug/js/src'
     ],
