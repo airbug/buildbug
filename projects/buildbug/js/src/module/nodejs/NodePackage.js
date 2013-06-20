@@ -39,7 +39,7 @@ var PackedNodePackage = bugpack.require('buildbug.PackedNodePackage');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $foreachSeries =    BugFlow.$foreachSeries;
+var $forEachSeries =    BugFlow.$forEachSeries;
 var $parallel =         BugFlow.$parallel;
 var $series =           BugFlow.$series;
 var $task =             BugFlow.$task;
@@ -234,7 +234,7 @@ var NodePackage = Class.extend(Obj, {
             $parallel([
                 $task(function(flow) {
                     if (binPaths) {
-                        $foreachSeries(binPaths, function(flow, binPath) {
+                        $forEachSeries(binPaths, function(flow, binPath) {
                             BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 flow.complete(error);
                             });
@@ -246,7 +246,7 @@ var NodePackage = Class.extend(Obj, {
                     }
                 }),
                 $task(function(flow) {
-                    $foreachSeries(sourcePaths, function(flow, sourcePath) {
+                    $forEachSeries(sourcePaths, function(flow, sourcePath) {
                         BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                             flow.complete(error);
                         });
@@ -256,7 +256,7 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (testPaths) {
-                        $foreachSeries(testPaths, function(flow, testPath) {
+                        $forEachSeries(testPaths, function(flow, testPath) {
                             BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 flow.complete(error);
                             });
@@ -269,7 +269,7 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (scriptPaths) {
-                        $foreachSeries(scriptPaths, function(flow, scriptPath) {
+                        $forEachSeries(scriptPaths, function(flow, scriptPath) {
                             BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 flow.complete(error);
                             });
@@ -282,7 +282,7 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (staticPaths) {
-                        $foreachSeries(staticPaths, function(flow, staticPath) {
+                        $forEachSeries(staticPaths, function(flow, staticPath) {
                             BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 flow.complete(error);
                             });
@@ -295,7 +295,7 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (resourcePaths) {
-                        $foreachSeries(resourcePaths, function(flow, resourcePath) {
+                        $forEachSeries(resourcePaths, function(flow, resourcePath) {
                             BugFs.copyDirectoryContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 flow.complete(error);
                             });

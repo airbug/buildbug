@@ -41,7 +41,7 @@ var PackedClientPackage =   bugpack.require('buildbug.PackedClientPackage');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $foreachSeries =    BugFlow.$foreachSeries;
+var $forEachSeries =    BugFlow.$forEachSeries;
 var $parallel =         BugFlow.$parallel;
 var $series =           BugFlow.$series;
 var $task =             BugFlow.$task;
@@ -198,7 +198,7 @@ var ClientPackage = Class.extend(Obj, {
             $parallel([
                 $task(function(flow) {
                     if (sourcePaths) {
-                       $foreachSeries(sourcePaths, function(flow, sourcePath) {
+                       $forEachSeries(sourcePaths, function(flow, sourcePath) {
                             BugFs.copyDirectoryContents(sourcePath, _this.getJsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 flow.complete(error);
                             });
@@ -211,7 +211,7 @@ var ClientPackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     if (staticPaths) {
-                        $foreachSeries(staticPaths, function(flow, staticPath) {
+                        $forEachSeries(staticPaths, function(flow, staticPath) {
                             BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
                                 flow.complete(error);
                             });

@@ -43,7 +43,7 @@ var BuildTask =         bugpack.require('buildbug.BuildTask');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $foreachParallel = BugFlow.$foreachParallel;
+var $forEachParallel = BugFlow.$forEachParallel;
 
 
 //-------------------------------------------------------------------------------
@@ -384,7 +384,7 @@ var BuildProject = Class.extend(EventDispatcher, {
      */
     executeTargets: function(targetArray, callback) {
         var _this = this;
-        $foreachParallel(targetArray, function(flow, target) {
+        $forEachParallel(targetArray, function(flow, target) {
             target.execute(_this, function(error) {
                 flow.complete(error);
             });
