@@ -37,7 +37,7 @@ var nodejs      = enableModule('nodejs');
 buildProperties({
     packageJson: {
         name: "buildbug",
-        version: "0.0.15",
+        version: "0.0.16",
         main: "./scripts/buildbug-module.js",
         bin: "bin/buildbug",
         dependencies: {
@@ -45,7 +45,7 @@ buildProperties({
             //bugjar: 'https://s3.amazonaws.com/bugjars/bugjar-0.0.1.tgz',
             "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.5.tgz',
             bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.5.tgz',
-            bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.9.tgz',
+            bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.10.tgz',
             deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
             "uglify-js": "2.3.x",
             npm: '1.2.18',
