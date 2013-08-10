@@ -1,13 +1,19 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
 
-//@Export('BuildModuleAnnotation')
+//@Export('BuildModuleScan')
 
 //@Require('Class')
-//@Require('annotate.Annotation')
+//@Require('Obj')
+//@Require('bugmeta.BugMeta')
+
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
 
 var bugpack = require('bugpack').context();
 
@@ -16,23 +22,24 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class = bugpack.require('Class');
-
-var Annotation = bugpack.require('annotate.Annotation');
+var Class   = bugpack.require('Class');
+var Obj     = bugpack.require('Obj');
+var BugMeta = bugpack.require('bugmeta.BugMeta');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildModuleAnnotation = Class.extend(Annotation, {
+var BuildModuleScan = Class.extend(Obj, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(buildModuleName) {
-        this._super('BuildModule');
+    _constructor: function(buildProject) {
+
+        this._super();
 
 
         //-------------------------------------------------------------------------------
@@ -41,40 +48,37 @@ var BuildModuleAnnotation = Class.extend(Annotation, {
 
         /**
          * @private
-         * @type {string}
+         * @type {BuildProject}
          */
-        this.buildModuleName = buildModuleName;
+        this.buildProject = buildProject;
     },
 
 
     //-------------------------------------------------------------------------------
-    // Getters and Setters
+    // Public Class Methods
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {string}
+     *
      */
-    getName: function() {
-        return this.buildModuleName;
+    scan: function() {
+        var _this                   = this;
+        var bugmeta                 = BugMeta.context();
+        var buildModuleAnnotations  = bugmeta.getAnnotationsByType("BuildModule");
+        if (buildModuleAnnotations) {
+            buildModuleAnnotations.forEach(function(annotation) {
+                var buildModuleClass = annotation.getReference();
+                var buildModuleName = annotation.getName();
+                var buildModule = new buildModuleClass();
+                _this.buildProject.registerModule(buildModuleName, buildModule);
+            });
+        }
     }
 });
-
-
-//-------------------------------------------------------------------------------
-// Static Methods
-//-------------------------------------------------------------------------------
-
-/**
- * @param {string} buildModuleName
- * @return {BuildModuleAnnotation}
- */
-BuildModuleAnnotation.buildModule = function(buildModuleName) {
-    return new BuildModuleAnnotation(buildModuleName);
-};
 
 
 //-------------------------------------------------------------------------------
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export('buildbug.BuildModuleAnnotation', BuildModuleAnnotation);
+bugpack.export('buildbug.BuildModuleScan', BuildModuleScan);

@@ -9,9 +9,9 @@
 
 //@Require('Class')
 //@Require('TypeUtil')
-//@Require('annotate.Annotate')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
+//@Require('bugmeta.BugMeta')
 //@Require('bugtrace.BugTrace')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
@@ -22,34 +22,34 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var bugpack_registry = require('bugpack-registry');
-var path = require('path');
+var bugpack                 = require('bugpack').context();
+var bugpack_registry        = require('bugpack-registry');
+var path                    = require('path');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var TypeUtil =              bugpack.require('TypeUtil');
-var Annotate =              bugpack.require('annotate.Annotate');
-var BugFs =                 bugpack.require('bugfs.BugFs');
-var Path =                  bugpack.require('bugfs.Path');
-var BugTrace =              bugpack.require('bugtrace.BugTrace');
-var BuildBug =              bugpack.require('buildbug.BuildBug');
-var BuildModule =           bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+var Class                   = bugpack.require('Class');
+var TypeUtil                = bugpack.require('TypeUtil');
+var BugFs                   = bugpack.require('bugfs.BugFs');
+var Path                    = bugpack.require('bugfs.Path');
+var BugMeta                 = bugpack.require('bugmeta.BugMeta');
+var BugTrace                = bugpack.require('bugtrace.BugTrace');
+var BuildBug                = bugpack.require('buildbug.BuildBug');
+var BuildModule             = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate = Annotate.annotate;
-var buildModule = BuildModuleAnnotation.buildModule;
-var buildTask = BuildBug.buildTask;
-var $traceWithError = BugTrace.$traceWithError;
+var bugmeta                 = BugMeta.context();
+var buildModule             = BuildModuleAnnotation.buildModule;
+var buildTask               = BuildBug.buildTask;
+var $traceWithError         = BugTrace.$traceWithError;
 
 
 //-------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ var BugPackModule = Class.extend(BuildModule, {
      *   sourceRoot: [string]
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     generateBugPackRegistryTask: function(buildProject, properties, callback) {
@@ -156,7 +156,12 @@ var BugPackModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(BugPackModule).with(
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
+
+bugmeta.annotate(BugPackModule).with(
     buildModule("bugpack")
 );
 

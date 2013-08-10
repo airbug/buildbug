@@ -4,11 +4,10 @@
 
 //@Package('buildbug')
 
-//@Export('BuildModuleScan')
+//@Export('BuildModuleAnnotation')
 
 //@Require('Class')
-//@Require('Obj')
-//@Require('annotate.Annotate')
+//@Require('bugmeta.Annotation')
 
 var bugpack = require('bugpack').context();
 
@@ -18,23 +17,22 @@ var bugpack = require('bugpack').context();
 //-------------------------------------------------------------------------------
 
 var Class = bugpack.require('Class');
-var Obj = bugpack.require('Obj');
-var Annotate = bugpack.require('annotate.Annotate');
+
+var Annotation = bugpack.require('bugmeta.Annotation');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BuildModuleScan = Class.extend(Obj, {
+var BuildModuleAnnotation = Class.extend(Annotation, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function(buildProject) {
-
-        this._super();
+    _constructor: function(buildModuleName) {
+        this._super('BuildModule');
 
 
         //-------------------------------------------------------------------------------
@@ -43,36 +41,40 @@ var BuildModuleScan = Class.extend(Obj, {
 
         /**
          * @private
-         * @type {BuildProject}
+         * @type {string}
          */
-        this.buildProject = buildProject;
+        this.buildModuleName = buildModuleName;
     },
 
 
     //-------------------------------------------------------------------------------
-    // Public Class Methods
+    // Getters and Setters
     //-------------------------------------------------------------------------------
 
     /**
-     *
+     * @return {string}
      */
-    scan: function() {
-        var _this = this;
-        var buildModuleAnnotations = Annotate.getAnnotationsByType("BuildModule");
-        if (buildModuleAnnotations) {
-            buildModuleAnnotations.forEach(function(annotation) {
-                var buildModuleClass = annotation.getReference();
-                var buildModuleName = annotation.getName();
-                var buildModule = new buildModuleClass();
-                _this.buildProject.registerModule(buildModuleName, buildModule);
-            });
-        }
+    getName: function() {
+        return this.buildModuleName;
     }
 });
+
+
+//-------------------------------------------------------------------------------
+// Static Methods
+//-------------------------------------------------------------------------------
+
+/**
+ * @param {string} buildModuleName
+ * @return {BuildModuleAnnotation}
+ */
+BuildModuleAnnotation.buildModule = function(buildModuleName) {
+    return new BuildModuleAnnotation(buildModuleName);
+};
 
 
 //-------------------------------------------------------------------------------
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export('buildbug.BuildModuleScan', BuildModuleScan);
+bugpack.export('buildbug.BuildModuleAnnotation', BuildModuleAnnotation);

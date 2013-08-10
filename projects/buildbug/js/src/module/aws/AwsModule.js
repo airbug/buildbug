@@ -8,10 +8,15 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('Map')
 //@Require('Obj')
-//@Require('annotate.Annotate')
+//@Require('TypeUtil')
+//@Require('aws.AwsConfig')
+//@Require('aws.S3Api')
+//@Require('aws.S3Bucket')
 //@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
+//@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
@@ -21,40 +26,39 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var AWS = require('aws-sdk');
-var bugpack = require('bugpack').context();
+var AWS                     = require('aws-sdk');
+var bugpack                 = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var Obj =                   bugpack.require('Obj');
-var Map =                   bugpack.require('Map');
-var TypeUtil =              bugpack.require('TypeUtil');
-var Annotate =              bugpack.require('annotate.Annotate');
-var AwsConfig =             bugpack.require('aws.AwsConfig');
-var S3Api =                 bugpack.require('aws.S3Api');
-var S3Bucket =              bugpack.require('aws.S3Bucket');
-var BugFlow =               bugpack.require('bugflow.BugFlow');
-var BugFs =                 bugpack.require('bugfs.BugFs');
-var BuildBug =              bugpack.require('buildbug.BuildBug');
-var BuildModule =           bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+var Class                   = bugpack.require('Class');
+var Map                     = bugpack.require('Map');
+var Obj                     =  bugpack.require('Obj');
+var TypeUtil                = bugpack.require('TypeUtil');
+var AwsConfig               = bugpack.require('aws.AwsConfig');
+var S3Api                   = bugpack.require('aws.S3Api');
+var S3Bucket                = bugpack.require('aws.S3Bucket');
+var BugFlow                 = bugpack.require('bugflow.BugFlow');
+var BugFs                   = bugpack.require('bugfs.BugFs');
+var BugMeta                 = bugpack.require('bugmeta.BugMeta');
+var BuildBug                = bugpack.require('buildbug.BuildBug');
+var BuildModule             = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate = Annotate.annotate;
-var buildModule = BuildModuleAnnotation.buildModule;
-var buildTask = BuildBug.buildTask;
-
-var $if = BugFlow.$if;
-var $series = BugFlow.$series;
-var $task = BugFlow.$task;
+var bugmeta                 = BugMeta.context();
+var buildModule             = BuildModuleAnnotation.buildModule;
+var buildTask               = BuildBug.buildTask;
+var $if                     = BugFlow.$if;
+var $series                 = BugFlow.$series;
+var $task                   = BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
@@ -124,23 +128,28 @@ var AwsModule = Class.extend(BuildModule, {
      *   bucket: string
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     s3EnsureBucketTask: function(buildProject, properties, callback) {
         var awsConfig = new AwsConfig(properties.getProperty("awsConfig"));
-        var s3Bucket = new S3Bucket({
-            name: properties.getProperty("bucket")
-        });
-        var s3Api = new S3Api(awsConfig);
-        s3Api.ensureBucket(s3Bucket, function(error) {
-            if (!error) {
-                console.log("Ensured bucket '" + s3Bucket.getName() + "' exists");
-                callback();
-            } else {
-                callback(error);
-            }
-        });
+        var bucket = properties.getProperty("bucket");
+        if (TypeUtil.isString(bucket) && bucket) {
+            var s3Bucket = new S3Bucket({
+                name: properties.getProperty("bucket")
+            });
+            var s3Api = new S3Api(awsConfig);
+            s3Api.ensureBucket(s3Bucket, function(error) {
+                if (!error) {
+                    console.log("Ensured bucket '" + s3Bucket.getName() + "' exists");
+                    callback();
+                } else {
+                    callback(error);
+                }
+            });
+        } else {
+            callback(new Error("Bucket must be specified!"));
+        }
     },
 
     /**
@@ -154,7 +163,7 @@ var AwsModule = Class.extend(BuildModule, {
      *     sourcePaths: Array.<string>
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     s3PutFileTask: function(buildProject, properties, callback) {
@@ -199,7 +208,7 @@ var AwsModule = Class.extend(BuildModule, {
      * @return {string}
      */
     getURL: function(filePath){
-        if(this.filePathToURLMap){
+        if (this.filePathToURLMap) {
             return this.filePathToURLMap.get(filePath);
         }
     },
@@ -220,7 +229,13 @@ var AwsModule = Class.extend(BuildModule, {
         this.filePathToURLMap.put(filePath, url);
     }
 });
-annotate(AwsModule).with(
+
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
+
+bugmeta.annotate(AwsModule).with(
     buildModule("aws")
 );
 

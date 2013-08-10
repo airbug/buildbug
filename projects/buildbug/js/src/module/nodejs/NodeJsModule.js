@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// Requires
+// Annotations
 //-------------------------------------------------------------------------------
 
 //@Package('buildbug')
@@ -8,38 +8,45 @@
 //@Autoload
 
 //@Require('Class')
-//@Require('annotate.Annotate')
+//@Require('Map')
+//@Require('bugfs.BugFs')
+//@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
+//@Require('buildbug.NodePackage')
 
 
-var bugpack = require('bugpack').context();
-var fs = require('fs');
-var npm = require('npm');
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
+
+var bugpack                 = require('bugpack').context();
+var fs                      = require('fs');
+var npm                     = require('npm');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var Map =                   bugpack.require('Map');
-var Annotate =              bugpack.require('annotate.Annotate');
-var BugFs =                 bugpack.require('bugfs.BugFs');
-var BuildBug =              bugpack.require('buildbug.BuildBug');
-var BuildModule =           bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
-var NodePackage =           bugpack.require('buildbug.NodePackage');
+var Class                   = bugpack.require('Class');
+var Map                     = bugpack.require('Map');
+var BugFs                   = bugpack.require('bugfs.BugFs');
+var BugMeta                 = bugpack.require('bugmeta.BugMeta');
+var BuildBug                = bugpack.require('buildbug.BuildBug');
+var BuildModule             = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
+var NodePackage             = bugpack.require('buildbug.NodePackage');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate = Annotate.annotate;
-var buildModule = BuildModuleAnnotation.buildModule;
-var buildTask = BuildBug.buildTask;
+var bugmeta                 = BugMeta.context();
+var buildModule             = BuildModuleAnnotation.buildModule;
+var buildTask               = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -127,7 +134,7 @@ var NodeJsModule = Class.extend(BuildModule, {
      *   buildPath: string
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     createNodePackageTask: function(buildProject, properties, callback) {
@@ -165,7 +172,7 @@ var NodeJsModule = Class.extend(BuildModule, {
      *   packagePath: string
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     packNodePackageTask: function(buildProject, properties, callback) {
@@ -269,7 +276,12 @@ var NodeJsModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(NodeJsModule).with(
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
+
+bugmeta.annotate(NodeJsModule).with(
     buildModule("nodejs")
 );
 

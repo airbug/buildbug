@@ -9,9 +9,10 @@
 
 //@Require('Class')
 //@Require('TypeUtil')
-//@Require('annotate.Annotate')
+//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
+//@Require('bugmeta.BugMeta')
 //@Require('bugtrace.BugTrace')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
@@ -22,36 +23,36 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var uglify_js = require("uglify-js");
+var bugpack                 = require('bugpack').context();
+var uglify_js               = require("uglify-js");
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var TypeUtil =              bugpack.require('TypeUtil');
-var Annotate =              bugpack.require('annotate.Annotate');
-var BugFlow =               bugpack.require('bugflow.BugFlow');
-var BugFs =                 bugpack.require('bugfs.BugFs');
-var Path =                  bugpack.require('bugfs.Path');
-var BugTrace =              bugpack.require('bugtrace.BugTrace');
-var BuildBug =              bugpack.require('buildbug.BuildBug');
-var BuildModule =           bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+var Class                   = bugpack.require('Class');
+var TypeUtil                = bugpack.require('TypeUtil');
+var BugFlow                 = bugpack.require('bugflow.BugFlow');
+var BugFs                   = bugpack.require('bugfs.BugFs');
+var Path                    = bugpack.require('bugfs.Path');
+var BugMeta                 = bugpack.require('bugmeta.BugMeta');
+var BugTrace                = bugpack.require('bugtrace.BugTrace');
+var BuildBug                = bugpack.require('buildbug.BuildBug');
+var BuildModule             = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate =          Annotate.annotate;
-var buildModule =       BuildModuleAnnotation.buildModule;
-var buildTask =         BuildBug.buildTask;
-var $parallel =         BugFlow.$parallel;
-var $task =             BugFlow.$task;
-var $traceWithError =   BugTrace.$traceWithError;
+var bugmeta                 = BugMeta.context();
+var buildModule             = BuildModuleAnnotation.buildModule;
+var buildTask               = BuildBug.buildTask;
+var $series                 = BugFlow.$series;
+var $task                   = BugFlow.$task;
+var $traceWithError         = BugTrace.$traceWithError;
 
 
 //-------------------------------------------------------------------------------
@@ -110,7 +111,7 @@ var UglifyJsModule = Class.extend(BuildModule, {
      *      !sources: (string|Path|Array.<(string|Path)>)
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     uglifyjsMinifyTask: function(buildProject, properties, callback) {
@@ -146,11 +147,7 @@ var UglifyJsModule = Class.extend(BuildModule, {
      */
     minifySources: function(sources) {
         var result = uglify_js.minify(sources);
-
-        //TEST BRN:
-        console.log(result.code);
-
-        BugFs.createFile()
+        return result.code;
     },
 
     /**
@@ -204,7 +201,7 @@ var UglifyJsModule = Class.extend(BuildModule, {
      * @param {function(Error)} callback
      */
     writeResultToOutputFile: function(result, outputFilePath, callback) {
-        $parallel([
+        $series([
             $task(function(flow) {
                 outputFilePath.createFile(function(error) {
                     flow.complete(error);
@@ -219,7 +216,12 @@ var UglifyJsModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(UglifyJsModule).with(
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
+
+bugmeta.annotate(UglifyJsModule).with(
     buildModule("uglifyjs")
 );
 

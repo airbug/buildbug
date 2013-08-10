@@ -9,7 +9,7 @@
 
 //@Require('Class')
 //@Require('Map')
-//@Require('annotate.Annotate')
+//@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
@@ -20,29 +20,29 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
+var bugpack                 = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var Map =                   bugpack.require('Map');
-var Annotate =              bugpack.require('annotate.Annotate');
-var BuildBug =              bugpack.require('buildbug.BuildBug');
-var BuildModule =           bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
-var ClientPackage =         bugpack.require('buildbug.ClientPackage');
+var Class                   = bugpack.require('Class');
+var Map                     = bugpack.require('Map');
+var BugMeta                 = bugpack.require('bugmeta.BugMeta');
+var BuildBug                = bugpack.require('buildbug.BuildBug');
+var BuildModule             = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
+var ClientPackage           = bugpack.require('buildbug.ClientPackage');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate =      Annotate.annotate;
-var buildModule =   BuildModuleAnnotation.buildModule;
-var buildTask =     BuildBug.buildTask;
+var bugmeta                 = BugMeta.context();
+var buildModule             = BuildModuleAnnotation.buildModule;
+var buildTask               = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ var ClientJsModule = Class.extend(BuildModule, {
 
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     createClientPackageTask: function(buildProject, properties, callback) {
@@ -153,7 +153,7 @@ var ClientJsModule = Class.extend(BuildModule, {
      *   packagePath: string
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     packClientPackageTask: function(buildProject, properties, callback) {
@@ -235,7 +235,12 @@ var ClientJsModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(ClientJsModule).with(
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
+
+bugmeta.annotate(ClientJsModule).with(
     buildModule("clientjs")
 );
 

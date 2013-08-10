@@ -22,10 +22,9 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =             bugpack.require('Class');
-var Event =             bugpack.require('Event');
-var EventDispatcher =   bugpack.require('EventDispatcher');
-var Properties =        bugpack.require('Properties');
+var Class           = bugpack.require('Class');
+var Event           = bugpack.require('Event');
+var EventDispatcher = bugpack.require('EventDispatcher');
 
 
 //-------------------------------------------------------------------------------

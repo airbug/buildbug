@@ -7,10 +7,10 @@
 //@Export('TargetTask')
 
 //@Require('Class')
-//@Require('Properties')
 //@Require('bugflow.Task')
 //@Require('buildbug.BuildFlow')
-//@Require('buildbug.ExecuteTarget');
+//@Require('buildbug.BuildProperties')
+//@Require('buildbug.ExecuteTarget')
 
 
 //-------------------------------------------------------------------------------
@@ -24,11 +24,11 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =         bugpack.require('Class');
-var Properties =    bugpack.require('Properties');
-var Task =          bugpack.require('bugflow.Task');
-var BuildFlow =     bugpack.require('buildbug.BuildFlow');
-var ExecuteTarget = bugpack.require('buildbug.ExecuteTarget');
+var Class           = bugpack.require('Class');
+var Task            = bugpack.require('bugflow.Task');
+var BuildFlow       = bugpack.require('buildbug.BuildFlow');
+var BuildProperties = bugpack.require('buildbug.BuildProperties');
+var ExecuteTarget   = bugpack.require('buildbug.ExecuteTarget');
 
 
 //-------------------------------------------------------------------------------
@@ -66,9 +66,9 @@ var TargetTask = Class.extend(BuildFlow, {
 
         /**
          * @private
-         * @type {Object}
+         * @type {BuildProperties}
          */
-        this.targetTaskProperties = new Properties(proto.properties ? proto.properties : {});
+        this.targetTaskProperties = new BuildProperties(proto.properties ? proto.properties : {});
     },
 
 

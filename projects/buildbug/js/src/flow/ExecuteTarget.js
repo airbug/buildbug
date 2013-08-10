@@ -7,9 +7,9 @@
 //@Export('ExecuteTarget')
 
 //@Require('Class')
-//@Require('Properties')
 //@Require('bugflow.Task')
 //@Require('buildbug.BuildFlow')
+//@Require('buildbug.BuildProperties')
 
 
 //-------------------------------------------------------------------------------
@@ -23,10 +23,10 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =         bugpack.require('Class');
-var Properties =    bugpack.require('Properties');
-var Task =          bugpack.require('bugflow.Task');
-var BuildFlow =     bugpack.require('buildbug.BuildFlow');
+var Class           = bugpack.require('Class');
+var Task            = bugpack.require('bugflow.Task');
+var BuildFlow       = bugpack.require('buildbug.BuildFlow');
+var BuildProperties = bugpack.require('buildbug.BuildProperties');
 
 
 //-------------------------------------------------------------------------------
@@ -62,9 +62,9 @@ var ExecuteTarget = Class.extend(Task, {
 
         /**
          * @private
-         * @type {Properties}
+         * @type {BuildProperties}
          */
-        this.taskProperties = taskProperties || new Properties({});
+        this.taskProperties = taskProperties || new BuildProperties({});
     },
 
 
@@ -114,7 +114,7 @@ var ExecuteTarget = Class.extend(Task, {
     /**
      * @private
      * @param {BuildProject} buildProject
-     * @param {Properties} finalProperties
+     * @param {BuildProperties} finalProperties
      */
     executeTargetTask: function(buildProject, finalProperties) {
         var _this = this;
@@ -126,11 +126,11 @@ var ExecuteTarget = Class.extend(Task, {
     /**
      * @private
      * @param {BuildProject} buildProject
-     * @return {Properties}
+     * @return {BuildProperties}
      */
     generateProperties: function(buildProject) {
         var projectProperties = buildProject.getProperties();
-        var finalProperties = new Properties({});
+        var finalProperties = new BuildProperties({});
         finalProperties.merge([this.taskProperties, projectProperties]);
         return finalProperties;
     }

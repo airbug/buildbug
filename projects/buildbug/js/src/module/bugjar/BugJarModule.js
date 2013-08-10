@@ -7,7 +7,7 @@
 //@Export('BugJarModule')
 
 //@Require('Class')
-//@Require('annotate.Annotate')
+//@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
@@ -17,28 +17,28 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var bugjar = require('bugjar');
+var bugpack                 = require('bugpack').context();
+var bugjar                  = require('bugjar');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                     bugpack.require('Class');
-var Annotate =                  bugpack.require('annotate.Annotate');
-var BuildBug =                  bugpack.require('buildbug.BuildBug');
-var BuildModule =               bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation =     bugpack.require('buildbug.BuildModuleAnnotation');
+var Class                   = bugpack.require('Class');
+var BugMeta                 = bugpack.require('bugmeta.BugMeta');
+var BuildBug                = bugpack.require('buildbug.BuildBug');
+var BuildModule             = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate = Annotate.annotate;
-var buildModule = BuildModuleAnnotation.buildModule;
-var buildTask = BuildBug.buildTask;
+var bugmeta                 = BugMeta.context();
+var buildModule             = BuildModuleAnnotation.buildModule;
+var buildTask               = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     createBugJarTask: function(buildProject, properties, callback) {
@@ -111,7 +111,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     deleteBugJarTask: function(buildProject, properties, callback) {
@@ -120,7 +120,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     emptyBugJarTask: function(buildProject, properties, callback) {
@@ -129,7 +129,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     fillBugJarTask: function(buildProject, properties, callback) {
@@ -138,7 +138,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     getBugJarFromShelfTask: function(buildProject, properties, callback) {
@@ -147,7 +147,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     putBugJarOnShelfTask: function(buildProject, properties, callback) {
@@ -156,7 +156,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     removeBugJarFromShelfTask: function(buildProject, properties, callback) {
@@ -165,7 +165,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     createShelfTask: function(buildProject, properties, callback) {
@@ -174,7 +174,7 @@ var BugJarModule = Class.extend(BuildModule, {
 
     /**
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     deleteShelfTask: function(buildProject, properties, callback) {
@@ -188,7 +188,12 @@ var BugJarModule = Class.extend(BuildModule, {
 
 });
 
-annotate(BugJarModule).with(
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
+
+bugmeta.annotate(BugJarModule).with(
     buildModule("bugjar")
 );
 

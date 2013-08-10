@@ -9,9 +9,9 @@
 
 //@Require('Class')
 //@Require('TypeUtil')
-//@Require('annotate.Annotate')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
+//@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
@@ -21,31 +21,31 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var deployBugClient = require('deploybug');
+var bugpack                 = require('bugpack').context();
+var deployBugClient         = require('deploybug');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var TypeUtil =              bugpack.require('TypeUtil');
-var Annotate =              bugpack.require('annotate.Annotate');
-var BugFs =                 bugpack.require('bugfs.BugFs');
-var Path =                  bugpack.require('bugfs.Path');
-var BuildBug =              bugpack.require('buildbug.BuildBug');
-var BuildModule =           bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+var Class                   = bugpack.require('Class');
+var TypeUtil                = bugpack.require('TypeUtil');
+var BugFs                   = bugpack.require('bugfs.BugFs');
+var Path                    = bugpack.require('bugfs.Path');
+var BugMeta                 = bugpack.require('bugmeta.BugMeta');
+var BuildBug                = bugpack.require('buildbug.BuildBug');
+var BuildModule             = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate = Annotate.annotate;
-var buildModule = BuildModuleAnnotation.buildModule;
-var buildTask = BuildBug.buildTask;
+var bugmeta                 = BugMeta.context();
+var buildModule             = BuildModuleAnnotation.buildModule;
+var buildTask               = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ var DeployBugModule = Class.extend(BuildModule, {
      * }
      *
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     registerDeployBugPackageTask: function(buildProject, properties, callback){
@@ -147,7 +147,7 @@ var DeployBugModule = Class.extend(BuildModule, {
      * }
      *
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     updateDeployBugPackageTask: function(buildProject, properties, callback){
@@ -170,7 +170,7 @@ var DeployBugModule = Class.extend(BuildModule, {
     /**
      * Available Properties
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     deployDeployBugPackageTask: function(buildProject, properties, callback) {
@@ -186,7 +186,7 @@ var DeployBugModule = Class.extend(BuildModule, {
      * }
      *
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     startDeployBugPackageTask: function(buildProject, properties, callback){
@@ -214,7 +214,7 @@ var DeployBugModule = Class.extend(BuildModule, {
      * }
      *
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     stopDeployBugPackageTask: function(buildProject, properties, callback){
@@ -242,7 +242,7 @@ var DeployBugModule = Class.extend(BuildModule, {
      * }
      *
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     restartDeployBugPackageTask: function(buildProject, properties, callback){
@@ -262,7 +262,12 @@ var DeployBugModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(DeployBugModule).with(
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
+
+bugmeta.annotate(DeployBugModule).with(
     buildModule("deploybug")
 );
 

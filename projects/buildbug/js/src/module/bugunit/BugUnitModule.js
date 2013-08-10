@@ -9,7 +9,7 @@
 
 //@Require('Class')
 //@Require('TypeUtil')
-//@Require('annotate.Annotate')
+//@Require('bugmeta.BugMeta')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
 //@Require('buildbug.BuildBug')
@@ -31,7 +31,7 @@ var bugunit = require('bugunit');
 
 var Class =                 bugpack.require('Class');
 var TypeUtil =              bugpack.require('TypeUtil');
-var Annotate =              bugpack.require('annotate.Annotate');
+var BugMeta = bugpack.require('bugmeta.BugMeta');
 var BugFs =                 bugpack.require('bugfs.BugFs');
 var Path =                  bugpack.require('bugfs.Path');
 var BuildBug =              bugpack.require('buildbug.BuildBug');
@@ -43,7 +43,7 @@ var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var annotate = Annotate.annotate;
+var bugmeta = BugMeta.context();
 var buildModule = BuildModuleAnnotation.buildModule;
 var buildTask = BuildBug.buildTask;
 
@@ -103,7 +103,7 @@ var BugUnitModule = Class.extend(BuildModule, {
      *      modulePath: (string|Path)
      * }
      * @param {BuildProject} buildProject
-     * @param {Properties} properties
+     * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
     startNodeModuleTestsTask: function(buildProject, properties, callback) {
@@ -119,7 +119,7 @@ var BugUnitModule = Class.extend(BuildModule, {
     }
 });
 
-annotate(BugUnitModule).with(
+bugmeta.annotate(BugUnitModule).with(
     buildModule("bugunit")
 );
 
