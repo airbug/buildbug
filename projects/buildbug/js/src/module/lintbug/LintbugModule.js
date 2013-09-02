@@ -4,15 +4,11 @@
 
 //@Package('buildbug')
 
-//@Export('BugPackModule')
+//@Export('LintbugModule')
 //@Autoload
 
 //@Require('Class')
-//@Require('TypeUtil')
-//@Require('bugfs.BugFs')
-//@Require('bugfs.Path')
 //@Require('bugmeta.BugMeta')
-//@Require('bugtrace.BugTrace')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleAnnotation')
@@ -23,8 +19,9 @@
 //-------------------------------------------------------------------------------
 
 var bugpack                 = require('bugpack').context();
-var bugpack_registry        = require('bugpack-registry');
-var path                    = require('path');
+var fs                      = require('fs');
+var npm                     = require('npm');
+var lintbug                 = require('lintbug');
 
 
 //-------------------------------------------------------------------------------
@@ -32,11 +29,7 @@ var path                    = require('path');
 //-------------------------------------------------------------------------------
 
 var Class                   = bugpack.require('Class');
-var TypeUtil                = bugpack.require('TypeUtil');
-var BugFs                   = bugpack.require('bugfs.BugFs');
-var Path                    = bugpack.require('bugfs.Path');
 var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-var BugTrace                = bugpack.require('bugtrace.BugTrace');
 var BuildBug                = bugpack.require('buildbug.BuildBug');
 var BuildModule             = bugpack.require('buildbug.BuildModule');
 var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
@@ -49,14 +42,13 @@ var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
 var bugmeta                 = BugMeta.context();
 var buildModule             = BuildModuleAnnotation.buildModule;
 var buildTask               = BuildBug.buildTask;
-var $traceWithError         = BugTrace.$traceWithError;
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
-var BugPackModule = Class.extend(BuildModule, {
+var LintbugModule = Class.extend(BuildModule, {
 
     //-------------------------------------------------------------------------------
     // Constructor
@@ -71,7 +63,11 @@ var BugPackModule = Class.extend(BuildModule, {
         // Declare Variables
         //-------------------------------------------------------------------------------
 
-
+        /**
+         * @private
+         * @type {Lintbug}
+         */
+        this.lintbug = lintbug;
     },
 
 
@@ -84,7 +80,7 @@ var BugPackModule = Class.extend(BuildModule, {
      */
     enableModule: function() {
         this._super();
-        buildTask('generateBugPackRegistry', this.generateBugPackRegistryTask, this);
+        buildTask('lint', this.runLintTasks, this);
     },
 
     /**
@@ -93,7 +89,6 @@ var BugPackModule = Class.extend(BuildModule, {
      */
     initializeModule: function() {
         this._super();
-        return true;
     },
 
 
@@ -104,59 +99,33 @@ var BugPackModule = Class.extend(BuildModule, {
     /**
      * Available Properties
      * {
-     *   sourceRoot: [string]
+     *   targetPath: (string | Path),
+     *   ignores: Array.<string>,
+     *   lintTasks: Array.<string>
      * }
      * @param {BuildProject} buildProject
      * @param {BuildProperties} properties
      * @param {function(Error)} callback
      */
-    generateBugPackRegistryTask: function(buildProject, properties, callback) {
-        var sourceRoot = properties.getProperty("sourceRoot");
-        var ignorePatterns = properties.getProperty("ignore");
-        this.generateBugPackRegistry(sourceRoot, ignorePatterns, callback);
+    runLintTasks: function(buildProject, properties, callback) {
+        var targetPath  = properties.getProperty("targetPath");
+        var ignores     = properties.getProperty("ignores");
+        var lintTasks   = properties.getProperty("lintTasks");
+        this.lintbug.lint(targetPath, ignores, lintTasks, callback);
     },
 
 
     //-------------------------------------------------------------------------------
-    // Private Class Methods
+    // Class Methods
     //-------------------------------------------------------------------------------
 
     /**
-     * @private
-     * @param {(string|Path)} sourceRoot
-     * @param {Array.<(string | RegExp>} ignorePatterns
-     * @param {function(Error)} callback
+     * @param {string} taskName
+     * @param {string} taskMethod
+     * @return {LintTask}
      */
-    generateBugPackRegistry: function(sourceRoot, ignorePatterns, callback) {
-        var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
-        var _this = this;
-        bugpack_registry.buildRegistry(sourceRootPath.getAbsolutePath(), ignorePatterns, $traceWithError(function(error, bugpackRegistry) {
-            if (!error) {
-                _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
-            } else {
-                callback(error);
-            }
-        }));
-    },
-
-    /**
-     * @private
-     * @param {Path} outputDirPath
-     * @param {BugPackRegistry} bugpackRegistry
-     * @param {function(Error)} callback
-     */
-    writeBugpackRegistryJson: function(outputDirPath, bugpackRegistry, callback) {
-        var bugpackRegistryPath = outputDirPath.getAbsolutePath() + path.sep + 'bugpack-registry.json';
-        BugFs.createFile(bugpackRegistryPath, function(error) {
-            if (!error) {
-
-                //TODO BRN: For loading performance, we should eliminate the \t characters from the registry files. Perhaps a debug mode?
-
-                BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistry.toObject(), null, '\t'), callback);
-            } else {
-                callback(error);
-            }
-        });
+    lintTask: function(taskName, taskMethod) {
+        return this.lintbug.lintTask(taskName, taskMethod);
     }
 });
 
@@ -165,8 +134,8 @@ var BugPackModule = Class.extend(BuildModule, {
 // BugMeta
 //-------------------------------------------------------------------------------
 
-bugmeta.annotate(BugPackModule).with(
-    buildModule("bugpack")
+bugmeta.annotate(LintbugModule).with(
+    buildModule("lintbug")
 );
 
 
@@ -174,4 +143,4 @@ bugmeta.annotate(BugPackModule).with(
 // Exports
 //-------------------------------------------------------------------------------
 
-bugpack.export('buildbug.BugPackModule', BugPackModule);
+bugpack.export('buildbug.LintbugModule', LintbugModule);

@@ -36,7 +36,7 @@ var bugpack                 = require('bugpack').context();
 
 var Class                   = bugpack.require('Class');
 var Map                     = bugpack.require('Map');
-var Obj                     =  bugpack.require('Obj');
+var Obj                     = bugpack.require('Obj');
 var TypeUtil                = bugpack.require('TypeUtil');
 var AwsConfig               = bugpack.require('aws.AwsConfig');
 var S3Api                   = bugpack.require('aws.S3Api');

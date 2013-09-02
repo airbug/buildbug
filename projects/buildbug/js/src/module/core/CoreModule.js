@@ -184,7 +184,13 @@ var CoreModule = Class.extend(BuildModule, {
         }).execute(function(error) {
             if (!error) {
                 var finalSource = "";
+                var first = true;
                 sourcePaths.forEach(function(sourcePath) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        finalSource += "\n";
+                    }
                     finalSource += sourceMap.get(sourcePath);
                 });
                 callback(undefined, finalSource);

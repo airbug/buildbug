@@ -38,16 +38,17 @@ buildProperties({
     buildbug: {
         packageJson: {
             name: "buildbug",
-            version: "0.0.17",
+            version: "0.0.18",
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
             dependencies: {
                 "aws-sdk": "0.9.x",
                 //bugjar: 'https://s3.amazonaws.com/bugjars/bugjar-0.0.1.tgz',
-                "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.5.tgz',
+                "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.6.tgz',
                 bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.5.tgz',
                 bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.10.tgz',
                 deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
+                lintbug: 'https://s3.amazonaws.com/airbug/lintbug-0.0.1.tgz',
                 "uglify-js": "2.3.x",
                 npm: '1.3.x',
                 tar: 'git://github.com/airbug/node-tar.git#master',
@@ -56,6 +57,7 @@ buildProperties({
         },
         sourcePaths: [
             "../bugjs/projects/aws/js/src",
+            "../bugjs/projects/buganno/js/src",
             "../bugjs/projects/bugmeta/js/src",
             "../bugjs/projects/bugcli/js/src",
             "../bugjs/projects/bugflow/js/src",
