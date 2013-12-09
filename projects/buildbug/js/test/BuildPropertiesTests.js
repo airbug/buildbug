@@ -4,6 +4,7 @@
 
 //@TestFile
 
+//@Require('TypeUtil')
 //@Require('buildbug.BuildProperties')
 //@Require('bugmeta.BugMeta')
 //@Require('bugunit-annotate.TestAnnotation')
@@ -20,6 +21,7 @@ var bugpack             = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
+var TypeUtil            = bugpack.require('TypeUtil');
 var BuildProperties     = bugpack.require('buildbug.BuildProperties');
 var BugMeta             = bugpack.require('bugmeta.BugMeta');
 var TestAnnotation      = bugpack.require('bugunit-annotate.TestAnnotation');
@@ -185,10 +187,47 @@ var buildPropertiesTokenObjectReplaceTest = {
 
     test: function(test) {
         var value = this.buildProperties.getProperty("tokenObject");
+        test.assertTrue(TypeUtil.isObject(value),
+            "Assert that the 'tokenObject' is an object");
         test.assertEqual(value.token, this.testObject.prop,
             "Assert that 'token' property of the tokenObject is equal to the 'prop' property");
     }
 };
 bugmeta.annotate(buildPropertiesTokenObjectReplaceTest).with(
-    test().name("Token build properties test")
+    test().name("BuildProperties - token object replace test")
+);
+
+
+/**
+ *
+ */
+var buildPropertiesTokenArrayReplaceTest = {
+
+    // Setup Test
+    //-------------------------------------------------------------------------------
+
+    setup: function() {
+        this.testObject = {
+            prop: "some value",
+            tokenArray: [
+                "{{prop}}"
+            ]
+        };
+        this.buildProperties = new BuildProperties(this.testObject);
+    },
+
+
+    // Run Test
+    //-------------------------------------------------------------------------------
+
+    test: function(test) {
+        var value = this.buildProperties.getProperty("tokenArray");
+        test.assertTrue(TypeUtil.isArray(value),
+            "Assert that the 'tokenArray' is an array");
+        test.assertEqual(value[0], this.testObject.prop,
+            "Assert that index 0 of the tokenArray is equal to the 'prop' property");
+    }
+};
+bugmeta.annotate(buildPropertiesTokenArrayReplaceTest).with(
+    test().name("BuildProperties - token array replace test")
 );

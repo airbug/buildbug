@@ -9,10 +9,10 @@
 //@Require('Class')
 //@Require('EventDispatcher')
 //@Require('Map')
-//@Require('Properties')
 //@Require('Set')
 //@Require('bugflow.BugFlow')
 //@Require('buildbug.BuildModule')
+//@Require('buildbug.BuildProperties')
 //@Require('buildbug.BuildTarget')
 //@Require('buildbug.BuildTask')
 
@@ -28,15 +28,15 @@ var bugpack = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =             bugpack.require('Class');
-var EventDispatcher =   bugpack.require('EventDispatcher');
-var Map =               bugpack.require('Map');
-var Properties =        bugpack.require('Properties');
-var Set =               bugpack.require('Set');
-var BugFlow =           bugpack.require('bugflow.BugFlow');
-var BuildModule =       bugpack.require('buildbug.BuildModule');
-var BuildTarget =       bugpack.require('buildbug.BuildTarget');
-var BuildTask =         bugpack.require('buildbug.BuildTask');
+var Class               = bugpack.require('Class');
+var EventDispatcher     = bugpack.require('EventDispatcher');
+var Map                 = bugpack.require('Map');
+var Set                 = bugpack.require('Set');
+var BugFlow             = bugpack.require('bugflow.BugFlow');
+var BuildModule         = bugpack.require('buildbug.BuildModule');
+var BuildProperties     = bugpack.require('buildbug.BuildProperties');
+var BuildTarget         = bugpack.require('buildbug.BuildTarget');
+var BuildTask           = bugpack.require('buildbug.BuildTask');
 
 
 //-------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ var BuildProject = Class.extend(EventDispatcher, {
          * @private
          * @type {Properties}
          */
-        this.properties = new Properties({
+        this.properties = new BuildProperties({
             buildPath: this.homePath + "/build",
             distPath: this.homePath + "/dist"
         });
@@ -148,7 +148,7 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
-     * @return {Properties}
+     * @return {BuildProperties}
      */
     getProperties: function() {
         return this.properties;

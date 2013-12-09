@@ -265,8 +265,6 @@ var NodeJsModule = Class.extend(BuildModule, {
             this.npmLoaded = true;
             npm.load({}, function (err) {
                 if (err) {
-                    console.log(err);
-                    console.log(err.stack);
                     process.exit(1);
                     return;
                 }

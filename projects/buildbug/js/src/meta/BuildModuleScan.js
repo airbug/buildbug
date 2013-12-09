@@ -67,7 +67,7 @@ var BuildModuleScan = Class.extend(Obj, {
         var buildModuleAnnotations  = bugmeta.getAnnotationsByType("BuildModule");
         if (buildModuleAnnotations) {
             buildModuleAnnotations.forEach(function(annotation) {
-                var buildModuleClass = annotation.getReference();
+                var buildModuleClass = annotation.getAnnotationReference();
                 var buildModuleName = annotation.getName();
                 var buildModule = new buildModuleClass();
                 _this.buildProject.registerModule(buildModuleName, buildModule);

@@ -8,6 +8,7 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('TypeUtil')
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
@@ -29,6 +30,7 @@ var lintbug                 = require('lintbug');
 //-------------------------------------------------------------------------------
 
 var Class                   = bugpack.require('Class');
+var TypeUtil                = bugpack.require('TypeUtil');
 var BugMeta                 = bugpack.require('bugmeta.BugMeta');
 var BuildBug                = bugpack.require('buildbug.BuildBug');
 var BuildModule             = bugpack.require('buildbug.BuildModule');
@@ -89,6 +91,7 @@ var LintbugModule = Class.extend(BuildModule, {
      */
     initializeModule: function() {
         this._super();
+        return true;
     },
 
 
@@ -108,10 +111,19 @@ var LintbugModule = Class.extend(BuildModule, {
      * @param {function(Error)} callback
      */
     runLintTasks: function(buildProject, properties, callback) {
-        var targetPath  = properties.getProperty("targetPath");
+        var targetPaths = properties.getProperty("targetPaths");
         var ignores     = properties.getProperty("ignores");
         var lintTasks   = properties.getProperty("lintTasks");
-        this.lintbug.lint(targetPath, ignores, lintTasks, callback);
+
+        if (TypeUtil.isArray(targetPaths) && targetPaths.length >= 1) {
+            if (TypeUtil.isArray(lintTasks) && lintTasks.length >= 1) {
+                this.lintbug.lint(targetPaths, ignores, lintTasks, callback);
+            } else {
+                callback(new Error("task property 'lintTasks' must be an array and must not be empty."));
+            }
+        } else {
+            callback(new Error("task property 'targetPaths' must be an array and must not be empty. Instead found " + targetPaths));
+        }
     },
 
 

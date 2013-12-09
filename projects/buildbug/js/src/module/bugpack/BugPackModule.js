@@ -152,7 +152,8 @@ var BugPackModule = Class.extend(BuildModule, {
 
                 //TODO BRN: For loading performance, we should eliminate the \t characters from the registry files. Perhaps a debug mode?
 
-                BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistry.toObject(), null, '\t'), callback);
+                //BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistry.toObject(), null, '\t'), callback);
+                BugFs.writeFile(bugpackRegistryPath, JSON.stringify(bugpackRegistry, null, '\t'), callback);
             } else {
                 callback(error);
             }
