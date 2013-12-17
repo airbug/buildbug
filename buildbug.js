@@ -38,7 +38,7 @@ buildProperties({
     buildbug: {
         packageJson: {
             name: "buildbug",
-            version: "0.0.20",
+            version: "0.0.22",
             private: true,
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
@@ -46,7 +46,7 @@ buildProperties({
                 "aws-sdk": "1.9.x",
                 "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.5.tgz',
                 bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.10.tgz',
+                bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.12.tgz',
                 deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
                 lintbug: 'https://s3.amazonaws.com/airbug/lintbug-0.0.2.tgz',
                 "uglify-js": "2.3.x",
@@ -76,7 +76,7 @@ buildProperties({
     unitTest: {
         packageJson: {
             name: "buildbug-test",
-            version: "0.0.20",
+            version: "0.0.22",
             private: true,
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
@@ -84,7 +84,7 @@ buildProperties({
                 "aws-sdk": "1.9.x",
                 "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.5.tgz',
                 bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.10.tgz',
+                bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.12.tgz',
                 deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
                 lintbug: 'https://s3.amazonaws.com/airbug/lintbug-0.0.2.tgz',
                 "uglify-js": "2.3.x",
