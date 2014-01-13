@@ -181,7 +181,7 @@ var AwsModule = Class.extend(BuildModule, {
                 });
             },
             $task(function(flow) {
-                s3Api.putFile(filePath, s3Bucket, options, function(error, s3Object) {
+                s3Api.putFile(filePath, filePath.getName(), null, s3Bucket, options, function(error, s3Object) {
                     if (!error) {
                         console.log("Successfully uploaded file to S3 '" + s3Api.getObjectURL(s3Object, s3Bucket) + "'");
                         _this.registerURL(filePath, s3Api.getObjectURL(s3Object, s3Bucket));
