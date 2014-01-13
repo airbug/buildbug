@@ -100,6 +100,7 @@ var AwsModule = Class.extend(BuildModule, {
         this._super();
         buildTask('s3EnsureBucket', this.s3EnsureBucketTask, this);
         buildTask('s3PutFile', this.s3PutFileTask, this);
+        buildTask('s3PutDirectoryContents', this.s3PutDirectoryContentsTask, this);
     },
 
     /**
@@ -160,7 +161,9 @@ var AwsModule = Class.extend(BuildModule, {
      *        region: string,
      *        secretAccessKey: string
      *     },
-     *     sourcePaths: Array.<string>
+     *     file: string,
+     *     bucket: string,
+     *     options: Object
      * }
      * @param {BuildProject} buildProject
      * @param {BuildProperties} properties
@@ -196,6 +199,53 @@ var AwsModule = Class.extend(BuildModule, {
                 flow.error(new Error("Cannot find file '" + filePath.getAbsolutePath() + "'"));
             })
         ).execute(callback);
+    },
+
+    /**
+     * Available Properties
+     * {
+     *     awsConfig: {
+     *        accessKeyId: string,
+     *        region: string,
+     *        secretAccessKey: string
+     *     },
+     *     files: Array.<string>,
+     *     bucket: string,
+     *     base: string,
+     *     options: Object
+     * }
+     * @param {BuildProject} buildProject
+     * @param {BuildProperties} properties
+     * @param {function(Error)} callback
+     */
+    s3PutDirectoryContentsTask: function(buildProject, properties, callback) {
+        var awsConfig = new AwsConfig(properties.getProperty("awsConfig"));
+        var directoryPath = BugFs.path(properties.getProperty("directory"));
+        var s3Bucket = new S3Bucket({
+            name: properties.getProperty("bucket")
+        });
+        var options = properties.getProperty("options");
+        var s3Api = new S3Api(awsConfig);
+        $if (function(flow) {
+                directoryPath.exists(function(exists) {
+                    flow.assert(exists);
+                });
+            },
+            $task(function(flow) {
+                s3Api.putDirectory(directoryPath, s3Bucket, options, function(error, s3Object) {
+                    if (!error) {
+                        console.log("Successfully uploaded file to S3 '" + s3Api.getObjectURL(s3Object, s3Bucket) + "'");
+                        flow.complete();
+                    } else {
+                        flow.error(error);
+                    }
+                });
+            })
+        ).$else(
+                $task(function(flow) {
+                    flow.error(new Error("Cannot find directory '" + directoryPath.getAbsolutePath() + "'"));
+                })
+            ).execute(callback);
     },
 
 

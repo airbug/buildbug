@@ -31,6 +31,13 @@ var nodejs          = enableModule('nodejs');
 
 
 //-------------------------------------------------------------------------------
+// Values
+//-------------------------------------------------------------------------------
+
+var version         = "0.0.24";
+
+
+//-------------------------------------------------------------------------------
 // Declare Properties
 //-------------------------------------------------------------------------------
 
@@ -38,7 +45,7 @@ buildProperties({
     buildbug: {
         packageJson: {
             name: "buildbug",
-            version: "0.0.23",
+            version: version,
             private: true,
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
@@ -76,7 +83,7 @@ buildProperties({
     unitTest: {
         packageJson: {
             name: "buildbug-test",
-            version: "0.0.23",
+            version: version,
             private: true,
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
