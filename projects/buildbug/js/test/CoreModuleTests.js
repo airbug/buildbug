@@ -4,6 +4,7 @@
 
 //@TestFile
 
+//@Require('Set')
 //@Require('buildbug.CoreModule')
 //@Require('bugmeta.BugMeta')
 //@Require('bugunit-annotate.TestAnnotation')
@@ -20,6 +21,7 @@ var bugpack             = require('bugpack').context();
 // BugPack
 //-------------------------------------------------------------------------------
 
+var Set                 = bugpack.require('Set');
 var CoreModule          = bugpack.require('buildbug.CoreModule');
 var BugMeta             = bugpack.require('bugmeta.BugMeta');
 var TestAnnotation      = bugpack.require('bugunit-annotate.TestAnnotation');
@@ -46,8 +48,7 @@ var coreModuleConcatSourcesWithNewLineTest = {
     //-------------------------------------------------------------------------------
 
     setup: function() {
-        var _this = this;
-        this.testPaths = [
+        this.testPathSet = new Set([
             {
                 readFile: function(encoding, callback) {
                     callback(undefined, "TEST1");
@@ -58,7 +59,7 @@ var coreModuleConcatSourcesWithNewLineTest = {
                     callback(undefined, "TEST2");
                 }
             }
-        ];
+        ]);
         this.coreModule = new CoreModule();
     },
 
@@ -67,8 +68,7 @@ var coreModuleConcatSourcesWithNewLineTest = {
     //-------------------------------------------------------------------------------
 
     test: function(test) {
-        var _this = this;
-        this.coreModule.concatSources(this.testPaths, function(error, finalSource) {
+        this.coreModule.concatSources(this.testPathSet, function(error, finalSource) {
             test.assertEqual(finalSource, "TEST1\nTEST2",
                 "Assert that the final source has been concatenated with a new line");
         });

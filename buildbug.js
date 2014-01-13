@@ -38,17 +38,17 @@ buildProperties({
     buildbug: {
         packageJson: {
             name: "buildbug",
-            version: "0.0.22",
+            version: "0.0.23",
             private: true,
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
             dependencies: {
                 "aws-sdk": "1.9.x",
-                "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.5.tgz',
-                bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.12.tgz',
-                deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
-                lintbug: 'https://s3.amazonaws.com/airbug/lintbug-0.0.2.tgz',
+                "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
+                bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
+                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.12.tgz',
+                deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
+                lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.2.tgz',
                 "uglify-js": "2.3.x",
                 npm: '1.3.x',
                 tar: 'git://github.com/airbug/node-tar.git#master',
@@ -76,17 +76,17 @@ buildProperties({
     unitTest: {
         packageJson: {
             name: "buildbug-test",
-            version: "0.0.22",
+            version: "0.0.23",
             private: true,
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
             dependencies: {
                 "aws-sdk": "1.9.x",
-                "bugpack-registry": 'https://s3.amazonaws.com/airbug/bugpack-registry-0.0.5.tgz',
-                bugpack: 'https://s3.amazonaws.com/airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/airbug/bugunit-0.0.12.tgz',
-                deploybug: 'https://s3.amazonaws.com/airbug/deploybug-0.0.4.tgz',
-                lintbug: 'https://s3.amazonaws.com/airbug/lintbug-0.0.2.tgz',
+                "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
+                bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
+                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.12.tgz',
+                deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
+                lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.2.tgz',
                 "uglify-js": "2.3.x",
                 npm: '1.3.x',
                 tar: 'git://github.com/airbug/node-tar.git#master',
@@ -140,56 +140,47 @@ buildTarget('local').buildFlow(
 
         targetTask('clean'),
         series([
-            parallel([
-                targetTask("s3EnsureBucket", {
-                    properties: {
-                        bucket: buildProject.getProperty("local-bucket")
-                    }
-                }),
-                series([
-                    targetTask('createNodePackage', {
-                        properties: {
-                            packageJson: buildProject.getProperty("buildbug.packageJson"),
-                            sourcePaths: buildProject.getProperty("buildbug.sourcePaths").concat(
-                                buildProject.getProperty("unitTest.sourcePaths")
-                            ),
-                            scriptPaths: buildProject.getProperty("buildbug.scriptPaths").concat(
-                                buildProject.getProperty("unitTest.scriptPaths")
-                            ),
-                            testPaths: buildProject.getProperty("unitTest.testPaths"),
-                            binPaths: buildProject.getProperty("buildbug.binPaths")
-                        }
-                    }),
-                    targetTask('generateBugPackRegistry', {
-                        init: function(task, buildProject, properties) {
-                            var nodePackage = nodejs.findNodePackage(
-                                buildProject.getProperty("buildbug.packageJson.name"),
-                                buildProject.getProperty("buildbug.packageJson.version")
-                            );
-                            task.updateProperties({
-                                sourceRoot: nodePackage.getBuildPath()
-                            });
-                        }
-                    }),
-                    targetTask('packNodePackage', {
-                        properties: {
-                            packageName: buildProject.getProperty("buildbug.packageJson.name"),
-                            packageVersion: buildProject.getProperty("buildbug.packageJson.version")
-                        }
-                    }),
-                    targetTask('startNodeModuleTests', {
-                        init: function(task, buildProject, properties) {
-                            var packedNodePackage = nodejs.findPackedNodePackage(
-                                buildProject.getProperty("buildbug.packageJson.name"),
-                                buildProject.getProperty("buildbug.packageJson.version")
-                            );
-                            task.updateProperties({
-                                modulePath: packedNodePackage.getFilePath()
-                            });
-                        }
-                    })
-                ])
-            ]),
+            targetTask('createNodePackage', {
+                properties: {
+                    packageJson: buildProject.getProperty("buildbug.packageJson"),
+                    sourcePaths: buildProject.getProperty("buildbug.sourcePaths").concat(
+                        buildProject.getProperty("unitTest.sourcePaths")
+                    ),
+                    scriptPaths: buildProject.getProperty("buildbug.scriptPaths").concat(
+                        buildProject.getProperty("unitTest.scriptPaths")
+                    ),
+                    testPaths: buildProject.getProperty("unitTest.testPaths"),
+                    binPaths: buildProject.getProperty("buildbug.binPaths")
+                }
+            }),
+            targetTask('generateBugPackRegistry', {
+                init: function(task, buildProject, properties) {
+                    var nodePackage = nodejs.findNodePackage(
+                        buildProject.getProperty("buildbug.packageJson.name"),
+                        buildProject.getProperty("buildbug.packageJson.version")
+                    );
+                    task.updateProperties({
+                        sourceRoot: nodePackage.getBuildPath()
+                    });
+                }
+            }),
+            targetTask('packNodePackage', {
+                properties: {
+                    packageName: buildProject.getProperty("buildbug.packageJson.name"),
+                    packageVersion: buildProject.getProperty("buildbug.packageJson.version")
+                }
+            }),
+            targetTask('startNodeModuleTests', {
+                init: function(task, buildProject, properties) {
+                    var packedNodePackage = nodejs.findPackedNodePackage(
+                        buildProject.getProperty("buildbug.packageJson.name"),
+                        buildProject.getProperty("buildbug.packageJson.version")
+                    );
+                    task.updateProperties({
+                        modulePath: packedNodePackage.getFilePath()
+                    });
+                }
+            }),
             targetTask("s3PutFile", {
                 init: function(task, buildProject) {
                     var packedNodePackage = nodejs.findPackedNodePackage(buildProject.getProperty("buildbug.packageJson.name"),
@@ -205,7 +196,7 @@ buildTarget('local').buildFlow(
                     });
                 },
                 properties: {
-                    bucket: buildProject.getProperty("local-bucket")
+                    bucket: "{{local-bucket}}"
                 }
             })
         ])
@@ -271,40 +262,31 @@ buildTarget("prod").buildFlow(
             // Create production package
 
             series([
-                parallel([
-                    targetTask("s3EnsureBucket", {
-                        properties: {
-                            bucket: "airbug"
-                        }
-                    }),
-                    series([
-                        targetTask("createNodePackage", {
-                            properties: {
-                                packageJson: buildProject.getProperty("buildbug.packageJson"),
-                                sourcePaths: buildProject.getProperty("buildbug.sourcePaths"),
-                                scriptPaths: buildProject.getProperty("buildbug.scriptPaths"),
-                                binPaths: buildProject.getProperty("buildbug.binPaths")
-                            }
-                        }),
-                        targetTask("generateBugPackRegistry", {
-                            init: function(task, buildProject) {
-                                var nodePackage = nodejs.findNodePackage(
-                                    buildProject.getProperty("buildbug.packageJson.name"),
-                                    buildProject.getProperty("buildbug.packageJson.version")
-                                );
-                                task.updateProperties({
-                                    sourceRoot: nodePackage.getBuildPath()
-                                });
-                            }
-                        }),
-                        targetTask("packNodePackage", {
-                            properties: {
-                                packageName: buildProject.getProperty("buildbug.packageJson.name"),
-                                packageVersion: buildProject.getProperty("buildbug.packageJson.version")
-                            }
-                        })
-                    ])
-                ]),
+                targetTask("createNodePackage", {
+                    properties: {
+                        packageJson: buildProject.getProperty("buildbug.packageJson"),
+                        sourcePaths: buildProject.getProperty("buildbug.sourcePaths"),
+                        scriptPaths: buildProject.getProperty("buildbug.scriptPaths"),
+                        binPaths: buildProject.getProperty("buildbug.binPaths")
+                    }
+                }),
+                targetTask("generateBugPackRegistry", {
+                    init: function(task, buildProject) {
+                        var nodePackage = nodejs.findNodePackage(
+                            buildProject.getProperty("buildbug.packageJson.name"),
+                            buildProject.getProperty("buildbug.packageJson.version")
+                        );
+                        task.updateProperties({
+                            sourceRoot: nodePackage.getBuildPath()
+                        });
+                    }
+                }),
+                targetTask("packNodePackage", {
+                    properties: {
+                        packageName: buildProject.getProperty("buildbug.packageJson.name"),
+                        packageVersion: buildProject.getProperty("buildbug.packageJson.version")
+                    }
+                }),
                 targetTask("s3PutFile", {
                     init: function(task, buildProject, properties) {
                         var packedNodePackage = nodejs.findPackedNodePackage(buildProject.getProperty("buildbug.packageJson.name"),
@@ -321,7 +303,7 @@ buildTarget("prod").buildFlow(
                         });
                     },
                     properties: {
-                        bucket: "airbug"
+                        bucket: "{{prod-deploy-bucket}}"
                     }
                 })
             ])
