@@ -304,10 +304,13 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
-     * @param {string} targetName
+     * @param {{
+     *      targetName: string,
+     *      debug: boolean
+     * }} options
      * @param {function(Error)} callback
      */
-    startBuild: function(targetName, callback) {
+    startBuild: function(options, callback) {
         if (!this.isStarted()) {
             this.started = true;
             var _this = this;
@@ -323,11 +326,11 @@ var BuildProject = Class.extend(EventDispatcher, {
                 }
             });
             if (this.checkModulesReady()) {
-                this.executeBuild(targetName, callback);
+                this.executeBuild(options, callback);
             } else {
                 this.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
                     if (_this.checkModulesReady()) {
-                        _this.executeBuild(targetName, callback);
+                        _this.executeBuild(options, callback);
                     }
                 });
             }
@@ -348,13 +351,18 @@ var BuildProject = Class.extend(EventDispatcher, {
 
     /**
      * @private
-     * @param {string} targetName
+     * @param {{
+     *      targetName: string,
+     *      debug: boolean
+     * }} options
      * @param {function(Error)} callback
      */
-    executeBuild: function(targetName, callback) {
+    executeBuild: function(options, callback) {
         console.log("Starting build");
-        var error = null;
-        var targetArray = [];
+        var targetName      = options.targetName;
+        var debug           = options.debug;
+        var error           = null;
+        var targetArray     = [];
         if (targetName) {
             var specifiedTarget = this.getTarget(targetName);
             if (specifiedTarget) {

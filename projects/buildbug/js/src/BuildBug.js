@@ -174,10 +174,10 @@ BuildBug.targetTask = function(taskName, proto) {
 /**
  * @static
  * @param {string} buildPath
- * @param {string} targetName
+ * @param {Object} options
  * @param {function(Error)} callback
  */
-BuildBug.build = function(buildPath, targetName, callback) {
+BuildBug.build = function(buildPath, options, callback) {
     var buildModuleScan = new BuildModuleScan(this.buildProject);
     buildModuleScan.scan();
 
@@ -189,39 +189,47 @@ BuildBug.build = function(buildPath, targetName, callback) {
         }),
         $task(function(flow) {
             var propertiesPath = BugFs.joinPaths([buildPath, "buildbug.json"]);
-            propertiesPath.exists(function(exists) {
-                if (exists) {
-                    propertiesPath.readFile('utf8', function(error, data) {
-                        if (!error) {
-                            var properties = JSON.parse(data);
-                            BuildBug.buildProperties(properties);
-                            flow.complete();
-                        } else {
-                            flow.error(error);
-                        }
-                    });
+            propertiesPath.exists(function(throwable, exists) {
+                if (!throwable) {
+                    if (exists) {
+                        propertiesPath.readFile('utf8', function(error, data) {
+                            if (!error) {
+                                var properties = JSON.parse(data);
+                                BuildBug.buildProperties(properties);
+                                flow.complete();
+                            } else {
+                                flow.error(error);
+                            }
+                        });
+                    } else {
+                        flow.complete();
+                    }
                 } else {
-                    flow.complete();
+                    flow.error(throwable);
                 }
             });
         }),
         $task(function(flow) {
             var buildFilePath = BugFs.joinPaths([buildPath, "buildbug.js"]);
-            buildFilePath.exists(function(exists) {
-                if (exists) {
-                    BuildBug.loadModule(buildFilePath.getAbsolutePath(), function(throwable, context) {
-                        if (!throwable) {
-                            setTimeout(function() {
-                                BuildBug.buildProject.startBuild(targetName, function(throwable) {
-                                    flow.complete(throwable);
-                                });
-                            }, 0);
-                        } else {
-                            flow.error(throwable)
-                        }
-                    });
+            buildFilePath.exists(function(throwable, exists) {
+                if (!throwable) {
+                    if (exists) {
+                        BuildBug.loadModule(buildFilePath.getAbsolutePath(), function(throwable, context) {
+                            if (!throwable) {
+                                setTimeout(function() {
+                                    BuildBug.buildProject.startBuild(options, function(throwable) {
+                                        flow.complete(throwable);
+                                    });
+                                }, 0);
+                            } else {
+                                flow.error(throwable)
+                            }
+                        });
+                    } else {
+                        flow.error(new Error("no buildbug.js file in this dir"));
+                    }
                 } else {
-                    flow.error(new Error("no buildbug.js file in this dir"));
+                    flow.error(throwable);
                 }
             });
         })

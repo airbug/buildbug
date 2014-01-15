@@ -84,15 +84,22 @@ var BuildBugCli = Class.extend(BugCli, {
                     executeMethod: function(cliBuild, cliAction, callback) {
                         console.log("Starting build");
                         /** @type {CliOptionInstance} */
-                        var targetOption = cliBuild.getOption("target");
+                        var targetOption    = cliBuild.getOption("target");
+                        /** @type {CliOptionInstance} */
+                        var debugOption     = cliBuild.getOption("debug");
                         /** @type {string} */
-                        var targetName = "";
+                        var targetName      = "";
+                        /** @type {boolean} */
+                        var debug           = false;
 
                         if (targetOption) {
                             targetName = targetOption.getParameter("targetName");
                         }
+                        if (debugOption) {
+                            debug = true;
+                        }
                         var buildPath = process.cwd();
-                        BuildBug.build(buildPath, targetName, callback);
+                        BuildBug.build(buildPath, {targetName: targetName, debug: debug}, callback);
                     }
                 });
 
@@ -106,6 +113,14 @@ var BuildBugCli = Class.extend(BugCli, {
                         {
                             name: "targetName"
                         }
+                    ]
+                });
+
+                _this.registerCliOption({
+                    name: 'debug',
+                    flags: [
+                        '-d',
+                        '--debug'
                     ]
                 });
 

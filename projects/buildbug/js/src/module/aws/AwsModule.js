@@ -179,8 +179,12 @@ var AwsModule = Class.extend(BuildModule, {
         var options = properties.getProperty("options");
         var s3Api = new S3Api(awsConfig);
         $if (function(flow) {
-                filePath.exists(function(exists) {
-                    flow.assert(exists);
+                filePath.exists(function(throwable, exists) {
+                    if (!throwable) {
+                        flow.assert(exists);
+                    } else {
+                        flow.error(throwable);
+                    }
                 });
             },
             $task(function(flow) {
@@ -227,8 +231,12 @@ var AwsModule = Class.extend(BuildModule, {
         var options = properties.getProperty("options");
         var s3Api = new S3Api(awsConfig);
         $if (function(flow) {
-                directoryPath.exists(function(exists) {
-                    flow.assert(exists);
+                directoryPath.exists(function(throwable, exists) {
+                    if (!throwable) {
+                        flow.assert(exists);
+                    } else {
+                        flow.error(throwable);
+                    }
                 });
             },
             $task(function(flow) {
