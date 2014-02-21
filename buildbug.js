@@ -34,7 +34,7 @@ var nodejs          = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version         = "0.0.25";
+var version         = "0.0.26";
 
 
 //-------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ buildProperties({
                 "aws-sdk": "1.9.x",
                 "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
                 bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.12.tgz',
+                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.13.tgz',
                 deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
                 lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.2.tgz',
                 "uglify-js": "2.3.x",
@@ -184,7 +184,8 @@ buildTarget('local').buildFlow(
                         buildProject.getProperty("buildbug.packageJson.version")
                     );
                     task.updateProperties({
-                        modulePath: packedNodePackage.getFilePath()
+                        modulePath: packedNodePackage.getFilePath(),
+                        checkCoverage: true
                     });
                 }
             }),
@@ -260,7 +261,8 @@ buildTarget("prod").buildFlow(
                             buildProject.getProperty("buildbug.packageJson.version")
                         );
                         task.updateProperties({
-                            modulePath: packedNodePackage.getFilePath()
+                            modulePath: packedNodePackage.getFilePath(),
+                            checkCoverage: true
                         });
                     }
                 })

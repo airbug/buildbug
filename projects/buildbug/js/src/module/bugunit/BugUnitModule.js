@@ -21,31 +21,31 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var bugunit = require('bugunit');
+var bugpack                     = require('bugpack').context();
+var bugunit                     = require('bugunit');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var TypeUtil =              bugpack.require('TypeUtil');
-var BugMeta = bugpack.require('bugmeta.BugMeta');
-var BugFs =                 bugpack.require('bugfs.BugFs');
-var Path =                  bugpack.require('bugfs.Path');
-var BuildBug =              bugpack.require('buildbug.BuildBug');
-var BuildModule =           bugpack.require('buildbug.BuildModule');
-var BuildModuleAnnotation = bugpack.require('buildbug.BuildModuleAnnotation');
+var Class                       = bugpack.require('Class');
+var TypeUtil                    = bugpack.require('TypeUtil');
+var BugMeta                     = bugpack.require('bugmeta.BugMeta');
+var BugFs                       = bugpack.require('bugfs.BugFs');
+var Path                        = bugpack.require('bugfs.Path');
+var BuildBug                    = bugpack.require('buildbug.BuildBug');
+var BuildModule                 = bugpack.require('buildbug.BuildModule');
+var BuildModuleAnnotation       = bugpack.require('buildbug.BuildModuleAnnotation');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var bugmeta = BugMeta.context();
-var buildModule = BuildModuleAnnotation.buildModule;
-var buildTask = BuildBug.buildTask;
+var bugmeta                     = BugMeta.context();
+var buildModule                 = BuildModuleAnnotation.buildModule;
+var buildTask                   = BuildBug.buildTask;
 
 
 //-------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ var BugUnitModule = Class.extend(BuildModule, {
 
 
         //-------------------------------------------------------------------------------
-        // Declare Variables
+        // Private Properties
         //-------------------------------------------------------------------------------
 
 
@@ -72,7 +72,7 @@ var BugUnitModule = Class.extend(BuildModule, {
 
 
     //-------------------------------------------------------------------------------
-    // BuildModule Implementation
+    // BuildModule Methods
     //-------------------------------------------------------------------------------
 
     /**
@@ -107,17 +107,26 @@ var BugUnitModule = Class.extend(BuildModule, {
      * @param {function(Error)} callback
      */
     startNodeModuleTestsTask: function(buildProject, properties, callback) {
-        var modulePath = properties.getProperty("modulePath");
-        var modulePathString = modulePath;
+        var modulePath          = properties.getProperty("modulePath");
+        var checkCoverage       = properties.getProperty("checkCoverage") || false;
+        var modulePathString    = modulePath;
 
         if (Class.doesExtend(modulePath, Path)) {
             modulePathString = modulePath.getAbsolutePath();
         } else if (!TypeUtil.isString(modulePathString)) {
             callback(new Error("modulePath must be a Path or a string"));
         }
-        bugunit.start(modulePathString, callback);
+        var options = {
+            checkCoverage: checkCoverage
+        };
+        bugunit.start(modulePathString, options, callback);
     }
 });
+
+
+//-------------------------------------------------------------------------------
+// BugMeta
+//-------------------------------------------------------------------------------
 
 bugmeta.annotate(BugUnitModule).with(
     buildModule("bugunit")
