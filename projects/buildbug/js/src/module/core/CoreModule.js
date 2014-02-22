@@ -58,6 +58,8 @@ var bugmeta                 = BugMeta.context();
 var buildModule             = BuildModuleAnnotation.buildModule;
 var buildTask               = BuildBug.buildTask;
 var $iterableParallel       = BugFlow.$iterableParallel;
+var $forEachParallel        = BugFlow.$forEachParallel;
+var $forEachSeries          = BugFlow.$forEachSeries;
 var $series                 = BugFlow.$series;
 var $task                   = BugFlow.$task;
 
@@ -96,6 +98,7 @@ var CoreModule = Class.extend(BuildModule, {
         buildTask('concat', this.concatTask, this);
         buildTask('copy', this.copyTask, this);
         buildTask('copyContents', this.copyContentsTask, this);
+        buildTask('replaceTokens', this.replaceTokensTask, this)
     },
 
 
@@ -247,6 +250,33 @@ var CoreModule = Class.extend(BuildModule, {
         }
     },
 
+    /**
+     * Available Properties
+     * {
+     *      variable: (string)
+     *      replacementValue: (string)
+     *      filePaths: (Array.<string | Path>)
+     * }
+     * @param {BuildProject} buildProject
+     * @param {BuildProperties} properties
+     * @param {function(Throwable=)} callback
+     */
+    replaceTokensTask: function(buildProject, properties, callback) {
+        var _this = this;
+        var tokenObjects = properties.getProperty("tokenObjects");
+
+        $forEachSeries(tokenObjects, function(flow, tokenObject){
+            $forEachParallel(tokenObject.filePaths, function(flow, filePath){
+                _this.replaceTokenInFilePathOrDirectory(tokenObject.token, tokenObject.replacementValue, filePath, function(error){
+                    flow.complete(error);
+                });
+            }).execute(function(error){
+                    flow.complete(error);
+            });
+        }).execute(function(error){
+            callback(error);
+        });
+    },
 
     //-------------------------------------------------------------------------------
     // Private Methods
@@ -433,6 +463,53 @@ var CoreModule = Class.extend(BuildModule, {
                 });
             })
         ]).execute(callback);
+    },
+
+    /**
+     * @param {string} token
+     * @param {string} replacementValue
+     * @param {string | Path} filePath
+     * @param {function(Error} callback
+     */
+    replaceTokenInFilePathOrDirectory: function(token, replacementValue, filePath, callback){
+        var _this = this;
+        if(BugFs.existsSync(filePath)){
+            if(BugFs.isFileSync(filePath)){
+                _this.replaceTokenInFilePath(token, replacementValue, filePath, function(error){
+                    callback(error);
+                });
+            } else {
+                var filePaths = BugFs.readDirectorySync(filePath);
+                $forEachParallel(filePaths, function(flow, filePath){
+                    _this.replaceTokenInFilePathOrDirectory(token, replacementValue, filePath, function(error){
+                        flow.complete(error);
+                    });
+                }).execute(function(error){
+                        callback(error);
+                    });
+            }
+        } else {
+            callback(new Error("Invalid file path:", filePath));
+        }
+    },
+
+    /**
+     * @param {string} token
+     * @param {string} replacementValue
+     * @param {string | Path} filePath
+     * @param {function(Error} callback
+     */
+    replaceTokenInFilePath: function(token, replacementValue, filePath, callback){
+        BugFs.readFile(filePath, 'utf8', function(error, data){
+            if(error){
+                callback(error);
+            } else {
+                var newFileString = data.replace(token, replacementValue);
+                BugFs.writeFile(filePath, newFileString, 'utf8', function(error){
+                    callback(error);
+                });
+            }
+        });
     }
 });
 

@@ -77,3 +77,33 @@ var coreModuleConcatSourcesWithNewLineTest = {
 bugmeta.annotate(coreModuleConcatSourcesWithNewLineTest).with(
     test().name("CoreModule - concat sources with new line test")
 );
+
+/**
+ *
+ */
+var coreModuleReplaceTokenInFilePathOrDirectoryTest = {
+
+    // Setup Test
+    //-------------------------------------------------------------------------------
+
+    setup: function() {
+        this.token = "{{TOKEN}}";
+        this.replacementValue = "newValue";
+        this.filePath = "./thisPathDoesNotExist"
+        this.coreModule = new CoreModule();
+    },
+
+
+    // Run Test
+    //-------------------------------------------------------------------------------
+
+    test: function(test) {
+        this.coreModule.replaceTokenInFilePathOrDirectory(this.token, this.replacementValue, this.filePath, function(error) {
+            test.assertTrue(error,
+                "Assert that an error is passed back for a path that does not exist");
+        });
+    }
+};
+bugmeta.annotate(coreModuleReplaceTokenInFilePathOrDirectoryTest).with(
+    test().name("CoreModule - replace token in file path test")
+);
