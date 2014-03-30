@@ -6,6 +6,7 @@
 
 //@Export('BuildProject')
 
+//@Require('Bug')
 //@Require('Class')
 //@Require('EventDispatcher')
 //@Require('Map')
@@ -13,6 +14,7 @@
 //@Require('bugflow.BugFlow')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildProperties')
+//@Require('buildbug.BuildScript')
 //@Require('buildbug.BuildTarget')
 //@Require('buildbug.BuildTask')
 
@@ -21,13 +23,14 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
+var bugpack             = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
+var Bug                 = bugpack.require('Bug');
 var Class               = bugpack.require('Class');
 var EventDispatcher     = bugpack.require('EventDispatcher');
 var Map                 = bugpack.require('Map');
@@ -35,6 +38,7 @@ var Set                 = bugpack.require('Set');
 var BugFlow             = bugpack.require('bugflow.BugFlow');
 var BuildModule         = bugpack.require('buildbug.BuildModule');
 var BuildProperties     = bugpack.require('buildbug.BuildProperties');
+var BuildScript         = bugpack.require('buildbug.BuildScript');
 var BuildTarget         = bugpack.require('buildbug.BuildTarget');
 var BuildTask           = bugpack.require('buildbug.BuildTask');
 
@@ -43,7 +47,10 @@ var BuildTask           = bugpack.require('buildbug.BuildTask');
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $forEachParallel = BugFlow.$forEachParallel;
+var $forEachParallel    = BugFlow.$forEachParallel;
+var $iterableParallel   = BugFlow.$iterableParallel;
+var $series             = BugFlow.$series;
+var $task               = BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
@@ -56,7 +63,11 @@ var BuildProject = Class.extend(EventDispatcher, {
     // Constructor
     //-------------------------------------------------------------------------------
 
-    _constructor: function() {
+    /**
+     * @constructs
+     * @param {Path} targetPath
+     */
+    _constructor: function(targetPath) {
 
         this._super();
 
@@ -67,51 +78,57 @@ var BuildProject = Class.extend(EventDispatcher, {
 
         /**
          * @private
-         * @type {Set<BuildModule>}
+         * @type {Set.<BuildModule>}
          */
-        this.buildModuleSet = new Set();
+        this.buildModuleSet                 = new Set();
 
         /**
          * @private
-         * @type {Set<BuildTarget>}
+         * @type {Set.<BuildScript>}
          */
-        this.buildTargetSet = new Set();
+        this.buildScriptSet                 = new Set();
 
         /**
          * @private
-         * @type {Set<BuildTask>}
+         * @type {Set.<BuildTarget>}
          */
-        this.buildTaskSet = new Set();
+        this.buildTargetSet                 = new Set();
+
+        /**
+         * @private
+         * @type {Set.<BuildTask>}
+         */
+        this.buildTaskSet                   = new Set();
 
         /**
          * @private
          * @type {string}
          */
-        this.homePath = process.cwd() + "/.buildbug";
+        this.homePath                       = targetPath.getAbsolutePath() + "/.buildbug";
 
         /**
          * @private
          * @type {Map<string, BuildModule>}
          */
-        this.moduleNameToBuildModuleMap = new Map();
+        this.moduleNameToBuildModuleMap     = new Map();
 
         /**
          * @private
          * @type {number}
          */
-        this.numberEnabledModules = 0;
+        this.numberEnabledModules           = 0;
 
         /**
          * @private
          * @type {number}
          */
-        this.numberInitializedModules = 0;
+        this.numberInitializedModules       = 0;
 
         /**
          * @private
-         * @type {Properties}
+         * @type {BuildProperties}
          */
-        this.properties = new BuildProperties({
+        this.properties                     = new BuildProperties({
             buildPath: this.homePath + "/build",
             distPath: this.homePath + "/dist"
         });
@@ -120,19 +137,25 @@ var BuildProject = Class.extend(EventDispatcher, {
          * @private
          * @type {boolean}
          */
-        this.started = false;
+        this.started                        = false;
 
         /**
          * @private
          * @type {Map<string, BuildTarget>}
          */
-        this.targetNameToBuildTargetMap = new Map();
+        this.targetNameToBuildTargetMap     = new Map();
+
+        /**
+         * @private
+         * @type {Path}
+         */
+        this.targetPath                     = targetPath;
 
         /**
          * @private
          * @type {Map<string, BuildTask>}
          */
-        this.taskNameToBuildTaskMap = new Map();
+        this.taskNameToBuildTaskMap         = new Map();
     },
 
 
@@ -153,6 +176,18 @@ var BuildProject = Class.extend(EventDispatcher, {
     getProperties: function() {
         return this.properties;
     },
+
+    /**
+     * @return {Path}
+     */
+    getTargetPath: function() {
+        return this.targetPath;
+    },
+
+
+    //-------------------------------------------------------------------------------
+    // Convenience Methods
+    //-------------------------------------------------------------------------------
 
     /**
      * @param {string} propertyName
@@ -201,7 +236,7 @@ var BuildProject = Class.extend(EventDispatcher, {
 
             return buildModule;
         } else {
-            throw new Error("Build module by the name of '" + moduleName + "' does not exist");
+            throw new Bug("IllegalState", {}, "Build module by the name of '" + moduleName + "' does not exist");
         }
     },
 
@@ -248,7 +283,7 @@ var BuildProject = Class.extend(EventDispatcher, {
      */
     registerModule: function(moduleName, buildModule) {
         if (!Class.doesExtend(buildModule, BuildModule)) {
-            throw new Error("Build modules must extend the BuildModule class");
+            throw new Bug("IllegalArgument", {}, "Build modules must extend the BuildModule class");
         }
         if (!this.moduleNameToBuildModuleMap.containsKey(moduleName)) {
             if (!this.buildModuleSet.contains(buildModule)) {
@@ -256,10 +291,25 @@ var BuildProject = Class.extend(EventDispatcher, {
                 this.moduleNameToBuildModuleMap.put(moduleName, buildModule);
                 this.buildModuleSet.add(buildModule);
             } else {
-                throw new Error("Each build module can only be registered once");
+                throw new Bug("IllegalState", {}, "Each build module can only be registered once");
             }
         } else {
-            throw new Error("Build module by the name of '" + moduleName + "' already exists");
+            throw new Bug("IllegalState", {}, "Build module by the name of '" + moduleName + "' already exists");
+        }
+    },
+
+    /**
+     * @param {BuildScript} buildScript
+     */
+    registerScript: function(buildScript) {
+        if (!Class.doesExtend(buildScript, BuildScript)) {
+            throw new Bug("IllegalArgument", {}, "Build scripts must extend the BuildScript class");
+        }
+        if (!this.buildScriptSet.contains(buildScript)) {
+            buildScript.setBuildProject(this);
+            this.buildScriptSet.add(buildScript);
+        } else {
+            throw new Bug("IllegalState", {}, "Each build script can only be registered once");
         }
     },
 
@@ -268,7 +318,7 @@ var BuildProject = Class.extend(EventDispatcher, {
      */
     registerTarget: function(buildTarget) {
         if (!Class.doesExtend(buildTarget, BuildTarget)) {
-            throw new Error("Build targets must extend the BuildTarget class");
+            throw new Bug("IllegalArgument", {}, "Build targets must extend the BuildTarget class");
         }
         if (!this.targetNameToBuildTargetMap.containsKey(buildTarget.getName())) {
             if (!this.buildTargetSet.contains(buildTarget)) {
@@ -276,10 +326,10 @@ var BuildProject = Class.extend(EventDispatcher, {
                 this.targetNameToBuildTargetMap.put(buildTarget.getName(), buildTarget);
                 this.buildTargetSet.add(buildTarget);
             } else {
-                throw new Error("Each build target can only be registered once");
+                throw new Bug("IllegalState", {}, "Each build target can only be registered once");
             }
         } else {
-            throw new Error("Target by the name of '" + buildTarget.getName() + "' already exists");
+            throw new Bug("IllegalState", {}, "Target by the name of '" + buildTarget.getName() + "' already exists");
         }
     },
 
@@ -288,7 +338,7 @@ var BuildProject = Class.extend(EventDispatcher, {
      */
     registerTask: function(buildTask) {
         if (!Class.doesExtend(buildTask, BuildTask)) {
-            throw new Error("Build tasks must extend the BuildTask class");
+            throw new Bug("IllegalArgument", {}, "Build tasks must extend the BuildTask class");
         }
         if (!this.taskNameToBuildTaskMap.containsKey(buildTask.getTaskName())) {
             if (!this.buildTaskSet.contains(buildTask)) {
@@ -296,10 +346,10 @@ var BuildProject = Class.extend(EventDispatcher, {
                 this.taskNameToBuildTaskMap.put(buildTask.getTaskName(), buildTask);
                 this.buildTaskSet.add(buildTask);
             } else {
-                throw new Error("Each build task can only be registered once");
+                throw new Bug("IllegalState", {}, "Each build task can only be registered once");
             }
         } else {
-            throw new Error("Task by the name of '" + buildTask.getTaskName() + "' already exists");
+            throw new Bug("IllegalState", {}, "Task by the name of '" + buildTask.getTaskName() + "' already exists");
         }
     },
 
@@ -307,60 +357,47 @@ var BuildProject = Class.extend(EventDispatcher, {
      * @param {{
      *      targetName: string,
      *      debug: boolean
-     * }} options
-     * @param {function(Error)} callback
+     * }} buildOptions
+     * @param {function(Throwable=)} callback
      */
-    startBuild: function(options, callback) {
+    startBuild: function(buildOptions, callback) {
+        var _this = this;
         if (!this.isStarted()) {
             this.started = true;
-            var _this = this;
-            this.buildModuleSet.forEach(function(buildModule) {
-                if (buildModule.isEnabled()) {
-                    if (buildModule.isInitialized()) {
-                        _this.numberInitializedModules++;
-                    } else {
-                        buildModule.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
-                            _this.numberInitializedModules++;
-                        });
-                    }
-                }
-            });
-            if (this.checkModulesReady()) {
-                this.executeBuild(options, callback);
-            } else {
-                this.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
-                    if (_this.checkModulesReady()) {
-                        _this.executeBuild(options, callback);
-                    }
-                });
-            }
+            $series([
+                $task(function(flow) {
+                    _this.initializeBuild(function(throwable) {
+                        flow.complete(throwable);
+                    });
+                }),
+                $task(function(flow) {
+                    _this.executeBuild(buildOptions, function(throwable) {
+                        flow.complete(throwable);
+                    });
+                })
+            ]).execute(callback);
+        } else {
+            callback(new Bug("IllegalState", {}, "Build already started"));
         }
     },
 
 
     //-------------------------------------------------------------------------------
-    // Protected Class Methods
+    // Protected Methods
     //-------------------------------------------------------------------------------
 
     /**
-     * @return {boolean}
-     */
-    checkModulesReady: function() {
-        return (this.numberInitializedModules === this.numberEnabledModules);
-    },
-
-    /**
-     * @private
+     * @protected
      * @param {{
      *      targetName: string,
      *      debug: boolean
-     * }} options
-     * @param {function(Error)} callback
+     * }} buildOptions
+     * @param {function(Throwable=)} callback
      */
-    executeBuild: function(options, callback) {
-        console.log("Starting build");
-        var targetName      = options.targetName;
-        var debug           = options.debug;
+    executeBuild: function(buildOptions, callback) {
+        console.log("Executing build");
+        var targetName      = buildOptions.targetName;
+        var debug           = buildOptions.debug;
         var error           = null;
         var targetArray     = [];
         if (targetName) {
@@ -368,7 +405,7 @@ var BuildProject = Class.extend(EventDispatcher, {
             if (specifiedTarget) {
                 targetArray.push(specifiedTarget);
             } else {
-                error = new Error("No target found by the name '" + targetName + "'");
+                error = new Bug("IllegalState", {}, "No target found by the name '" + targetName + "'");
             }
         } else {
             targetArray = this.getDefaultTargets();
@@ -378,7 +415,7 @@ var BuildProject = Class.extend(EventDispatcher, {
             if (targetArray.length > 0) {
                 this.executeTargets(targetArray, callback);
             } else {
-                callback(new Error("No build target specified and no default targets found."));
+                callback(new Bug("IllegalState", {}, "No build target specified and no default targets found."));
             }
         } else {
             callback(error);
@@ -386,15 +423,83 @@ var BuildProject = Class.extend(EventDispatcher, {
     },
 
     /**
+     * @protected
+     * @param callback
+     */
+    initializeBuild: function(callback) {
+        console.log("Initializing build");
+        var _this = this;
+        $series([
+            $task(function(flow) {
+                _this.initializeBuildModules(function(throwable) {
+                    flow.complete(throwable);
+                });
+            }),
+            $task(function(flow) {
+                _this.initializeBuildScripts(function(throwable) {
+                    flow.complete(throwable);
+                });
+            })
+        ]).execute(callback);
+    },
+
+
+    //-------------------------------------------------------------------------------
+    // Private Methods
+    //-------------------------------------------------------------------------------
+
+    /**
      * @private
      * @param {Array<BuildTarget>} targetArray
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     executeTargets: function(targetArray, callback) {
         var _this = this;
         $forEachParallel(targetArray, function(flow, target) {
             target.execute(_this, function(error) {
                 flow.complete(error);
+            });
+        }).execute(callback);
+    },
+
+    /**
+     * @private
+     * @param {function(Throwable=)} callback
+     */
+    initializeBuildModules: function(callback) {
+        $iterableParallel(this.buildModuleSet, function(flow, buildModule) {
+            if (buildModule.isEnabled()) {
+                if (buildModule.isInitialized()) {
+                    flow.complete();
+                } else {
+                    buildModule.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
+                        flow.complete();
+                    });
+                }
+            } else {
+                flow.complete();
+            }
+        }).execute(callback);
+    },
+
+    /**
+     * @private
+     * @param {function(Throwable=)} callback
+     */
+    initializeBuildScripts: function(callback) {
+        $iterableParallel(this.buildScriptSet, function(flow, buildScript) {
+            $series([
+                $task(function(flow) {
+                    buildScript.setupScript(function(throwable) {
+                        flow.complete(throwable);
+                    });
+                }),
+                $task(function(flow) {
+                    buildScript.runScript();
+                    flow.complete();
+                })
+            ]).execute(function(throwable) {
+                flow.complete(throwable);
             });
         }).execute(callback);
     }

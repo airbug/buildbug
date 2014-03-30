@@ -9,33 +9,33 @@
 //@Require('Class')
 //@Require('bugcli.BugCli')
 //@Require('bugflow.BugFlow')
-//@Require('buildbug.BuildBug')
+//@Require('buildbug.BuildBugMaster')
 
 
 //-------------------------------------------------------------------------------
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var path = require('path');
+var bugpack             = require('bugpack').context();
+var path                = require('path');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =     bugpack.require('Class');
-var BugCli =    bugpack.require('bugcli.BugCli');
-var BugFlow =   bugpack.require('bugflow.BugFlow');
-var BuildBug =  bugpack.require('buildbug.BuildBug');
+var Class               = bugpack.require('Class');
+var BugCli              = bugpack.require('bugcli.BugCli');
+var BugFlow             = bugpack.require('bugflow.BugFlow');
+var BuildBugMaster      = bugpack.require('buildbug.BuildBugMaster');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $series =   BugFlow.$series;
-var $task =     BugFlow.$task;
+var $series             = BugFlow.$series;
+var $task               = BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
@@ -45,22 +45,7 @@ var $task =     BugFlow.$task;
 var BuildBugCli = Class.extend(BugCli, {
 
     //-------------------------------------------------------------------------------
-    // Constructor
-    //-------------------------------------------------------------------------------
-
-    _constructor: function() {
-
-        this._super();
-    },
-
-
-    //-------------------------------------------------------------------------------
-    // Getters and Setters
-    //-------------------------------------------------------------------------------
-
-
-    //-------------------------------------------------------------------------------
-    // Bugcli Extended Class Methods
+    // BugCli Methods
     //-------------------------------------------------------------------------------
 
     /**
@@ -82,7 +67,6 @@ var BuildBugCli = Class.extend(BugCli, {
                         'build'
                     ],
                     executeMethod: function(cliBuild, cliAction, callback) {
-                        console.log("Starting build");
                         /** @type {CliOptionInstance} */
                         var targetOption    = cliBuild.getOption("target");
                         /** @type {CliOptionInstance} */
@@ -98,8 +82,9 @@ var BuildBugCli = Class.extend(BugCli, {
                         if (debugOption) {
                             debug = true;
                         }
-                        var buildPath = process.cwd();
-                        BuildBug.build(buildPath, {targetName: targetName, debug: debug}, callback);
+                        var buildPath       = process.cwd();
+                        var buildBugMaster  = new BuildBugMaster();
+                        buildBugMaster.build(buildPath, {targetName: targetName, debug: debug}, callback);
                     }
                 });
 

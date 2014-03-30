@@ -10,23 +10,23 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context(module);
+var bugpack         = require('bugpack').context(module);
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var BugFlow =       bugpack.require('bugflow.BugFlow');
-var BuildBugCli =   bugpack.require('buildbug.BuildBugCli');
+var BugFlow         = bugpack.require('bugflow.BugFlow');
+var BuildBugCli     = bugpack.require('buildbug.BuildBugCli');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $series =   BugFlow.$series;
-var $task =     BugFlow.$task;
+var $series         = BugFlow.$series;
+var $task           = BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------

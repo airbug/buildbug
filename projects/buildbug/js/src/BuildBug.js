@@ -11,10 +11,10 @@
 //@Require('Obj')
 //@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
-//@Require('buildbug.BuildModuleScan')
 //@Require('buildbug.BuildParallel')
 //@Require('buildbug.BuildProject')
 //@Require('buildbug.BuildSeries')
+//@Require('buildbug.BuildScript')
 //@Require('buildbug.BuildTarget')
 //@Require('buildbug.BuildTask')
 //@Require('buildbug.TargetTask')
@@ -38,10 +38,10 @@ var Map                 = bugpack.require('Map');
 var Obj                 = bugpack.require('Obj');
 var BugFlow             = bugpack.require('bugflow.BugFlow');
 var BugFs               = bugpack.require('bugfs.BugFs');
-var BuildModuleScan     = bugpack.require('buildbug.BuildModuleScan');
 var BuildParallel       = bugpack.require('buildbug.BuildParallel');
 var BuildProject        = bugpack.require('buildbug.BuildProject');
 var BuildSeries         = bugpack.require('buildbug.BuildSeries');
+var BuildScript         = bugpack.require('buildbug.BuildScript');
 var BuildTarget         = bugpack.require('buildbug.BuildTarget');
 var BuildTask           = bugpack.require('buildbug.BuildTask');
 var TargetTask          = bugpack.require('buildbug.TargetTask');
@@ -71,7 +71,7 @@ var BuildBug = Class.extend(Obj, {});
  * @private
  * @type {BuildProject}
  */
-BuildBug.buildProject = new BuildProject();
+BuildBug.buildProject = null;
 
 
 //-------------------------------------------------------------------------------
@@ -84,6 +84,17 @@ BuildBug.buildProject = new BuildProject();
  */
 BuildBug.buildProperties = function(propertiesObject) {
     BuildBug.buildProject.updateProperties(propertiesObject);
+};
+
+/**
+ * @static
+ * @param {Object} scriptObject
+ * @return {BuildScript}
+ */
+BuildBug.buildScript = function(scriptObject) {
+    var buildScript = new BuildScript(scriptObject);
+    BuildBug.buildProject.registerScript(buildScript);
+    return buildScript;
 };
 
 /**
@@ -120,9 +131,18 @@ BuildBug.enableModule = function(moduleName) {
 };
 
 /**
+ * @param {Path} targetPath
+ * @return {BuildProject}
+ */
+BuildBug.generateBuildProject = function(targetPath) {
+    BuildBug.buildProject = new BuildProject(targetPath);
+    return BuildBug.buildProject;
+};
+
+/**
  * @static
  * @param {string} targetName
- * @return {BuildTask}
+ * @return {BuildTarget}
  */
 BuildBug.getTarget = function(targetName) {
     return BuildBug.buildProject.getTarget(targetName);
@@ -149,6 +169,15 @@ BuildBug.parallel = function(tasksArray, callback) {
 
 /**
  * @static
+ * @param {string} moduleName
+ * @param {BuildModule} buildModule
+ */
+BuildBug.registerModule = function(moduleName, buildModule) {
+    BuildBug.buildProject.registerModule(moduleName, buildModule);
+};
+
+/**
+ * @static
  * @param {Array<(function()|Task)>} tasksArray
  * @return {BuildSeries}
  */
@@ -164,121 +193,6 @@ BuildBug.series = function(tasksArray) {
  */
 BuildBug.targetTask = function(taskName, proto) {
     return new TargetTask(taskName, proto);
-};
-
-
-//-------------------------------------------------------------------------------
-// Private Static Methods
-//-------------------------------------------------------------------------------
-
-/**
- * @static
- * @param {string} buildPath
- * @param {Object} options
- * @param {function(Error)} callback
- */
-BuildBug.build = function(buildPath, options, callback) {
-    var buildModuleScan = new BuildModuleScan(this.buildProject);
-    buildModuleScan.scan();
-
-    $series([
-        $task(function(flow) {
-            child_process.exec('npm link buildbug', {cwd: buildPath, env: process.env}, function (error, stdout, stderr) {
-                flow.complete(error);
-            });
-        }),
-        $task(function(flow) {
-            var propertiesPath = BugFs.joinPaths([buildPath, "buildbug.json"]);
-            propertiesPath.exists(function(throwable, exists) {
-                if (!throwable) {
-                    if (exists) {
-                        propertiesPath.readFile('utf8', function(error, data) {
-                            if (!error) {
-                                var properties = JSON.parse(data);
-                                BuildBug.buildProperties(properties);
-                                flow.complete();
-                            } else {
-                                flow.error(error);
-                            }
-                        });
-                    } else {
-                        flow.complete();
-                    }
-                } else {
-                    flow.error(throwable);
-                }
-            });
-        }),
-        $task(function(flow) {
-            var buildFilePath = BugFs.joinPaths([buildPath, "buildbug.js"]);
-            buildFilePath.exists(function(throwable, exists) {
-                if (!throwable) {
-                    if (exists) {
-                        BuildBug.loadModule(buildFilePath.getAbsolutePath(), function(throwable, context) {
-                            if (!throwable) {
-                                setTimeout(function() {
-                                    BuildBug.buildProject.startBuild(options, function(throwable) {
-                                        flow.complete(throwable);
-                                    });
-                                }, 0);
-                            } else {
-                                flow.error(throwable)
-                            }
-                        });
-                    } else {
-                        flow.error(new Error("no buildbug.js file in this dir"));
-                    }
-                } else {
-                    flow.error(throwable);
-                }
-            });
-        })
-    ]).execute(callback);
-};
-
-/**
- * @param {string} filePath
- * @param {Object=} mocks
- */
-BuildBug.loadModule = function(filePath, callback) {
-    /*mocks = mocks || {};
-
-    // this is necessary to allow relative path modules within loaded file
-    // i.e. requiring ./some inside file /a/b.js needs to be resolved to /a/some
-    var resolveModule = function(module) {
-        if (module.charAt(0) !== '.') return module;
-        return path.resolve(path.dirname(filePath), module);
-    };
-
-    var exports = {};
-    var context = {
-        require: function(name) {
-            return mocks[name] || require(resolveModule(name));
-        },
-        console: console,
-        exports: exports,
-        module: {
-            exports: exports
-        }
-    };
-
-    vm.runInNewContext(BugFs.readFileSync(filePath, 'utf8'), context);
-    return context;*/
-
-    //TODO BRN: Try to figure out how we can use the above instead of
-
-    require(filePath);
-    callback();
-};
-
-/**
- * @static
- * @private
- * @param {string} moduleName
- * @param {BuildModule} buildModule
- */
-BuildBug.registerModule = function(moduleName, buildModule) {
-    BuildBug.buildProject.registerModule(moduleName, buildModule);
 };
 
 

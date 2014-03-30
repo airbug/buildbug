@@ -34,7 +34,7 @@ var nodejs          = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version         = "0.0.27";
+var version         = "0.0.29";
 
 
 //-------------------------------------------------------------------------------
@@ -53,9 +53,9 @@ buildProperties({
                 "aws-sdk": "1.9.x",
                 "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
                 bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.13.tgz',
+                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.14.tgz',
                 deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
-                lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.2.tgz',
+                lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.3.tgz',
                 "uglify-js": "2.3.x",
                 npm: '1.3.x',
                 tar: 'git://github.com/airbug/node-tar.git#master',
@@ -78,43 +78,44 @@ buildProperties({
         ],
         binPaths: [
             "./projects/buildbug/bin"
-        ]
-    },
-    unitTest: {
-        packageJson: {
-            name: "buildbug-test",
-            version: version,
-            private: true,
-            main: "./scripts/buildbug-module.js",
-            bin: "bin/buildbug",
-            dependencies: {
-                "aws-sdk": "1.9.x",
-                "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
-                bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.12.tgz',
-                deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
-                lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.2.tgz',
-                "uglify-js": "2.3.x",
-                npm: '1.3.x',
-                tar: 'git://github.com/airbug/node-tar.git#master',
-                fstream: '0.1.x'
-            }
-        },
-        sourcePaths: [
-            "../bugunit/projects/bugdouble/js/src",
-            "../bugunit/projects/bugunit/js/src"
         ],
-        scriptPaths: [
-            "../bugunit/projects/bugunit/js/scripts"
-        ],
-        testPaths: [
-            "../bugjs/projects/bugcli/js/test",
-            "../bugjs/projects/bugflow/js/test",
-            "../bugjs/projects/bugjs/js/test",
-            "../bugjs/projects/bugmeta/js/test",
-            "../bugjs/projects/bugtrace/js/test",
-            "./projects/buildbug/js/test"
-        ]
+        unitTest: {
+            packageJson: {
+                name: "buildbug-test",
+                version: version,
+                private: true,
+                main: "./scripts/buildbug-module.js",
+                bin: "bin/buildbug",
+                dependencies: {
+                    "aws-sdk": "1.9.x",
+                    "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
+                    bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
+                    bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.14.tgz',
+                    deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
+                    lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.3.tgz',
+                    "uglify-js": "2.3.x",
+                    npm: '1.3.x',
+                    tar: 'git://github.com/airbug/node-tar.git#master',
+                    fstream: '0.1.x'
+                }
+            },
+            sourcePaths: [
+                "../bugjs/projects/bugyarn/js/src",
+                "../bugunit/projects/bugdouble/js/src",
+                "../bugunit/projects/bugunit/js/src"
+            ],
+            scriptPaths: [
+                "../bugunit/projects/bugunit/js/scripts"
+            ],
+            testPaths: [
+                "../bugjs/projects/bugcli/js/test",
+                "../bugjs/projects/bugflow/js/test",
+                "../bugjs/projects/bugjs/js/test",
+                "../bugjs/projects/bugmeta/js/test",
+                "../bugjs/projects/bugtrace/js/test",
+                "./projects/buildbug/js/test"
+            ]
+        }
     }
 });
 
@@ -151,12 +152,12 @@ buildTarget('local').buildFlow(
                 properties: {
                     packageJson: buildProject.getProperty("buildbug.packageJson"),
                     sourcePaths: buildProject.getProperty("buildbug.sourcePaths").concat(
-                        buildProject.getProperty("unitTest.sourcePaths")
+                        buildProject.getProperty("buildbug.unitTest.sourcePaths")
                     ),
                     scriptPaths: buildProject.getProperty("buildbug.scriptPaths").concat(
-                        buildProject.getProperty("unitTest.scriptPaths")
+                        buildProject.getProperty("buildbug.unitTest.scriptPaths")
                     ),
-                    testPaths: buildProject.getProperty("unitTest.testPaths"),
+                    testPaths: buildProject.getProperty("buildbug.unitTest.testPaths"),
                     binPaths: buildProject.getProperty("buildbug.binPaths")
                 }
             }),
@@ -228,12 +229,12 @@ buildTarget("prod").buildFlow(
                     properties: {
                         packageJson: buildProject.getProperty("buildbug.packageJson"),
                         sourcePaths: buildProject.getProperty("buildbug.sourcePaths").concat(
-                            buildProject.getProperty("unitTest.sourcePaths")
+                            buildProject.getProperty("buildbug.unitTest.sourcePaths")
                         ),
                         scriptPaths: buildProject.getProperty("buildbug.scriptPaths").concat(
-                            buildProject.getProperty("unitTest.scriptPaths")
+                            buildProject.getProperty("buildbug.unitTest.scriptPaths")
                         ),
-                        testPaths: buildProject.getProperty("unitTest.testPaths"),
+                        testPaths: buildProject.getProperty("buildbug.unitTest.testPaths"),
                         binPaths: buildProject.getProperty("buildbug.binPaths")
                     }
                 }),
