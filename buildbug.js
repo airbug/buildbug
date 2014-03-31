@@ -34,7 +34,7 @@ var nodejs          = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version         = "0.0.29";
+var version         = "0.0.30";
 
 
 //-------------------------------------------------------------------------------
@@ -63,11 +63,11 @@ buildProperties({
             }
         },
         sourcePaths: [
+            "../bugcore/projects/bugcore/js/src",
             "../bugjs/projects/aws/js/src",
             "../bugjs/projects/bugcli/js/src",
             "../bugjs/projects/bugflow/js/src",
             "../bugjs/projects/bugfs/js/src",
-            "../bugjs/projects/bugjs/js/src",
             "../bugjs/projects/bugmeta/js/src",
             "../bugjs/projects/bugtrace/js/src",
             "./projects/buildbug/js/src"
@@ -108,9 +108,9 @@ buildProperties({
                 "../bugunit/projects/bugunit/js/scripts"
             ],
             testPaths: [
+                "../bugcore/projects/bugcore/js/test",
                 "../bugjs/projects/bugcli/js/test",
                 "../bugjs/projects/bugflow/js/test",
-                "../bugjs/projects/bugjs/js/test",
                 "../bugjs/projects/bugmeta/js/test",
                 "../bugjs/projects/bugtrace/js/test",
                 "./projects/buildbug/js/test"

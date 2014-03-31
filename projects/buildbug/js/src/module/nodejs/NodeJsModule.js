@@ -8,6 +8,7 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('Exception')
 //@Require('Map')
 //@Require('bugfs.BugFs')
 //@Require('bugmeta.BugMeta')
@@ -31,6 +32,7 @@ var npm                     = require('npm');
 //-------------------------------------------------------------------------------
 
 var Class                   = bugpack.require('Class');
+var Exception               = bugpack.require('Exception');
 var Map                     = bugpack.require('Map');
 var BugFs                   = bugpack.require('bugfs.BugFs');
 var BugMeta                 = bugpack.require('bugmeta.BugMeta');
@@ -53,12 +55,19 @@ var buildTask               = BuildBug.buildTask;
 // Declare Class
 //-------------------------------------------------------------------------------
 
+/**
+ * @class
+ * @extends {BuildModule}
+ */
 var NodeJsModule = Class.extend(BuildModule, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
+    /**
+     * @constructs
+     */
     _constructor: function() {
 
         this._super();
@@ -72,24 +81,24 @@ var NodeJsModule = Class.extend(BuildModule, {
          * @private
          * @type {boolean}
          */
-        this.npmLoaded = false;
+        this.npmLoaded                          = false;
 
         /**
          * @private
          * @type {Map.<string, NodePackage>}
          */
-        this.packageKeyToNodePackageMap = new Map();
+        this.packageKeyToNodePackageMap         = new Map();
 
         /**
          * @private
          * @type {Map.<string, PackedNodePackage>}
          */
-        this.packageKeyToPackedNodePackageMap = new Map();
+        this.packageKeyToPackedNodePackageMap   = new Map();
     },
 
 
     //-------------------------------------------------------------------------------
-    // BuildModule Implementation
+    // BuildModule Methods
     //-------------------------------------------------------------------------------
 
     /**
@@ -99,6 +108,7 @@ var NodeJsModule = Class.extend(BuildModule, {
         this._super();
         buildTask('createNodePackage', this.createNodePackageTask, this);
         buildTask('packNodePackage', this.packNodePackageTask, this);
+        buildTask('publishNodePackage', this.publishNodePackageTask, this);
     },
 
     /**
@@ -135,21 +145,20 @@ var NodeJsModule = Class.extend(BuildModule, {
      * }
      * @param {BuildProject} buildProject
      * @param {BuildProperties} properties
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     createNodePackageTask: function(buildProject, properties, callback) {
-        var sourcePaths = properties.getProperty("sourcePaths");
-        var testPaths = properties.getProperty("testPaths");
-        var scriptPaths = properties.getProperty("scriptPaths");
-        var binPaths = properties.getProperty("binPaths");
-        var staticPaths = properties.getProperty("staticPaths");
-        var resourcePaths = properties.getProperty("resourcePaths");
-        var packageJson = properties.getProperty("packageJson");
-        var buildPath = properties.getProperty("buildPath");
+        var sourcePaths     = properties.getProperty("sourcePaths");
+        var testPaths       = properties.getProperty("testPaths");
+        var scriptPaths     = properties.getProperty("scriptPaths");
+        var binPaths        = properties.getProperty("binPaths");
+        var staticPaths     = properties.getProperty("staticPaths");
+        var resourcePaths   = properties.getProperty("resourcePaths");
+        var packageJson     = properties.getProperty("packageJson");
+        var buildPath       = properties.getProperty("buildPath");
 
-        var nodePackage = this.generateNodePackage(packageJson, buildPath);
-
-        var params = {
+        var nodePackage     = this.generateNodePackage(packageJson, buildPath);
+        var params          = {
             sourcePaths: sourcePaths,
             testPaths: testPaths,
             scriptPaths: scriptPaths,
@@ -163,17 +172,13 @@ var NodeJsModule = Class.extend(BuildModule, {
     /**
      * Available Properties
      * {
-     *   packageJson: {
-     *       name: string,
-     *       version: string,
-     *       main: string,
-     *       dependencies: Object
-     *   }
-     *   packagePath: string
+     *   packageName: string,
+     *   packageVersion: string,
+     *   distPath: string
      * }
      * @param {BuildProject} buildProject
      * @param {BuildProperties} properties
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     packNodePackageTask: function(buildProject, properties, callback) {
         var _this = this;
@@ -185,30 +190,63 @@ var NodeJsModule = Class.extend(BuildModule, {
         };
 
         if (nodePackage) {
-            nodePackage.packPackage(params, function(error, packedNodePackage) {
-                if (!error) {
+            nodePackage.packPackage(params, function(throwable, packedNodePackage) {
+                if (!throwable) {
+                    console.log("Packed up node package '" + packedNodePackage.getFilePath() + "'");
                     var nodePackageKey = _this.generatePackageKey(packedNodePackage.getName(),
                         packedNodePackage.getVersion());
                     _this.packageKeyToPackedNodePackageMap.put(nodePackageKey, packedNodePackage);
                     callback(null);
                 } else {
-                    callback(error);
+                    callback(throwable);
                 }
             });
         } else {
-            callback(new Error("Cannot pack package. Package '" + packageName + "' and version '" + packageVersion +
+            callback(new Exception("IllegalState", {}, "Cannot pack package. Package '" + packageName + "' and version '" + packageVersion +
+                "' cannot be found."));
+        }
+    },
+
+    /**
+     * Available Properties
+     * {
+     *   packageName: string,
+     *   packageVersion: string,
+     * }
+     * @param {BuildProject} buildProject
+     * @param {BuildProperties} properties
+     * @param {function(Throwable=)} callback
+     */
+    publishNodePackageTask: function(buildProject, properties, callback) {
+        var _this               = this;
+        var packageName         = properties.getProperty("packageName");
+        var packageVersion      = properties.getProperty("packageVersion");
+        var packageNodePackage  = this.findPackedNodePackage(packageName, packageVersion);
+
+        if (packageNodePackage) {
+            packageNodePackage.publishPackage(function(throwable) {
+                console.log("Published node package " + packageNodePackage.getName() + "@" + packageNodePackage.getVersion());
+                if (!throwable) {
+                    callback();
+                } else {
+                    callback(throwable);
+                }
+            });
+        } else {
+            callback(new Exception("IllegalState", {}, "Cannot publish package. A packed package '" + packageName + "' and version '" + packageVersion +
                 "' cannot be found."));
         }
     },
 
 
     //-------------------------------------------------------------------------------
-    // Class Methods
+    // Public Methods
     //-------------------------------------------------------------------------------
 
     /**
      * @param {string} packageName
      * @param {string} packageVersion
+     * @return {NodePackage}
      */
     findNodePackage: function(packageName, packageVersion) {
         var packageKey = this.generatePackageKey(packageName, packageVersion);
@@ -218,6 +256,7 @@ var NodeJsModule = Class.extend(BuildModule, {
     /**
      * @param {string} packageName
      * @param {string} packageVersion
+     * @return {PackedNodePackage}
      */
     findPackedNodePackage: function(packageName, packageVersion) {
         var packageKey = this.generatePackageKey(packageName, packageVersion);
@@ -226,7 +265,7 @@ var NodeJsModule = Class.extend(BuildModule, {
 
 
     //-------------------------------------------------------------------------------
-    // Private Class Methods
+    // Private Methods
     //-------------------------------------------------------------------------------
 
     /**

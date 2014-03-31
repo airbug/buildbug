@@ -6,7 +6,9 @@
 
 //@Export('NodePackage')
 
+//@Require('Bug')
 //@Require('Class')
+//@Require('Exception')
 //@Require('Obj')
 //@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
@@ -18,110 +20,136 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var npm = require('npm');
-var path = require('path');
+var bugpack             = require('bugpack').context();
+var npm                 = require('npm');
+var path                = require('path');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =             bugpack.require('Class');
-var Obj =               bugpack.require('Obj');
-var BugFlow =           bugpack.require('bugflow.BugFlow');
-var BugFs =             bugpack.require('bugfs.BugFs');
-var Path =              bugpack.require('bugfs.Path');
-var PackedNodePackage = bugpack.require('buildbug.PackedNodePackage');
+var Bug                 = bugpack.require('Bug');
+var Class               = bugpack.require('Class');
+var Exception           = bugpack.require('Exception');
+var Obj                 = bugpack.require('Obj');
+var BugFlow             = bugpack.require('bugflow.BugFlow');
+var BugFs               = bugpack.require('bugfs.BugFs');
+var Path                = bugpack.require('bugfs.Path');
+var PackedNodePackage   = bugpack.require('buildbug.PackedNodePackage');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $forEachSeries =    BugFlow.$forEachSeries;
-var $parallel =         BugFlow.$parallel;
-var $series =           BugFlow.$series;
-var $task =             BugFlow.$task;
+var $forEachSeries      = BugFlow.$forEachSeries;
+var $parallel           = BugFlow.$parallel;
+var $series             = BugFlow.$series;
+var $task               = BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
+/**
+ * @class
+ * @extends {Obj}
+ */
 var NodePackage = Class.extend(Obj, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
+    /**
+     * @constructs
+     * @param {{
+     *      author: string,
+     *      bugs: Object,
+     *      dependencies: Object
+     *      description: string,
+     *      licenses: Array.<Object>, 
+     *      main: string,
+     *      name: string,
+     *      repository: Object, 
+     *      version: string
+     * }} packageJson
+     * @param {string} baseBuildPathString
+     */
     _constructor: function(packageJson, baseBuildPathString) {
 
         this._super();
 
 
         //-------------------------------------------------------------------------------
-        // Declare Variables
+        // Private Properties
         //-------------------------------------------------------------------------------
 
         /**
          * @private
          * @type {string}
          */
-        this.baseBuildPathString = baseBuildPathString;
+        this.baseBuildPathString    = baseBuildPathString;
 
         /**
          * @private
          * @type {Path}
          */
-        this.binPath = null;
+        this.binPath                = null;
 
         /**
          * @private
          * @type {Path}
          */
-        this.buildPath = null;
+        this.buildPath              = null;
 
         /**
          * @private
          * @type {Path}
          */
-        this.libPath = null;
+        this.libPath                = null;
 
         /**
          * @private
          * @type {Path}
          */
-        this.resourcesPath = null;
+        this.resourcesPath          = null;
 
         /**
          * @private
          * @type {Path}
          */
-        this.scriptsPath = null;
+        this.scriptsPath            = null;
 
         /**
          * @private
          * @type {Path}
          */
-        this.staticPath = null;
+        this.staticPath             = null;
 
         /**
          * @private
          * @type {Path}
          */
-        this.testPath = null;
+        this.testPath               = null;
 
         /**
          * @private
          * @type {{
-         *      name: string,
-         *      version: string,
-         *      main: string,
+         *      author: string,
+         *      bugs: Object,
          *      dependencies: Object
+         *      description: string,
+         *      licenses: Array.<Object>, 
+         *      main: string,
+         *      name: string,
+         *      repository: Object, 
+         *      version: string
          * }}
          */
-        this.packageJson = packageJson;
+        this.packageJson            = packageJson;
     },
 
 
@@ -152,10 +180,15 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @return {{
-     *      name: string,
-     *      version: string,
-     *      main: string,
+     *      author: string,
+     *      bugs: Object,
      *      dependencies: Object
+     *      description: string,
+     *      licenses: Array.<Object>, 
+     *      main: string,
+     *      name: string,
+     *      repository: Object, 
+     *      version: string
      * }}
      */
     getPackageJson: function() {
@@ -206,27 +239,27 @@ var NodePackage = Class.extend(Obj, {
 
 
     //-------------------------------------------------------------------------------
-    // Class Methods
+    // Public Methods
     //-------------------------------------------------------------------------------
 
     /**
      * @param {{
      *      sourcePaths: Array.<(string|Path)>,
      *      testPaths: Array.<(string|Path)>,
-     *      scriptPaths: Array.<(string|Path)>}
+     *      scriptPaths: Array.<(string|Path)>
      * }} params
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     buildPackage: function(params, callback) {
         var _this = this;
         this.validatePackageJson();
 
-        var sourcePaths = params.sourcePaths;
-        var testPaths = params.testPaths;
-        var scriptPaths = params.scriptPaths;
-        var binPaths = params.binPaths;
-        var staticPaths = params.staticPaths;
-        var resourcePaths = params.resourcePaths;
+        var sourcePaths     = params.sourcePaths;
+        var testPaths       = params.testPaths;
+        var scriptPaths     = params.scriptPaths;
+        var binPaths        = params.binPaths;
+        var staticPaths     = params.staticPaths;
+        var resourcePaths   = params.resourcePaths;
 
         this.createPackageBuildPaths();
 
@@ -235,11 +268,11 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (binPaths) {
                         $forEachSeries(binPaths, function(flow, binPath) {
-                            BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                flow.complete(error);
+                            BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                                flow.complete(throwable);
                             });
-                        }).execute(function(error) {
-                            flow.complete(error);
+                        }).execute(function(throwable) {
+                            flow.complete(throwable);
                         });
                     } else {
                         flow.complete();
@@ -247,21 +280,21 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     $forEachSeries(sourcePaths, function(flow, sourcePath) {
-                        BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                            flow.complete(error);
+                        BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            flow.complete(throwable);
                         });
-                    }).execute(function(error) {
-                        flow.complete(error);
+                    }).execute(function(throwable) {
+                        flow.complete(throwable);
                     });
                 }),
                 $task(function(flow) {
                     if (testPaths) {
                         $forEachSeries(testPaths, function(flow, testPath) {
-                            BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                flow.complete(error);
+                            BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                                flow.complete(throwable);
                             });
-                        }).execute(function(error) {
-                            flow.complete(error);
+                        }).execute(function(throwable) {
+                            flow.complete(throwable);
                         });
                     } else {
                         flow.complete();
@@ -270,11 +303,11 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (scriptPaths) {
                         $forEachSeries(scriptPaths, function(flow, scriptPath) {
-                            BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                flow.complete(error);
+                            BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                                flow.complete(throwable);
                             });
-                        }).execute(function(error) {
-                            flow.complete(error);
+                        }).execute(function(throwable) {
+                            flow.complete(throwable);
                         });
                     } else {
                         flow.complete();
@@ -283,11 +316,11 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (staticPaths) {
                         $forEachSeries(staticPaths, function(flow, staticPath) {
-                            BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                flow.complete(error);
+                            BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                                flow.complete(throwable);
                             });
-                        }).execute(function(error) {
-                            flow.complete(error);
+                        }).execute(function(throwable) {
+                            flow.complete(throwable);
                         });
                     } else {
                         flow.complete();
@@ -296,11 +329,11 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (resourcePaths) {
                         $forEachSeries(resourcePaths, function(flow, resourcePath) {
-                            BugFs.copyDirectoryContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(error) {
-                                flow.complete(error);
+                            BugFs.copyDirectoryContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                                flow.complete(throwable);
                             });
-                        }).execute(function(error) {
-                                flow.complete(error);
+                        }).execute(function(throwable) {
+                                flow.complete(throwable);
                             });
                     } else {
                         flow.complete();
@@ -308,8 +341,8 @@ var NodePackage = Class.extend(Obj, {
                 })
             ]),
             $task(function(flow) {
-                _this.writePackageJson(function(error) {
-                    flow.complete(error);
+                _this.writePackageJson(function(throwable) {
+                    flow.complete(throwable);
                 });
             })
         ]).execute(callback);
@@ -317,31 +350,31 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @param {Object} params
-     * @param {function(Error, PackedNodePackage)} callback
+     * @param {function(Throwable, PackedNodePackage=)} callback
      */
     packPackage: function(params, callback) {
         var _this = this;
         var distPath = params.distPath;
         var packedNodePackage = new PackedNodePackage(this, distPath);
-        this.packNodePackage(function(error) {
-            if (!error) {
+        this.packNodePackage(function(throwable) {
+            if (!throwable) {
                 var npmPackageFilePath = process.cwd() + path.sep + packedNodePackage.getFileName();
-                BugFs.move(npmPackageFilePath, distPath, Path.SyncMode.MERGE_REPLACE, function(error) {
-                    if (!error) {
+                BugFs.move(npmPackageFilePath, distPath, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                    if (!throwable) {
                         callback(null, packedNodePackage);
                     } else {
-                        callback(error);
+                        callback(throwable);
                     }
                 });
             } else {
-                callback(error);
+                callback(throwable);
             }
         });
     },
 
 
     //-------------------------------------------------------------------------------
-    // Private Class Methods
+    // Private Methods
     //-------------------------------------------------------------------------------
 
     /**
@@ -359,16 +392,15 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @private
-     * @param {function()} callback
+     * @param {function(Throwable=)} callback
      */
     packNodePackage: function(callback) {
         var packagePath = this.buildPath.getAbsolutePath();
         npm.commands.pack([packagePath], function (error, data) {
             if (!error) {
-                console.log("Packed up node package '" + packagePath + "'");
                 callback();
             } else {
-                callback(error);
+                callback(new Exception("NpmError", {}, "Error occurred in NPM", [error]));
             }
         });
     },
@@ -378,28 +410,28 @@ var NodePackage = Class.extend(Obj, {
      */
     validatePackageJson: function() {
         if (!this.packageJson.name) {
-            throw new Error("'name' is required in a node package's package.json");
+            throw new Bug("PackageJsonInvalid", {}, "'name' is required in a node package's package.json");
         }
 
         //TODO BRN: Do a better job of validating the version.
 
         if (!this.packageJson.version) {
-            throw new Error("'version' is required in a node package's package.json");
+            throw Bug("PackageJsonInvalid", {}, "'version' is required in a node package's package.json");
         }
     },
 
     /**
      * @private
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     writePackageJson: function(callback) {
         var packageJson = this.packageJson;
         var packageJsonPath = this.buildPath.joinPaths(['package.json']);
-        BugFs.createFile(packageJsonPath, function(error) {
-            if (!error) {
+        BugFs.createFile(packageJsonPath, function(throwable) {
+            if (!throwable) {
                 BugFs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, '\t'), callback);
             } else {
-                callback(error);
+                callback(throwable);
             }
         });
     }
