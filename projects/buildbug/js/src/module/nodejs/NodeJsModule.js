@@ -10,6 +10,7 @@
 //@Require('Class')
 //@Require('Exception')
 //@Require('Map')
+//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
@@ -34,6 +35,7 @@ var npm                     = require('npm');
 var Class                   = bugpack.require('Class');
 var Exception               = bugpack.require('Exception');
 var Map                     = bugpack.require('Map');
+var BugFlow                 = bugpack.require('bugflow.BugFlow');
 var BugFs                   = bugpack.require('bugfs.BugFs');
 var BugMeta                 = bugpack.require('bugmeta.BugMeta');
 var BuildBug                = bugpack.require('buildbug.BuildBug');
@@ -46,6 +48,7 @@ var NodePackage             = bugpack.require('buildbug.NodePackage');
 // Simplify References
 //-------------------------------------------------------------------------------
 
+var $forInParallel          = BugFlow.$forInParallel;
 var bugmeta                 = BugMeta.context();
 var buildModule             = BuildModuleAnnotation.buildModule;
 var buildTask               = BuildBug.buildTask;
@@ -109,6 +112,8 @@ var NodeJsModule = Class.extend(BuildModule, {
         buildTask('createNodePackage', this.createNodePackageTask, this);
         buildTask('packNodePackage', this.packNodePackageTask, this);
         buildTask('publishNodePackage', this.publishNodePackageTask, this);
+        buildTask('npmAddUser', this.npmAddUserTask, this);
+        buildTask('npmConfigSet', this.npmConfigSetTask, this);
     },
 
     /**
@@ -129,19 +134,20 @@ var NodeJsModule = Class.extend(BuildModule, {
     /**
      * Available Properties
      * {
-     *   sourcePaths: Array.<string>,
-     *   testPaths: Array.<string>,
-     *   scriptPaths: Array.<string>,
      *   binPaths: Array.<string>,
-     *   staticPaths: Array.<string>,
-     *   resourcePaths: Array.<string>,
+     *   buildPath: string,
      *   packageJson: {
      *       name: string,
      *       version: string,
      *       main: string,
      *       dependencies: Object
      *   },
-     *   buildPath: string
+     *   readmePath: string,
+     *   resourcePaths: Array.<string>,
+     *   scriptPaths: Array.<string>,
+     *   sourcePaths: Array.<string>,
+     *   staticPaths: Array.<string>,
+     *   testPaths: Array.<string>
      * }
      * @param {BuildProject} buildProject
      * @param {BuildProperties} properties
@@ -154,6 +160,7 @@ var NodeJsModule = Class.extend(BuildModule, {
         var binPaths        = properties.getProperty("binPaths");
         var staticPaths     = properties.getProperty("staticPaths");
         var resourcePaths   = properties.getProperty("resourcePaths");
+        var readmePath      = properties.getProperty("readmePath");
         var packageJson     = properties.getProperty("packageJson");
         var buildPath       = properties.getProperty("buildPath");
 
@@ -164,9 +171,29 @@ var NodeJsModule = Class.extend(BuildModule, {
             scriptPaths: scriptPaths,
             binPaths: binPaths,
             staticPaths: staticPaths,
-            resourcePaths: resourcePaths
+            resourcePaths: resourcePaths,
+            readmePath: readmePath
         };
         nodePackage.buildPackage(params, callback);
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {BuildProperties} properties
+     * @param {function(Throwable=)} callback
+     */
+    npmAddUserTask: function(buildProject, properties, callback) {
+        this.npmAddUser(callback);
+    },
+
+    /**
+     * @param {BuildProject} buildProject
+     * @param {BuildProperties} properties
+     * @param {function(Throwable=)} callback
+     */
+    npmConfigSetTask: function(buildProject, properties, callback) {
+        var config  = properties.getProperty("config");
+        this.npmConfigSet(config, callback);
     },
 
     /**
@@ -310,6 +337,48 @@ var NodeJsModule = Class.extend(BuildModule, {
                 _this.initializeComplete();
             });
         }
+    },
+
+    /**
+     * @private
+     * @param {function(Throwable=)} callback
+     */
+    npmAddUser: function(callback) {
+        var registry    = npm.registry;
+        var username    = npm.config.get("username");
+        var password    = npm.config.get("_password");
+        var email       = npm.config.get("email");
+        registry.adduser(username, password, email, function(error) {
+            if (!error) {
+                registry.username = username;
+                registry.password = password;
+                registry.email = email;
+                npm.config.set("username", username, "user");
+                npm.config.set("_password", password, "user");
+                npm.config.set("email", email, "user");
+                npm.config.del("_token", "user");
+                npm.config.save("user", callback);
+            } else {
+                callback(error);
+            }
+        });
+    },
+
+    /**
+     * @private
+     * @param {Object} configObject
+     * @param {function(Throwable=)} callback
+     */
+    npmConfigSet: function(configObject, callback) {
+        $forInParallel(configObject, function(flow, key, value) {
+            npm.commands.config(["set", key, value], function(error, data) {
+                if (!error) {
+                    callback();
+                } else {
+                    callback(new Exception("NpmError", {}, "Error occurred in NPM", [error]));
+                }
+            });
+        }).execute(callback);
     }
 });
 

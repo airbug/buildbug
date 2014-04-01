@@ -51,13 +51,13 @@ buildProperties({
             bin: "bin/buildbug",
             dependencies: {
                 "aws-sdk": "1.9.x",
-                "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
+                "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.1.0.tgz',
                 bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
                 bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.14.tgz',
                 deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
                 lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.3.tgz',
                 "uglify-js": "2.3.x",
-                npm: '1.3.x',
+                npm: '1.4.x',
                 tar: 'git://github.com/airbug/node-tar.git#master',
                 fstream: '0.1.x'
             }

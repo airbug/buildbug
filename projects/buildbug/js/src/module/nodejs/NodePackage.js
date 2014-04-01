@@ -244,9 +244,20 @@ var NodePackage = Class.extend(Obj, {
 
     /**
      * @param {{
-     *      sourcePaths: Array.<(string|Path)>,
-     *      testPaths: Array.<(string|Path)>,
-     *      scriptPaths: Array.<(string|Path)>
+     *   binPaths: Array.<string>,
+     *   buildPath: string,
+     *   packageJson: {
+     *       name: string,
+     *       version: string,
+     *       main: string,
+     *       dependencies: Object
+     *   },
+     *   readmePath: string,
+     *   resourcePaths: Array.<string>,
+     *   scriptPaths: Array.<string>,
+     *   sourcePaths: Array.<string>,
+     *   staticPaths: Array.<string>,
+     *   testPaths: Array.<string>
      * }} params
      * @param {function(Throwable=)} callback
      */
@@ -260,6 +271,7 @@ var NodePackage = Class.extend(Obj, {
         var binPaths        = params.binPaths;
         var staticPaths     = params.staticPaths;
         var resourcePaths   = params.resourcePaths;
+        var readmePath      = params.readmePath;
 
         this.createPackageBuildPaths();
 
@@ -335,6 +347,15 @@ var NodePackage = Class.extend(Obj, {
                         }).execute(function(throwable) {
                                 flow.complete(throwable);
                             });
+                    } else {
+                        flow.complete();
+                    }
+                }),
+                $task(function(flow) {
+                    if (readmePath) {
+                        BugFs.copyFile(readmePath, _this.getBuildPath(), Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            flow.complete(throwable);
+                        });
                     } else {
                         flow.complete();
                     }
