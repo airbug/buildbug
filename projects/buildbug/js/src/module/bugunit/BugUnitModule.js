@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BugUnitModule')
+//@Export('buildbug.BugUnitModule')
 //@Autoload
 
 //@Require('Class')

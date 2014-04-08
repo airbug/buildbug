@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('ClientJsModule')
+//@Export('buildbug.ClientJsModule')
 //@Autoload
 
 //@Require('Class')

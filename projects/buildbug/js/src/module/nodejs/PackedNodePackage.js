@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('PackedNodePackage')
+//@Export('buildbug.PackedNodePackage')
 
 //@Require('Class')
 //@Require('Exception')

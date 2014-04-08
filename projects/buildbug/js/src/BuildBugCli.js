@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildBugCli')
+//@Export('buildbug.BuildBugCli')
 
 //@Require('Class')
 //@Require('bugcli.BugCli')

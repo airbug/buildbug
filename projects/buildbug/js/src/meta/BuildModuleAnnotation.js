@@ -2,29 +2,35 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildModuleAnnotation')
+//@Export('buildbug.BuildModuleAnnotation')
 
 //@Require('Class')
 //@Require('bugmeta.Annotation')
 
-var bugpack = require('bugpack').context();
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
+
+var bugpack         = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class = bugpack.require('Class');
-
-var Annotation = bugpack.require('bugmeta.Annotation');
+var Class           = bugpack.require('Class');
+var Annotation      = bugpack.require('bugmeta.Annotation');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
+/**
+ * @class
+ * @extends {Annotation}
+ */
 var BuildModuleAnnotation = Class.extend(Annotation, {
 
     //-------------------------------------------------------------------------------

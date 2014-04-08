@@ -1,25 +1,28 @@
 //-------------------------------------------------------------------------------
-// Dependencies
+// Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildSeries')
+//@Export('buildbug.BuildSeries')
 
 //@Require('Class')
 //@Require('bugflow.Series')
 //@Require('buildbug.BuildFlow')
 
-var bugpack = require('bugpack').context();
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
+
+var bugpack         = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class = bugpack.require('Class');
-var Series = bugpack.require('bugflow.Series');
-var BuildFlow = bugpack.require('buildbug.BuildFlow');
+var Class           = bugpack.require('Class');
+var Series          = bugpack.require('bugflow.Series');
+var BuildFlow       = bugpack.require('buildbug.BuildFlow');
 
 
 //-------------------------------------------------------------------------------
@@ -38,7 +41,7 @@ var BuildSeries = Class.extend(BuildFlow, {
 
 
         //-------------------------------------------------------------------------------
-        // Declare Variables
+        // Private Properties
         //-------------------------------------------------------------------------------
 
         /**
@@ -50,7 +53,7 @@ var BuildSeries = Class.extend(BuildFlow, {
 
 
     //-------------------------------------------------------------------------------
-    // BuildFlow Extensions
+    // BuildFlow Methods
     //-------------------------------------------------------------------------------
 
     /**

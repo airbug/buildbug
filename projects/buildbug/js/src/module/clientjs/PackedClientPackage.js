@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('PackedClientPackage')
+//@Export('buildbug.PackedClientPackage')
 
 //@Require('Class')
 //@Require('Obj')

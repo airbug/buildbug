@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildModuleScan')
+//@Export('buildbug.BuildModuleScan')
 
 //@Require('Class')
 //@Require('Obj')
@@ -15,16 +13,16 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
+var bugpack     = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class   = bugpack.require('Class');
-var Obj     = bugpack.require('Obj');
-var BugMeta = bugpack.require('bugmeta.BugMeta');
+var Class       = bugpack.require('Class');
+var Obj         = bugpack.require('Obj');
+var BugMeta     = bugpack.require('bugmeta.BugMeta');
 
 
 //-------------------------------------------------------------------------------

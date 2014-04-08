@@ -34,7 +34,19 @@ var nodejs          = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version         = "0.0.30";
+var version             = "0.1.1";
+var dependencies        = {
+    "aws-sdk": "1.9.x",
+    "bugpack-registry": "0.1.2",
+    bugpack: "0.1.5",
+    bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.0.tgz",
+    deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
+    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.3.tgz",
+    "uglify-js": "2.3.x",
+    npm: "1.4.x",
+    tar: "git://github.com/airbug/node-tar.git#master",
+    fstream: "0.1.x"
+};
 
 
 //-------------------------------------------------------------------------------
@@ -49,27 +61,16 @@ buildProperties({
             private: true,
             main: "./scripts/buildbug-module.js",
             bin: "bin/buildbug",
-            dependencies: {
-                "aws-sdk": "1.9.x",
-                "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.1.0.tgz',
-                bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
-                bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.14.tgz',
-                deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
-                lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.3.tgz',
-                "uglify-js": "2.3.x",
-                npm: '1.4.x',
-                tar: 'git://github.com/airbug/node-tar.git#master',
-                fstream: '0.1.x'
-            }
+            dependencies: dependencies
         },
         sourcePaths: [
             "../bugcore/projects/bugcore/js/src",
+            "../bugflow/projects/bugflow/js/src",
+            "../bugfs/projects/bugfs/js/src",
             "../bugjs/projects/aws/js/src",
             "../bugjs/projects/bugcli/js/src",
-            "../bugjs/projects/bugflow/js/src",
-            "../bugjs/projects/bugfs/js/src",
-            "../bugjs/projects/bugmeta/js/src",
-            "../bugjs/projects/bugtrace/js/src",
+            "../bugmeta/projects/bugmeta/js/src",
+            "../bugtrace/projects/bugtrace/js/src",
             "./projects/buildbug/js/src"
         ],
         scriptPaths: [
@@ -86,33 +87,25 @@ buildProperties({
                 private: true,
                 main: "./scripts/buildbug-module.js",
                 bin: "bin/buildbug",
-                dependencies: {
-                    "aws-sdk": "1.9.x",
-                    "bugpack-registry": 'https://s3.amazonaws.com/deploy-airbug/bugpack-registry-0.0.5.tgz',
-                    bugpack: 'https://s3.amazonaws.com/deploy-airbug/bugpack-0.0.5.tgz',
-                    bugunit: 'https://s3.amazonaws.com/deploy-airbug/bugunit-0.0.14.tgz',
-                    deploybug: 'https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz',
-                    lintbug: 'https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.3.tgz',
-                    "uglify-js": "2.3.x",
-                    npm: '1.3.x',
-                    tar: 'git://github.com/airbug/node-tar.git#master',
-                    fstream: '0.1.x'
-                }
+                dependencies: dependencies
             },
             sourcePaths: [
+                "../buganno/projects/buganno/js/src",
                 "../bugjs/projects/bugyarn/js/src",
                 "../bugunit/projects/bugdouble/js/src",
                 "../bugunit/projects/bugunit/js/src"
             ],
             scriptPaths: [
+                "../buganno/projects/buganno/js/scripts",
                 "../bugunit/projects/bugunit/js/scripts"
             ],
             testPaths: [
                 "../bugcore/projects/bugcore/js/test",
+                "../bugflow/projects/bugflow/js/test",
+                "../bugfs/projects/bugfs/js/test",
                 "../bugjs/projects/bugcli/js/test",
-                "../bugjs/projects/bugflow/js/test",
-                "../bugjs/projects/bugmeta/js/test",
-                "../bugjs/projects/bugtrace/js/test",
+                "../bugmeta/projects/bugmeta/js/test",
+                "../bugtrace/projects/bugtrace/js/test",
                 "./projects/buildbug/js/test"
             ]
         }
@@ -121,15 +114,10 @@ buildProperties({
 
 
 //-------------------------------------------------------------------------------
-// Declare Tasks
+// Declare BuildTasks
 //-------------------------------------------------------------------------------
 
-
-//-------------------------------------------------------------------------------
-// Declare Flows
-//-------------------------------------------------------------------------------
-
-// Clean Flow
+// Clean BuildTask
 //-------------------------------------------------------------------------------
 
 buildTarget('clean').buildFlow(
@@ -137,7 +125,7 @@ buildTarget('clean').buildFlow(
 );
 
 
-// Local Flow
+// Local BuildTask
 //-------------------------------------------------------------------------------
 
 buildTarget('local').buildFlow(
@@ -186,7 +174,7 @@ buildTarget('local').buildFlow(
                     );
                     task.updateProperties({
                         modulePath: packedNodePackage.getFilePath(),
-                        checkCoverage: true
+                        //checkCoverage: true
                     });
                 }
             }),
@@ -213,7 +201,7 @@ buildTarget('local').buildFlow(
 ).makeDefault();
 
 
-// Prod Flow
+// Prod BuildTask
 //-------------------------------------------------------------------------------
 
 buildTarget("prod").buildFlow(

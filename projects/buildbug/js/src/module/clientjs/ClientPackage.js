@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('ClientPackage')
+//@Export('buildbug.ClientPackage')
 
 //@Require('Class')
 //@Require('Obj')
@@ -18,33 +16,33 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var fstream = require("fstream");
-var zlib = require('zlib');
-var path = require('path');
-var tar = require('tar');
+var bugpack                 = require('bugpack').context();
+var fstream                 = require("fstream");
+var path                    = require('path');
+var tar                     = require('tar');
+var zlib                    = require('zlib');
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class =                 bugpack.require('Class');
-var Obj =                   bugpack.require('Obj');
-var BugFlow =               bugpack.require('bugflow.BugFlow');
-var BugFs =                 bugpack.require('bugfs.BugFs');
-var Path =                  bugpack.require('bugfs.Path');
-var PackedClientPackage =   bugpack.require('buildbug.PackedClientPackage');
+var Class                   = bugpack.require('Class');
+var Obj                     = bugpack.require('Obj');
+var BugFlow                 = bugpack.require('bugflow.BugFlow');
+var BugFs                   = bugpack.require('bugfs.BugFs');
+var Path                    = bugpack.require('bugfs.Path');
+var PackedClientPackage     = bugpack.require('buildbug.PackedClientPackage');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var $forEachSeries =    BugFlow.$forEachSeries;
-var $parallel =         BugFlow.$parallel;
-var $series =           BugFlow.$series;
-var $task =             BugFlow.$task;
+var $forEachSeries          = BugFlow.$forEachSeries;
+var $parallel               = BugFlow.$parallel;
+var $series                 = BugFlow.$series;
+var $task                   = BugFlow.$task;
 
 
 //-------------------------------------------------------------------------------

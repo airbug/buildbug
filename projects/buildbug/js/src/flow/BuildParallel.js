@@ -1,16 +1,19 @@
 //-------------------------------------------------------------------------------
-// Dependencies
+// Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildParallel')
+//@Export('buildbug.BuildParallel')
 
 //@Require('Class')
 //@Require('bugflow.Parallel')
 //@Require('buildbug.BuildFlow')
 
-var bugpack = require('bugpack').context();
+
+//-------------------------------------------------------------------------------
+// Common Modules
+//-------------------------------------------------------------------------------
+
+var bugpack     = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
@@ -18,15 +21,19 @@ var bugpack = require('bugpack').context();
 //-------------------------------------------------------------------------------
 
 
-var Class = bugpack.require('Class');
-var Parallel = bugpack.require('bugflow.Parallel');
-var BuildFlow = bugpack.require('buildbug.BuildFlow');
+var Class       = bugpack.require('Class');
+var Parallel    = bugpack.require('bugflow.Parallel');
+var BuildFlow   = bugpack.require('buildbug.BuildFlow');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
+/**
+ * @class
+ * @extends {BuildFlow}
+ */
 var BuildParallel = Class.extend(BuildFlow, {
 
     //-------------------------------------------------------------------------------
@@ -39,7 +46,7 @@ var BuildParallel = Class.extend(BuildFlow, {
 
 
         //-------------------------------------------------------------------------------
-        // Declare Variables
+        // Private Properties
         //-------------------------------------------------------------------------------
 
         /**
@@ -51,7 +58,7 @@ var BuildParallel = Class.extend(BuildFlow, {
 
 
     //-------------------------------------------------------------------------------
-    // BuildFlow Extensions
+    // BuildFlow Methods
     //-------------------------------------------------------------------------------
 
     /**

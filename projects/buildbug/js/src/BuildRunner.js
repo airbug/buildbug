@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildRunner')
+//@Export('buildbug.BuildRunner')
 
 //@Require('Class')
 //@Require('Obj')

@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BugJarModule')
+//@Export('buildbug.BugJarModule')
 
 //@Require('Class')
 //@Require('bugmeta.BugMeta')

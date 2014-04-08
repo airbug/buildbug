@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('ExecuteTarget')
+//@Export('buildbug.ExecuteTarget')
 
 //@Require('Class')
 //@Require('bugflow.Task')
@@ -16,7 +14,7 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
+var bugpack         = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
@@ -39,13 +37,19 @@ var ExecuteTarget = Class.extend(Task, {
     // Constructor
     //-------------------------------------------------------------------------------
 
+    /**
+     * @constructs
+     * @param {BuildTask} buildTask
+     * @param {BuildProperties} taskProperties
+     * @param {function()} taskInitMethod
+     */
     _constructor: function(buildTask, taskProperties, taskInitMethod) {
 
         this._super(buildTask.getTaskMethod(), buildTask.getTaskContext());
 
 
         //-------------------------------------------------------------------------------
-        // Declare Variables
+        // Private Properties
         //-------------------------------------------------------------------------------
 
         /**
@@ -69,7 +73,7 @@ var ExecuteTarget = Class.extend(Task, {
 
 
     //-------------------------------------------------------------------------------
-    // Flow Extensions
+    // Flow Methods
     //-------------------------------------------------------------------------------
 
     /**
@@ -95,7 +99,7 @@ var ExecuteTarget = Class.extend(Task, {
 
 
     //-------------------------------------------------------------------------------
-    // Class Methods
+    // Public Methods
     //-------------------------------------------------------------------------------
 
     /**
@@ -108,7 +112,7 @@ var ExecuteTarget = Class.extend(Task, {
 
 
     //-------------------------------------------------------------------------------
-    // Private Class Methods
+    // Private Methods
     //-------------------------------------------------------------------------------
 
     /**

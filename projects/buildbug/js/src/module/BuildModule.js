@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildModule')
+//@Export('buildbug.BuildModule')
 
 //@Require('Class')
 //@Require('Event')
@@ -15,65 +13,92 @@
 // Common Modules
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
+var bugpack             = require('bugpack').context();
 
 
 //-------------------------------------------------------------------------------
 // BugPack
 //-------------------------------------------------------------------------------
 
-var Class           = bugpack.require('Class');
-var Event           = bugpack.require('Event');
-var EventDispatcher = bugpack.require('EventDispatcher');
+var Class               = bugpack.require('Class');
+var Event               = bugpack.require('Event');
+var EventDispatcher     = bugpack.require('EventDispatcher');
 
 
 //-------------------------------------------------------------------------------
 // Declare Class
 //-------------------------------------------------------------------------------
 
+/**
+ * @class
+ * @extends {EventDispatcher}
+ */
 var BuildModule = Class.extend(EventDispatcher, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
+    /**
+     * @constructs
+     */
     _constructor: function() {
 
         this._super();
 
 
         //-------------------------------------------------------------------------------
-        // Declare Variables
+        // Private Properties
         //-------------------------------------------------------------------------------
 
         /**
          * @private
          * @type {BuildProject}
          */
-        this.buildProject = null;
+        this.buildProject       = null;
 
         /**
          * @private
          * @type {boolean}
          */
-        this.enabled = false;
+        this.enabled            = false;
 
         /**
          * @private
-         * @type {boolean}
+         * @type {(BuildModule.InitializeStates|string)}
          */
-        this.initialized = false;
-
-        /**
-         * @private
-         * @type {boolean}
-         */
-        this.initailizing = false;
+        this.initializeState    = BuildModule.InitializeStates.DEINITIALIZED;
     },
 
 
     //-------------------------------------------------------------------------------
     // Getters and Setters
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @return {BuildProject}
+     */
+    geBuildProject: function() {
+        return this.buildProject;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    getEnabled: function() {
+        return this.enabled;
+    },
+
+    /**
+     * @return {BuildModule.InitializeStates|string}
+     */
+    getInitializeState: function() {
+        return this.initializeState;
+    },
+
+
+    //-------------------------------------------------------------------------------
+    // Convenience Methods
     //-------------------------------------------------------------------------------
 
     /**
@@ -86,21 +111,48 @@ var BuildModule = Class.extend(EventDispatcher, {
     /**
      * @return {boolean}
      */
+    isDeinitialized: function() {
+        return this.initializeState === BuildModule.InitializeStates.DEINITIALIZED;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isDeinitializing: function() {
+        return this.initializeState === BuildModule.InitializeStates.DEINITIALIZING;
+    },
+
+    /**
+     * @return {boolean}
+     */
     isInitialized: function() {
-        return this.initialized;
+        return this.initializeState === BuildModule.InitializeStates.INITIALIZED;
     },
 
     /**
      * @return {boolean}
      */
     isInitializing: function() {
-        return this.initailizing;
+        return this.initializeState === BuildModule.InitializeStates.INITIALIZING;
     },
 
 
     //-------------------------------------------------------------------------------
-    // Class Methods
+    // Public Methods
     //-------------------------------------------------------------------------------
+
+    /**
+     *
+     */
+    deinitialize: function() {
+        if (this.isInitialized()) {
+            this.initializeState    = BuildModule.InitializeStates.DEINITIALIZING;
+            var deinitializeComplete  = this.deinitializeModule();
+            if (deinitializeComplete) {
+                this.deinitializeComplete();
+            }
+        }
+    },
 
     /**
      * @param {BuildProject} buildProject
@@ -114,12 +166,12 @@ var BuildModule = Class.extend(EventDispatcher, {
     },
 
     /**
-     * @return {boolean}
+     *
      */
     initialize: function() {
-        if (!this.isInitialized() && !this.isInitializing()) {
-            this.initailizing = true;
-            var initializeComplete = this.initializeModule();
+        if (this.isDeinitialized()) {
+            this.initializeState    = BuildModule.InitializeStates.INITIALIZING;
+            var initializeComplete  = this.initializeModule();
             if (initializeComplete) {
                 this.initializeComplete();
             }
@@ -128,8 +180,27 @@ var BuildModule = Class.extend(EventDispatcher, {
 
 
     //-------------------------------------------------------------------------------
-    // Protected Class Methods
+    // Protected Methods
     //-------------------------------------------------------------------------------
+
+    /**
+     * @protected
+     */
+    deinitializeComplete: function() {
+        if (!this.isInitialized()) {
+            this.initializeState = BuildModule.InitializeStates.DEINITIALIZED;
+            this.dispatchEvent(new Event(BuildModule.EventTypes.MODULE_DEINITIALIZED));
+        }
+    },
+
+    /**
+     * @protected
+     * @return {boolean}
+     */
+    deinitializeModule: function() {
+        // Override this function
+        return true;
+    },
 
     /**
      * @protected
@@ -142,8 +213,8 @@ var BuildModule = Class.extend(EventDispatcher, {
      * @protected
      */
     initializeComplete: function() {
-        if (!this.initialized) {
-            this.initialized = true;
+        if (!this.isInitialized()) {
+            this.initializeState = BuildModule.InitializeStates.INITIALIZED;
             this.dispatchEvent(new Event(BuildModule.EventTypes.MODULE_INITIALIZED));
         }
     },
@@ -163,8 +234,24 @@ var BuildModule = Class.extend(EventDispatcher, {
 // Static Variables
 //-------------------------------------------------------------------------------
 
+/**
+ * @static
+ * @enum {string}
+ */
 BuildModule.EventTypes = {
+    MODULE_DEINITIALIZED: "BuildModule:ModuleDeinitialized",
     MODULE_INITIALIZED: "BuildModule:ModuleInitialized"
+};
+
+/**
+ * @static
+ * @enum {string}
+ */
+BuildModule.InitializeStates = {
+    DEINITIALIZED: "BuildModule:Deinitialized",
+    DEINITIALIZING: "BuildModule:Deinitializing",
+    INITIALIZED: "BuildModule:Initialized",
+    INITIALIZING: "BuildModule:Initializing"
 };
 
 

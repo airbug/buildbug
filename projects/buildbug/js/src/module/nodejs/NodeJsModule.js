@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('NodeJsModule')
+//@Export('buildbug.NodeJsModule')
 //@Autoload
 
 //@Require('Class')

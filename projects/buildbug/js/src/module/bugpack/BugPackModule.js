@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BugPackModule')
+//@Export('buildbug.BugPackModule')
 //@Autoload
 
 //@Require('Class')
@@ -56,28 +54,56 @@ var $traceWithError         = BugTrace.$traceWithError;
 // Declare Class
 //-------------------------------------------------------------------------------
 
+/**
+ * @class
+ * @extends {BuildModule}
+ */
 var BugPackModule = Class.extend(BuildModule, {
 
     //-------------------------------------------------------------------------------
     // Constructor
     //-------------------------------------------------------------------------------
 
+    /**
+     * @constructs
+     */
     _constructor: function() {
 
         this._super();
 
 
         //-------------------------------------------------------------------------------
-        // Declare Variables
+        // Private Properties
         //-------------------------------------------------------------------------------
 
-
+        //TODO BRN: upgrade buildbug to use bugioc and inject this module instead of setting it like this
+        /**
+         * @private
+         * @type {BugPackRegistryBuilder}
+         */
+        this.bugpackRegistryModule = bugpack_registry;
     },
 
+    //-------------------------------------------------------------------------------
+    // BuildModule Methods
+    //-------------------------------------------------------------------------------
 
-    //-------------------------------------------------------------------------------
-    // BuildModule Implementation
-    //-------------------------------------------------------------------------------
+    /**
+     * @protected
+     * @return {boolean}
+     */
+    deinitializeModule: function() {
+        this._super();
+        var _this = this;
+        this.bugpackRegistryModule.deinitialize(function(throwable) {
+            if (!throwable) {
+                _this.deinitializeComplete();
+            } else {
+                throw throwable;
+            }
+        });
+        return false;
+    },
 
     /**
      * @protected
@@ -93,7 +119,15 @@ var BugPackModule = Class.extend(BuildModule, {
      */
     initializeModule: function() {
         this._super();
-        return true;
+        var _this = this;
+        this.bugpackRegistryModule.initialize(function(throwable) {
+            if (!throwable) {
+                _this.initializeComplete();
+            } else {
+                throw throwable;
+            }
+        });
+        return false;
     },
 
 
@@ -108,7 +142,7 @@ var BugPackModule = Class.extend(BuildModule, {
      * }
      * @param {BuildProject} buildProject
      * @param {BuildProperties} properties
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     generateBugPackRegistryTask: function(buildProject, properties, callback) {
         var sourceRoot = properties.getProperty("sourceRoot");
@@ -118,19 +152,19 @@ var BugPackModule = Class.extend(BuildModule, {
 
 
     //-------------------------------------------------------------------------------
-    // Private Class Methods
+    // Private Methods
     //-------------------------------------------------------------------------------
 
     /**
      * @private
      * @param {(string|Path)} sourceRoot
-     * @param {Array.<(string | RegExp>} ignorePatterns
-     * @param {function(Error)} callback
+     * @param {Array.<(string | RegExp)>} ignorePatterns
+     * @param {function(Throwable=)} callback
      */
     generateBugPackRegistry: function(sourceRoot, ignorePatterns, callback) {
         var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
         var _this = this;
-        bugpack_registry.buildRegistry(sourceRootPath.getAbsolutePath(), ignorePatterns, $traceWithError(function(error, bugpackRegistry) {
+        this.bugpackRegistryModule.buildRegistry(sourceRootPath.getAbsolutePath(), ignorePatterns, $traceWithError(function(error, bugpackRegistry) {
             if (!error) {
                 _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
             } else {
@@ -143,7 +177,7 @@ var BugPackModule = Class.extend(BuildModule, {
      * @private
      * @param {Path} outputDirPath
      * @param {BugPackRegistry} bugpackRegistry
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     writeBugpackRegistryJson: function(outputDirPath, bugpackRegistry, callback) {
         var bugpackRegistryPath = outputDirPath.getAbsolutePath() + path.sep + 'bugpack-registry.json';

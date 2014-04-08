@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('UglifyJsModule')
+//@Export('buildbug.UglifyJsModule')
 //@Autoload
 
 //@Require('Class')

@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('TokenReplacer')
+//@Export('buildbug.TokenReplacer')
 
 //@Require('Class')
 //@Require('Obj')

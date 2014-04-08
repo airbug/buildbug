@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('BuildProject')
+//@Export('buildbug.BuildProject')
 
 //@Require('Bug')
 //@Require('Class')
@@ -228,7 +226,6 @@ var BuildProject = Class.extend(EventDispatcher, {
                 this.numberEnabledModules++;
                 buildModule.setParentPropagator(this);
                 buildModule.enable(this);
-                buildModule.initialize();
             }
 
             // NOTE BRN: It's very possible that a module might try to be enabled multiple times. Thus, we don't throw an
@@ -396,6 +393,7 @@ var BuildProject = Class.extend(EventDispatcher, {
      */
     executeBuild: function(buildOptions, callback) {
         console.log("Executing build");
+        var _this           = this;
         var targetName      = buildOptions.targetName;
         var debug           = buildOptions.debug;
         var error           = null;
@@ -413,7 +411,18 @@ var BuildProject = Class.extend(EventDispatcher, {
 
         if (!error) {
             if (targetArray.length > 0) {
-                this.executeTargets(targetArray, callback);
+                $series([
+                    $task(function(flow) {
+                        _this.executeTargets(targetArray, function(throwable) {
+                            flow.complete(throwable);
+                        });
+                    }),
+                    $task(function(flow) {
+                        _this.deinitializeBuildModules(function(throwable) {
+                            flow.complete(throwable);
+                        });
+                    })
+                ]).execute(callback);
             } else {
                 callback(new Bug("IllegalState", {}, "No build target specified and no default targets found."));
             }
@@ -450,6 +459,29 @@ var BuildProject = Class.extend(EventDispatcher, {
 
     /**
      * @private
+     * @param {function(Throwable=)} callback
+     */
+    deinitializeBuildModules: function(callback) {
+        $iterableParallel(this.buildModuleSet, function(flow, buildModule) {
+            if (buildModule.isEnabled()) {
+                if (buildModule.isDeinitialized()) {
+                    flow.complete();
+                } else {
+                    buildModule.addEventListener(BuildModule.EventTypes.MODULE_DEINITIALIZED, function (event) {
+                        flow.complete();
+                    });
+                    if (!buildModule.isDeinitialized()) {
+                        buildModule.deinitialize();
+                    }
+                }
+            } else {
+                flow.complete();
+            }
+        }).execute(callback);
+    },
+
+    /**
+     * @private
      * @param {Array<BuildTarget>} targetArray
      * @param {function(Throwable=)} callback
      */
@@ -475,6 +507,9 @@ var BuildProject = Class.extend(EventDispatcher, {
                     buildModule.addEventListener(BuildModule.EventTypes.MODULE_INITIALIZED, function(event) {
                         flow.complete();
                     });
+                    if (!buildModule.isInitializing()) {
+                        buildModule.initialize();
+                    }
                 }
             } else {
                 flow.complete();

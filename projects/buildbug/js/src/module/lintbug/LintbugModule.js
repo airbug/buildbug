@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('LintbugModule')
+//@Export('buildbug.LintbugModule')
 //@Autoload
 
 //@Require('Class')

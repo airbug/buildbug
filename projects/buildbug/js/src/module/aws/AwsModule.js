@@ -2,9 +2,7 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Package('buildbug')
-
-//@Export('AwsModule')
+//@Export('buildbug.AwsModule')
 //@Autoload
 
 //@Require('Class')
