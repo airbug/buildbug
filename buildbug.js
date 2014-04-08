@@ -34,14 +34,14 @@ var nodejs          = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.1";
+var version             = "0.1.3";
 var dependencies        = {
     "aws-sdk": "1.9.x",
     "bugpack-registry": "0.1.2",
     bugpack: "0.1.5",
     bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.0.tgz",
     deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
-    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.3.tgz",
+    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.5.tgz",
     "uglify-js": "2.3.x",
     npm: "1.4.x",
     tar: "git://github.com/airbug/node-tar.git#master",

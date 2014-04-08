@@ -47,25 +47,27 @@ bugpack.loadContext(module, function(error, bugpack) {
                             flow.complete(error);
                         });
                     })
-                ]).execute(function(error) {
+                ]).execute(function(throwable) {
                     if (!error) {
                         var endTime = (new Date()).getTime();
                         console.log("buildbug ran successfully in " + (endTime - startTime) + " ms");
                     } else {
-                        console.log(error);
-                        console.log(error.stack);
+                        console.log(throwable.message);
+                        console.log(throwable.stack);
                         console.log("buildbug encountered an error");
                         process.exit(1);
                     }
                 });
 
             } else {
-                console.error(error);
+                console.log(error.message);
+                console.log(error.stack);
                 process.exit(1);
             }
         });
     } else {
-        console.error(error);
+        console.log(error.message);
+        console.log(error.stack);
         process.exit(1);
     }
 });
