@@ -34,7 +34,7 @@ var nodejs          = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.3";
+var version             = "0.1.4";
 var dependencies        = {
     "aws-sdk": "1.9.x",
     "bugpack-registry": "0.1.2",

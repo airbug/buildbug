@@ -10,6 +10,7 @@
 //@Require('Obj')
 //@Require('TypeUtil')
 //@Require('bugflow.BugFlow')
+//@Require('bugfs.BugFs')
 
 
 //-------------------------------------------------------------------------------
@@ -30,6 +31,7 @@ var Exception           = bugpack.require('Exception');
 var Obj                 = bugpack.require('Obj');
 var TypeUtil            = bugpack.require('TypeUtil');
 var BugFlow             = bugpack.require('bugflow.BugFlow');
+var BugFs               = bugpack.require('bugfs.BugFs');
 
 
 //-------------------------------------------------------------------------------
@@ -131,7 +133,11 @@ var BuildScript = Class.extend(Obj, {
      */
     runScript: function() {
         if (TypeUtil.isString(this.script)) {
-            require(this.script);
+            var scriptPath = BugFs.path(this.script);
+            if (!scriptPath.isGivenPathAbsolute()) {
+                scriptPath = BugFs.joinPaths([this.buildProject.getTargetPath(), scriptPath]);
+            }
+            require(scriptPath.getAbsolutePath());
         } else if (TypeUtil.isFunction(this.script)) {
             this.script();
         } else {
