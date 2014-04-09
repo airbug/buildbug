@@ -2,43 +2,43 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-var buildbug        = require('buildbug');
+var buildbug                = require('buildbug');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var buildProject    = buildbug.buildProject;
-var buildProperties = buildbug.buildProperties;
-var buildTarget     = buildbug.buildTarget;
-var enableModule    = buildbug.enableModule;
-var parallel        = buildbug.parallel;
-var series          = buildbug.series;
-var targetTask      = buildbug.targetTask;
+var buildProject            = buildbug.buildProject;
+var buildProperties         = buildbug.buildProperties;
+var buildTarget             = buildbug.buildTarget;
+var enableModule            = buildbug.enableModule;
+var parallel                = buildbug.parallel;
+var series                  = buildbug.series;
+var targetTask              = buildbug.targetTask;
 
 
 //-------------------------------------------------------------------------------
 // Enable Modules
 //-------------------------------------------------------------------------------
 
-var aws             = enableModule("aws");
-var bugpack         = enableModule('bugpack');
-var bugunit         = enableModule('bugunit');
-var clientjs        = enableModule('clientjs');
-var core            = enableModule('core');
-var nodejs          = enableModule('nodejs');
+var aws                     = enableModule("aws");
+var bugpack                 = enableModule('bugpack');
+var bugunit                 = enableModule('bugunit');
+var clientjs                = enableModule('clientjs');
+var core                    = enableModule('core');
+var nodejs                  = enableModule('nodejs');
 
 
 //-------------------------------------------------------------------------------
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.4";
+var version             = "0.1.6";
 var dependencies        = {
     "aws-sdk": "1.9.x",
-    "bugpack-registry": "0.1.2",
-    bugpack: "0.1.5",
+    "bugpack-registry": "0.1.4",
+    bugpack: "0.1.6",
     bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.0.tgz",
     deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
     lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.5.tgz",

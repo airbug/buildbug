@@ -8,7 +8,9 @@
 //@Require('ArgumentBug')
 //@Require('Bug')
 //@Require('Class')
+//@Require('Exception')
 //@Require('ICollection')
+//@Require('List')
 //@Require('Map')
 //@Require('Set')
 //@Require('TypeUtil')
@@ -35,7 +37,9 @@ var bugpack                 = require('bugpack').context();
 var ArgumentBug             = bugpack.require('ArgumentBug');
 var Bug                     = bugpack.require('Bug');
 var Class                   = bugpack.require('Class');
+var Exception               = bugpack.require('Exception');
 var ICollection             = bugpack.require('ICollection');
+var List                    = bugpack.require('List');
 var Map                     = bugpack.require('Map');
 var Set                     = bugpack.require('Set');
 var TypeUtil                = bugpack.require('TypeUtil');
@@ -359,6 +363,24 @@ var CoreModule = Class.extend(BuildModule, {
     /**
      * @private
      * @param {(string | Path | Array.<(string | Path)> | ICollection.<(string | Path)>)} paths
+     * @return {List.<Path>}
+     */
+    generateListOfPaths: function(paths) {
+        var _this = this;
+        var files = new List();
+        if (Class.doesImplement(paths, ICollection) || TypeUtil.isArray(paths)) {
+            paths.forEach(function(path) {
+                files.add(_this.generatePath(path));
+            });
+        } else {
+            files.add(this.generatePath(paths));
+        }
+        return files;
+    },
+
+    /**
+     * @private
+     * @param {(string | Path | Array.<(string | Path)> | ICollection.<(string | Path)>)} paths
      * @return {Set.<Path>}
      */
     generateSetOfPaths: function(paths) {
@@ -428,36 +450,36 @@ var CoreModule = Class.extend(BuildModule, {
     /**
      * @private
      * @param {(string | Path | Array.<(string | Path)> | ICollection.<(string | Path)>)} sourcesProperty
-     * @return {Set.<string>}
+     * @return {List.<string>}
      * @throws {Bug}
      */
     validateAndConvertSourcesProperty: function(sourcesProperty) {
-        /** @type {Set.<Path>} */
-        var sourcePathSet = null;
+        /** @type {List.<Path>} */
+        var sourcePathList = null;
         try {
-            sourcePathSet = this.generateSetOfPaths(sourcesProperty);
+            sourcePathList = this.generateListOfPaths(sourcesProperty);
         } catch(throwable) {
             throw new Bug("InvalidProperty", {}, "'concat' task: 'sources' property was not valid.", [throwable]);
         }
-        return sourcePathSet;
+        return sourcePathList;
     },
 
     /**
      * @private
      * @param {string} result
      * @param {Path} outputFilePath
-     * @param {function(Error)} callback
+     * @param {function(Throwable=)} callback
      */
     writeResultToOutputFile: function(result, outputFilePath, callback) {
         $series([
             $task(function(flow) {
-                outputFilePath.createFile(function(error) {
-                    flow.complete(error);
+                outputFilePath.createFile(function(throwable) {
+                    flow.complete(throwable);
                 });
             }),
             $task(function(flow) {
-                outputFilePath.writeFile(result, function(error) {
-                    flow.complete(error);
+                outputFilePath.writeFile(result, function(throwable) {
+                    flow.complete(throwable);
                 });
             })
         ]).execute(callback);
@@ -467,27 +489,23 @@ var CoreModule = Class.extend(BuildModule, {
      * @param {string} token
      * @param {string} replacementValue
      * @param {string | Path} filePath
-     * @param {function(Error} callback
+     * @param {function(Throwable=)} callback
      */
-    replaceTokenInFilePathOrDirectory: function(token, replacementValue, filePath, callback){
+    replaceTokenInFilePathOrDirectory: function(token, replacementValue, filePath, callback) {
         var _this = this;
-        if(BugFs.existsSync(filePath)){
-            if(BugFs.isFileSync(filePath)){
-                _this.replaceTokenInFilePath(token, replacementValue, filePath, function(error){
-                    callback(error);
-                });
+        if (BugFs.existsSync(filePath)) {
+            if (BugFs.isFileSync(filePath)) {
+                _this.replaceTokenInFilePath(token, replacementValue, filePath, callback);
             } else {
                 var filePaths = BugFs.readDirectorySync(filePath);
                 $forEachParallel(filePaths, function(flow, filePath){
-                    _this.replaceTokenInFilePathOrDirectory(token, replacementValue, filePath, function(error){
-                        flow.complete(error);
+                    _this.replaceTokenInFilePathOrDirectory(token, replacementValue, filePath, function(throwable) {
+                        flow.complete(throwable);
                     });
-                }).execute(function(error){
-                        callback(error);
-                    });
+                }).execute(callback);
             }
         } else {
-            callback(new Error("Invalid file path:", filePath));
+            callback(new Exception("FileDoesNotExist", {}, "Cannot find filePath"));
         }
     },
 
@@ -495,16 +513,16 @@ var CoreModule = Class.extend(BuildModule, {
      * @param {string} token
      * @param {string} replacementValue
      * @param {string | Path} filePath
-     * @param {function(Error} callback
+     * @param {function(Throwable=)} callback
      */
     replaceTokenInFilePath: function(token, replacementValue, filePath, callback){
-        BugFs.readFile(filePath, 'utf8', function(error, data){
-            if(error){
-                callback(error);
+        BugFs.readFile(filePath, 'utf8', function(throwable, data) {
+            if (throwable) {
+                callback(throwable);
             } else {
                 var newFileString = data.replace(token, replacementValue);
-                BugFs.writeFile(filePath, newFileString, 'utf8', function(error){
-                    callback(error);
+                BugFs.writeFile(filePath, newFileString, 'utf8', function(throwable) {
+                    callback(throwable);
                 });
             }
         });

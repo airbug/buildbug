@@ -6,6 +6,7 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('Map')
 //@Require('TypeUtil')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
@@ -30,6 +31,7 @@ var path                    = require('path');
 //-------------------------------------------------------------------------------
 
 var Class                   = bugpack.require('Class');
+var Map                     = bugpack.require('Map');
 var TypeUtil                = bugpack.require('TypeUtil');
 var BugFs                   = bugpack.require('bugfs.BugFs');
 var Path                    = bugpack.require('bugfs.Path');
@@ -81,7 +83,13 @@ var BugPackModule = Class.extend(BuildModule, {
          * @private
          * @type {BugPackRegistryBuilder}
          */
-        this.bugpackRegistryModule = bugpack_registry;
+        this.bugpackRegistryModule          = bugpack_registry;
+
+        /**
+         * @private
+         * @type {Map.<string, NodePackage>}
+         */
+        this.nameToBugPackRegistryMap       = new Map();
     },
 
     //-------------------------------------------------------------------------------
@@ -145,9 +153,23 @@ var BugPackModule = Class.extend(BuildModule, {
      * @param {function(Throwable=)} callback
      */
     generateBugPackRegistryTask: function(buildProject, properties, callback) {
-        var sourceRoot = properties.getProperty("sourceRoot");
-        var ignorePatterns = properties.getProperty("ignore");
-        this.generateBugPackRegistry(sourceRoot, ignorePatterns, callback);
+        var sourceRoot      = properties.getProperty("sourceRoot");
+        var ignorePatterns  = properties.getProperty("ignore");
+        var name            = properties.getProperty("name");
+        this.generateBugPackRegistry(sourceRoot, ignorePatterns, name, callback);
+    },
+
+
+    //-------------------------------------------------------------------------------
+    // Public Methods
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @param {string} name
+     * @return {BugPackRegistry}
+     */
+    findBugPackRegistry: function(name) {
+        return this.nameToBugPackRegistryMap.get(name);
     },
 
 
@@ -159,14 +181,17 @@ var BugPackModule = Class.extend(BuildModule, {
      * @private
      * @param {(string|Path)} sourceRoot
      * @param {Array.<(string | RegExp)>} ignorePatterns
+     * @param {string} name
      * @param {function(Throwable=)} callback
      */
-    generateBugPackRegistry: function(sourceRoot, ignorePatterns, callback) {
-        var sourceRootPath = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
-        var _this = this;
-        this.bugpackRegistryModule.buildRegistry(sourceRootPath.getAbsolutePath(), ignorePatterns, $traceWithError(function(error, bugpackRegistry) {
+    generateBugPackRegistry: function(sourceRoot, ignorePatterns, name, callback) {
+        var _this           = this;
+        var sourceRootPath  = TypeUtil.isString(sourceRoot) ? new Path(sourceRoot) : sourceRoot;
+        this.bugpackRegistryModule.buildRegistry(sourceRootPath.getAbsolutePath(), ignorePatterns, $traceWithError(function(error, bugPackRegistry) {
             if (!error) {
-                _this.writeBugpackRegistryJson(sourceRootPath, bugpackRegistry, callback);
+                name = name || bugPackRegistry.getRegistryRootPath();
+                _this.nameToBugPackRegistryMap.put(name, bugPackRegistry);
+                _this.writeBugpackRegistryJson(sourceRootPath, bugPackRegistry, callback);
             } else {
                 callback(error);
             }
