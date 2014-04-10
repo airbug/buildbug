@@ -278,7 +278,7 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (binPaths) {
                         $forEachSeries(binPaths, function(flow, binPath) {
-                            BugFs.copyDirectoryContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            BugFs.copyContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
                                 flow.complete(throwable);
                             });
                         }).execute(function(throwable) {
@@ -290,7 +290,7 @@ var NodePackage = Class.extend(Obj, {
                 }),
                 $task(function(flow) {
                     $forEachSeries(sourcePaths, function(flow, sourcePath) {
-                        BugFs.copyDirectoryContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                        BugFs.copyContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
                             flow.complete(throwable);
                         });
                     }).execute(function(throwable) {
@@ -300,7 +300,7 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (testPaths) {
                         $forEachSeries(testPaths, function(flow, testPath) {
-                            BugFs.copyDirectoryContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            BugFs.copyContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
                                 flow.complete(throwable);
                             });
                         }).execute(function(throwable) {
@@ -313,7 +313,7 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (scriptPaths) {
                         $forEachSeries(scriptPaths, function(flow, scriptPath) {
-                            BugFs.copyDirectoryContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            BugFs.copyContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
                                 flow.complete(throwable);
                             });
                         }).execute(function(throwable) {
@@ -326,7 +326,7 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (staticPaths) {
                         $forEachSeries(staticPaths, function(flow, staticPath) {
-                            BugFs.copyDirectoryContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            BugFs.copyContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
                                 flow.complete(throwable);
                             });
                         }).execute(function(throwable) {
@@ -339,7 +339,7 @@ var NodePackage = Class.extend(Obj, {
                 $task(function(flow) {
                     if (resourcePaths) {
                         $forEachSeries(resourcePaths, function(flow, resourcePath) {
-                            BugFs.copyDirectoryContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            BugFs.copyContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
                                 flow.complete(throwable);
                             });
                         }).execute(function(throwable) {

@@ -34,11 +34,11 @@ var nodejs                  = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.6";
+var version             = "0.1.7";
 var dependencies        = {
     "aws-sdk": "1.9.x",
     "bugpack-registry": "0.1.4",
-    bugpack: "0.1.6",
+    bugpack: "0.1.9",
     bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.0.tgz",
     deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
     lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.5.tgz",
