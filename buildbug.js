@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Requires
 //-------------------------------------------------------------------------------
@@ -34,12 +44,12 @@ var nodejs                  = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.8";
+var version             = "0.1.9";
 var dependencies        = {
     "aws-sdk": "1.9.x",
     "bugpack-registry": "0.1.6",
     bugpack: "0.1.12",
-    bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.1.tgz",
+    bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.2.tgz",
     deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
     lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.6.tgz",
     "uglify-js": "2.3.x",
@@ -69,12 +79,12 @@ buildProperties({
             "../bugfs/projects/bugfs/js/src",
             "../bugjs/projects/aws/js/src",
             "../bugjs/projects/bugcli/js/src",
+            "../bugjs/projects/npm/js/src",
             "../bugmeta/projects/bugmeta/js/src",
             "../bugtrace/projects/bugtrace/js/src",
             "./projects/buildbug/js/src"
         ],
         scriptPaths: [
-            "../bugunit/projects/bugunit/js/scripts",
             "./projects/buildbug/js/scripts"
         ],
         binPaths: [
@@ -114,10 +124,10 @@ buildProperties({
 
 
 //-------------------------------------------------------------------------------
-// Declare BuildTasks
+// Declare BuildTargets
 //-------------------------------------------------------------------------------
 
-// Clean BuildTask
+// Clean BuildTarget
 //-------------------------------------------------------------------------------
 
 buildTarget('clean').buildFlow(
@@ -125,7 +135,7 @@ buildTarget('clean').buildFlow(
 );
 
 
-// Local BuildTask
+// Local BuildTarget
 //-------------------------------------------------------------------------------
 
 buildTarget('local').buildFlow(
@@ -201,7 +211,7 @@ buildTarget('local').buildFlow(
 ).makeDefault();
 
 
-// Prod BuildTask
+// Prod BuildTarget
 //-------------------------------------------------------------------------------
 
 buildTarget("prod").buildFlow(

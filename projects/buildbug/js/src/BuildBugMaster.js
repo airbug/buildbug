@@ -54,7 +54,10 @@ var BuildBugMaster = Class.extend(Obj, {
 
     /**
      * @param {string} targetPathString
-     * @param {Object} buildOptions
+     * @param {{
+     *      debug: boolean=,
+     *      targetNames: Array.<string>=
+     * }} buildOptions
      * @param {function(Error)} callback
      */
     build: function(targetPathString, buildOptions, callback) {
@@ -110,7 +113,10 @@ var BuildBugMaster = Class.extend(Obj, {
      * @private
      * @param {Path} targetPath
      * @param {Path} buildFilePath
-     * @param {Object} buildOptions
+     * @param {{
+     *      debug: boolean=,
+     *      targetNames: Array.<string>=
+     * }} buildOptions
      * @param {function(Throwable=)} callback
      */
     startBuild: function(targetPath, buildFilePath, buildOptions, callback) {

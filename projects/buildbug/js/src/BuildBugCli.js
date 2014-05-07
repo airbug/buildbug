@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -11,111 +21,125 @@
 
 
 //-------------------------------------------------------------------------------
-// Common Modules
+// Context
 //-------------------------------------------------------------------------------
 
-var bugpack             = require('bugpack').context();
-var path                = require('path');
-
-
-//-------------------------------------------------------------------------------
-// BugPack
-//-------------------------------------------------------------------------------
-
-var Class               = bugpack.require('Class');
-var BugCli              = bugpack.require('bugcli.BugCli');
-var BugFlow             = bugpack.require('bugflow.BugFlow');
-var BuildBugMaster      = bugpack.require('buildbug.BuildBugMaster');
-
-
-//-------------------------------------------------------------------------------
-// Simplify References
-//-------------------------------------------------------------------------------
-
-var $series             = BugFlow.$series;
-var $task               = BugFlow.$task;
-
-
-//-------------------------------------------------------------------------------
-// Declare Class
-//-------------------------------------------------------------------------------
-
-var BuildBugCli = Class.extend(BugCli, {
+require('bugpack').context("*", function(bugpack) {
 
     //-------------------------------------------------------------------------------
-    // BugCli Methods
+    // Common Modules
+    //-------------------------------------------------------------------------------
+
+    var path                = require('path');
+
+
+    //-------------------------------------------------------------------------------
+    // BugPack
+    //-------------------------------------------------------------------------------
+
+    var Class               = bugpack.require('Class');
+    var BugCli              = bugpack.require('bugcli.BugCli');
+    var BugFlow             = bugpack.require('bugflow.BugFlow');
+    var BuildBugMaster      = bugpack.require('buildbug.BuildBugMaster');
+
+
+    //-------------------------------------------------------------------------------
+    // Simplify References
+    //-------------------------------------------------------------------------------
+
+    var $series             = BugFlow.$series;
+    var $task               = BugFlow.$task;
+
+
+    //-------------------------------------------------------------------------------
+    // Declare Class
     //-------------------------------------------------------------------------------
 
     /**
-     *
+     * @class
+     * @extends {BugCli}
      */
-    configure: function(callback) {
-        var _this = this;
-        $series([
-            $task(function(flow) {
-                _this._super(function(error) {
-                    flow.complete(error);
-                });
-            }),
-            $task(function(flow) {
-                _this.registerCliAction({
-                    name: 'build',
-                    default: true,
-                    flags: [
-                        'build'
-                    ],
-                    executeMethod: function(cliBuild, cliAction, callback) {
-                        /** @type {CliOptionInstance} */
-                        var targetOption    = cliBuild.getOption("target");
-                        /** @type {CliOptionInstance} */
-                        var debugOption     = cliBuild.getOption("debug");
-                        /** @type {string} */
-                        var targetName      = "";
-                        /** @type {boolean} */
-                        var debug           = false;
+    var BuildBugCli = Class.extend(BugCli, {
 
-                        if (targetOption) {
-                            targetName = targetOption.getParameter("targetName");
+        _name: "buildbug.BuildBugCli",
+
+
+        //-------------------------------------------------------------------------------
+        // BugCli Methods
+        //-------------------------------------------------------------------------------
+
+        /**
+         *
+         */
+        configure: function(callback) {
+            var _this = this;
+            $series([
+                $task(function(flow) {
+                    _this._super(function(error) {
+                        flow.complete(error);
+                    });
+                }),
+                $task(function(flow) {
+                    _this.registerCliAction({
+                        name: 'build',
+                        default: true,
+                        flags: [
+                            'build'
+                        ],
+                        executeMethod: function(cliBuild, cliAction, callback) {
+                            /** @type {CliOptionInstance} */
+                            var targetOption    = cliBuild.getOption("target");
+                            /** @type {CliOptionInstance} */
+                            var debugOption     = cliBuild.getOption("debug");
+                            /** @type {Array.<string>} */
+                            var targetNames      = [];
+                            /** @type {boolean} */
+                            var debug           = false;
+
+                            if (targetOption) {
+                                var targetNamesString = targetOption.getParameter("targetNames");
+                                targetNames = targetNamesString.split(",");
+                            }
+                            if (debugOption) {
+                                debug = true;
+                            }
+                            var buildPath       = process.cwd();
+                            var buildBugMaster  = new BuildBugMaster();
+                            buildBugMaster.build(buildPath, {targetNames: targetNames, debug: debug}, callback);
                         }
-                        if (debugOption) {
-                            debug = true;
-                        }
-                        var buildPath       = process.cwd();
-                        var buildBugMaster  = new BuildBugMaster();
-                        buildBugMaster.build(buildPath, {targetName: targetName, debug: debug}, callback);
-                    }
-                });
+                    });
 
-                _this.registerCliOption({
-                    name: 'target',
-                    flags: [
-                        '-t',
-                        '--target'
-                    ],
-                    parameters: [
-                        {
-                            name: "targetName"
-                        }
-                    ]
-                });
+                    _this.registerCliOption({
+                        name: 'target',
+                        flags: [
+                            '-t',
+                            '--target'
+                        ],
+                        parameters: [
+                            {
+                                name: "targetNames"
+                            }
+                        ]
+                    });
 
-                _this.registerCliOption({
-                    name: 'debug',
-                    flags: [
-                        '-d',
-                        '--debug'
-                    ]
-                });
+                    _this.registerCliOption({
+                        name: 'debug',
+                        flags: [
+                            '-d',
+                            '--debug'
+                        ]
+                    });
 
-                flow.complete();
-            })
-        ]).execute(callback);
-    }
+                    flow.complete();
+                })
+            ]).execute(callback);
+        }
+    });
+
+
+    //-------------------------------------------------------------------------------
+    // Exports
+    //-------------------------------------------------------------------------------
+
+    bugpack.export('buildbug.BuildBugCli', BuildBugCli);
 });
-
-
-//-------------------------------------------------------------------------------
-// Exports
-//-------------------------------------------------------------------------------
-
-bugpack.export('buildbug.BuildBugCli', BuildBugCli);

@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -9,6 +19,7 @@
 //@Require('EventDispatcher')
 //@Require('Map')
 //@Require('Set')
+//@Require('TypeUtil')
 //@Require('bugflow.BugFlow')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildProperties')
@@ -32,6 +43,7 @@ require('bugpack').context("*", function(bugpack) {
     var EventDispatcher     = bugpack.require('EventDispatcher');
     var Map                 = bugpack.require('Map');
     var Set                 = bugpack.require('Set');
+    var TypeUtil            = bugpack.require('TypeUtil');
     var BugFlow             = bugpack.require('bugflow.BugFlow');
     var BuildModule         = bugpack.require('buildbug.BuildModule');
     var BuildProperties     = bugpack.require('buildbug.BuildProperties');
@@ -44,7 +56,7 @@ require('bugpack').context("*", function(bugpack) {
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $forEachParallel    = BugFlow.$forEachParallel;
+    var $forEachSeries      = BugFlow.$forEachSeries;
     var $iterableParallel   = BugFlow.$iterableParallel;
     var $series             = BugFlow.$series;
     var $task               = BugFlow.$task;
@@ -54,7 +66,14 @@ require('bugpack').context("*", function(bugpack) {
     // Declare Class
     //-------------------------------------------------------------------------------
 
+    /**
+     * @class
+     * @extends {EventDispatcher}
+     */
     var BuildProject = Class.extend(EventDispatcher, {
+
+        _name: "buildbug.BuildProject",
+
 
         //-------------------------------------------------------------------------------
         // Constructor
@@ -351,8 +370,8 @@ require('bugpack').context("*", function(bugpack) {
 
         /**
          * @param {{
-         *      targetName: string,
-         *      debug: boolean
+         *      targetNames: Array.<string>=,
+         *      debug: boolean=
          * }} buildOptions
          * @param {function(Throwable=)} callback
          */
@@ -385,25 +404,27 @@ require('bugpack').context("*", function(bugpack) {
         /**
          * @protected
          * @param {{
-         *      targetName: string,
-         *      debug: boolean
+         *      targetNames: Array.<string>=,
+         *      debug: boolean=
          * }} buildOptions
          * @param {function(Throwable=)} callback
          */
         executeBuild: function(buildOptions, callback) {
             console.log("Executing build");
             var _this           = this;
-            var targetName      = buildOptions.targetName;
-            var debug           = buildOptions.debug;
+            var targetNames      = buildOptions.targetNames || [];
+            var debug           = TypeUtil.isBoolean(buildOptions.debug) ? buildOptions.debug : false;
             var error           = null;
             var targetArray     = [];
-            if (targetName) {
-                var specifiedTarget = this.getTarget(targetName);
-                if (specifiedTarget) {
-                    targetArray.push(specifiedTarget);
-                } else {
-                    error = new Bug("IllegalState", {}, "No target found by the name '" + targetName + "'");
-                }
+            if (targetNames.length > 0) {
+                targetNames.forEach(function(targetName) {
+                var specifiedTarget = _this.getTarget(targetName);
+                    if (specifiedTarget) {
+                        targetArray.push(specifiedTarget);
+                    } else {
+                        error = new Bug("IllegalState", {}, "No target found by the name '" + targetName + "'");
+                    }
+                })
             } else {
                 targetArray = this.getDefaultTargets();
             }
@@ -486,7 +507,7 @@ require('bugpack').context("*", function(bugpack) {
          */
         executeTargets: function(targetArray, callback) {
             var _this = this;
-            $forEachParallel(targetArray, function(flow, target) {
+            $forEachSeries(targetArray, function(flow, target) {
                 target.execute(_this, function(error) {
                     flow.complete(error);
                 });

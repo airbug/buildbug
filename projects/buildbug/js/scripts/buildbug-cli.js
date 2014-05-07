@@ -1,15 +1,8 @@
 //-------------------------------------------------------------------------------
-// Common Modules
-//-------------------------------------------------------------------------------
-
-var bugpack = require("bugpack");
-
-
-//-------------------------------------------------------------------------------
 // Context
 //-------------------------------------------------------------------------------
 
-bugpack.loadContext(module, function(error, bugpack) {
+require("bugpack").loadContext(module, function(error, bugpack) {
     if (!error) {
         bugpack.loadExports(["bugflow.BugFlow", "buildbug.BuildBugCli"], function(error) {
             if (!error) {
@@ -38,17 +31,17 @@ bugpack.loadContext(module, function(error, bugpack) {
                 var buildBugCli = new BuildBugCli();
                 $series([
                     $task(function(flow) {
-                        buildBugCli.configure(function(error) {
-                            flow.complete(error);
+                        buildBugCli.configure(function(throwable) {
+                            flow.complete(throwable);
                         });
                     }),
                     $task(function(flow) {
-                        buildBugCli.run(process.argv, function(error) {
-                            flow.complete(error);
+                        buildBugCli.run(process.argv, function(throwable) {
+                            flow.complete(throwable);
                         });
                     })
                 ]).execute(function(throwable) {
-                    if (!error) {
+                    if (!throwable) {
                         var endTime = (new Date()).getTime();
                         console.log("buildbug ran successfully in " + (endTime - startTime) + " ms");
                     } else {
