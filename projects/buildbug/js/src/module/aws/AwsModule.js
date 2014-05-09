@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -6,6 +16,7 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('Exception')
 //@Require('Map')
 //@Require('Obj')
 //@Require('TypeUtil')
@@ -38,6 +49,7 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var Class                   = bugpack.require('Class');
+    var Exception               = bugpack.require('Exception');
     var Map                     = bugpack.require('Map');
     var Obj                     = bugpack.require('Obj');
     var TypeUtil                = bugpack.require('TypeUtil');
@@ -142,15 +154,15 @@ require('bugpack').context("*", function(bugpack) {
          *   bucket: string
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
-         * @param {function(Error)} callback
+         * @param {BuildPropertiesChain} taskProperties
+         * @param {function(Throwable=)} callback
          */
-        s3EnsureBucketTask: function(buildProject, properties, callback) {
-            var awsConfig = new AwsConfig(properties.getProperty("awsConfig"));
-            var bucket = properties.getProperty("bucket");
+        s3EnsureBucketTask: function(buildProject, taskProperties, callback) {
+            var awsConfig = this.generateAwsConfig(taskProperties);
+            var bucket = taskProperties.getProperty("bucket");
             if (TypeUtil.isString(bucket) && bucket) {
                 var s3Bucket = new S3Bucket({
-                    name: properties.getProperty("bucket")
+                    name: taskProperties.getProperty("bucket")
                 });
                 var s3Api = new S3Api(awsConfig);
                 s3Api.ensureBucket(s3Bucket, function(error) {
@@ -162,7 +174,7 @@ require('bugpack').context("*", function(bugpack) {
                     }
                 });
             } else {
-                callback(new Error("Bucket must be specified!"));
+                callback(new Exception("InvalidProperties", {}, "Bucket must be specified!"));
             }
         },
 
@@ -179,17 +191,17 @@ require('bugpack').context("*", function(bugpack) {
          *     options: Object
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
-         * @param {function(Error)} callback
+         * @param {BuildPropertiesChain} taskProperties
+         * @param {function(Throwable=)} callback
          */
-        s3PutFileTask: function(buildProject, properties, callback) {
+        s3PutFileTask: function(buildProject, taskProperties, callback) {
             var _this = this;
-            var awsConfig = new AwsConfig(properties.getProperty("awsConfig"));
-            var filePath = BugFs.path(properties.getProperty("file"));
+            var awsConfig = this.generateAwsConfig(taskProperties);
+            var filePath = BugFs.path(taskProperties.getProperty("file"));
             var s3Bucket = new S3Bucket({
-                name: properties.getProperty("bucket")
+                name: taskProperties.getProperty("bucket")
             });
-            var options = properties.getProperty("options");
+            var options = taskProperties.getProperty("options");
             var s3Api = new S3Api(awsConfig);
             $if (function(flow) {
                     filePath.exists(function(throwable, exists) {
@@ -213,7 +225,7 @@ require('bugpack').context("*", function(bugpack) {
                 })
             ).$else(
                 $task(function(flow) {
-                    flow.error(new Error("Cannot find file '" + filePath.getAbsolutePath() + "'"));
+                    flow.error(new Exception("NoSuchFile", {}, "Cannot find file '" + filePath.getAbsolutePath() + "'"));
                 })
             ).execute(callback);
         },
@@ -232,17 +244,17 @@ require('bugpack').context("*", function(bugpack) {
          *     options: Object
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
-         * @param {function(Error)} callback
+         * @param {BuildPropertiesChain} taskProperties
+         * @param {function(Throwable=)} callback
          */
-        s3PutDirectoryContentsTask: function(buildProject, properties, callback) {
-            var awsConfig = new AwsConfig(properties.getProperty("awsConfig"));
-            var directoryPath = BugFs.path(properties.getProperty("directory"));
-            var s3Bucket = new S3Bucket({
-                name: properties.getProperty("bucket")
+        s3PutDirectoryContentsTask: function(buildProject, taskProperties, callback) {
+            var awsConfig       = this.generateAwsConfig(taskProperties);
+            var directoryPath   = BugFs.path(taskProperties.getProperty("directory"));
+            var s3Bucket        = new S3Bucket({
+                name: taskProperties.getProperty("bucket")
             });
-            var options = properties.getProperty("options");
-            var s3Api = new S3Api(awsConfig);
+            var options         = taskProperties.getProperty("options");
+            var s3Api           = new S3Api(awsConfig);
             $if (function(flow) {
                     directoryPath.exists(function(throwable, exists) {
                         if (!throwable) {
@@ -263,10 +275,10 @@ require('bugpack').context("*", function(bugpack) {
                     });
                 })
             ).$else(
-                    $task(function(flow) {
-                        flow.error(new Error("Cannot find directory '" + directoryPath.getAbsolutePath() + "'"));
-                    })
-                ).execute(callback);
+                $task(function(flow) {
+                    flow.error(new Exception("NoSuchDirectory", {}, "Cannot find directory '" + directoryPath.getAbsolutePath() + "'"));
+                })
+            ).execute(callback);
         },
 
 
@@ -291,9 +303,19 @@ require('bugpack').context("*", function(bugpack) {
 
         /**
          * @private
-         * @param {(Path|string)} filePath
+         * @param {BuildPropertiesChain} taskProperties
+         * @return {AwsConfig}
          */
-        registerURL: function(filePath, url){
+        generateAwsConfig: function(taskProperties) {
+            return new AwsConfig(taskProperties.getProperty("awsConfig"));
+        },
+
+        /**
+         * @private
+         * @param {(Path|string)} filePath
+         * @param {string} url
+         */
+        registerURL: function(filePath, url) {
             if(!this.filePathToURLMap){
                 this.filePathToURLMap = new Map();
             }

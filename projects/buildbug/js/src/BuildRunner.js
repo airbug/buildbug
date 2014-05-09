@@ -18,8 +18,10 @@
 //@Require('Obj')
 //@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
+//@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
-//@Require('buildbug.BuildModuleScan')
+//@Require('buildbug.BuildModuleAnnotationProcessor')
+//@Require('buildbug.BuildModuleAnnotationScan')
 
 
 //-------------------------------------------------------------------------------
@@ -32,20 +34,22 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class               = bugpack.require('Class');
-    var Obj                 = bugpack.require('Obj');
-    var BugFlow             = bugpack.require('bugflow.BugFlow');
-    var BugFs               = bugpack.require('bugfs.BugFs');
-    var BuildBug            = bugpack.require('buildbug.BuildBug');
-    var BuildModuleScan     = bugpack.require('buildbug.BuildModuleScan');
+    var Class                               = bugpack.require('Class');
+    var Obj                                 = bugpack.require('Obj');
+    var BugFlow                             = bugpack.require('bugflow.BugFlow');
+    var BugFs                               = bugpack.require('bugfs.BugFs');
+    var BugMeta                             = bugpack.require('bugmeta.BugMeta');
+    var BuildBug                            = bugpack.require('buildbug.BuildBug');
+    var BuildModuleAnnotationProcessor      = bugpack.require('buildbug.BuildModuleAnnotationProcessor');
+    var BuildModuleAnnotationScan           = bugpack.require('buildbug.BuildModuleAnnotationScan');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $series             = BugFlow.$series;
-    var $task               = BugFlow.$task;
+    var $series                             = BugFlow.$series;
+    var $task                               = BugFlow.$task;
 
 
     //-------------------------------------------------------------------------------
@@ -115,9 +119,9 @@ require('bugpack').context("*", function(bugpack) {
          */
         runBuild: function(callback) {
             var _this = this;
-            var buildProject    = BuildBug.generateBuildProject(this.targetPath);
-            var buildModuleScan = new BuildModuleScan(buildProject);
-            buildModuleScan.scan();
+            var buildProject                = BuildBug.generateBuildProject(this.targetPath);
+            var buildModuleAnnotationScan   = new BuildModuleAnnotationScan(BugMeta.context(), new BuildModuleAnnotationProcessor(buildProject));
+            buildModuleAnnotationScan.scanAll();
 
             $series([
                 $task(function(flow) {

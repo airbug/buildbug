@@ -12,10 +12,10 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Export('buildbug.BuildProperties')
+//@Export('buildbug.BuildPropertiesChain')
 
 //@Require('Class')
-//@Require('Properties')
+//@Require('PropertiesChain')
 //@Require('TypeUtil')
 //@Require('buildbug.TokenReplacer')
 
@@ -30,10 +30,10 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class           = bugpack.require('Class');
-    var Properties      = bugpack.require('Properties');
-    var TypeUtil        = bugpack.require('TypeUtil');
-    var TokenReplacer   = bugpack.require('buildbug.TokenReplacer');
+    var Class               = bugpack.require('Class');
+    var PropertiesChain     = bugpack.require('PropertiesChain');
+    var TypeUtil            = bugpack.require('TypeUtil');
+    var TokenReplacer       = bugpack.require('buildbug.TokenReplacer');
 
 
     //-------------------------------------------------------------------------------
@@ -42,11 +42,11 @@ require('bugpack').context("*", function(bugpack) {
 
     /**
      * @class
-     * @extends {Properties}
+     * @extends {PropertiesChain}
      */
-    var BuildProperties = Class.extend(Properties, {
+    var BuildPropertiesChain = Class.extend(PropertiesChain, {
 
-        _name: "buildbug.BuildProperties",
+        _name: "buildbug.BuildPropertiesChain",
 
 
         //-------------------------------------------------------------------------------
@@ -55,11 +55,11 @@ require('bugpack').context("*", function(bugpack) {
 
         /**
          * @constructs
-         * @param {Object} propertiesObject
+         * @param {(Array.<Properties> | List.<Properties>)} propertiesList
          */
-        _constructor: function(propertiesObject) {
+        _constructor: function(propertiesList) {
 
-            this._super(propertiesObject);
+            this._super(propertiesList);
 
 
             //-------------------------------------------------------------------------------
@@ -79,11 +79,11 @@ require('bugpack').context("*", function(bugpack) {
         //-------------------------------------------------------------------------------
 
         /**
-         * @param {string} propertyName
+         * @param {string} propertyQuery
          * @return {*}
          */
-        getProperty: function(propertyName) {
-            var propertyValue = this._super(propertyName);
+        getProperty: function(propertyQuery) {
+            var propertyValue = this._super(propertyQuery);
             if (TypeUtil.isString(propertyValue) || TypeUtil.isArray(propertyValue) || TypeUtil.isObject(propertyValue)) {
                 var newValue = this.tokenReplacer.replace(propertyValue, this);
                 while (newValue !== propertyValue) {
@@ -101,5 +101,5 @@ require('bugpack').context("*", function(bugpack) {
     // Exports
     //-------------------------------------------------------------------------------
 
-    bugpack.export('buildbug.BuildProperties', BuildProperties);
+    bugpack.export('buildbug.BuildPropertiesChain', BuildPropertiesChain);
 });

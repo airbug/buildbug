@@ -1,12 +1,22 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Export('buildbug.BuildModuleScan')
+//@Export('buildbug.BuildModuleAnnotationProcessor')
 
 //@Require('Class')
 //@Require('Obj')
-//@Require('bugmeta.BugMeta')
+//@Require('Set')
 
 
 //-------------------------------------------------------------------------------
@@ -21,7 +31,7 @@ require('bugpack').context("*", function(bugpack) {
 
     var Class       = bugpack.require('Class');
     var Obj         = bugpack.require('Obj');
-    var BugMeta     = bugpack.require('bugmeta.BugMeta');
+    var Set         = bugpack.require('Set');
 
 
     //-------------------------------------------------------------------------------
@@ -32,9 +42,9 @@ require('bugpack').context("*", function(bugpack) {
      * @class
      * @extends {Obj}
      */
-    var BuildModuleScan = Class.extend(Obj, {
+    var BuildModuleAnnotationProcessor = Class.extend(Obj, {
 
-        _name: "buildbug.BuildModuleScan",
+        _name: "buildbug.BuildModuleAnnotationProcessor",
 
 
         //-------------------------------------------------------------------------------
@@ -58,7 +68,13 @@ require('bugpack').context("*", function(bugpack) {
              * @private
              * @type {BuildProject}
              */
-            this.buildProject = buildProject;
+            this.buildProject                       = buildProject;
+
+            /**
+             * @private
+             * @type {Set.<BuildModuleAnnotation>}
+             */
+            this.processedBuildModuleAnnotationSet  = new Set();
         },
 
 
@@ -67,19 +83,29 @@ require('bugpack').context("*", function(bugpack) {
         //-------------------------------------------------------------------------------
 
         /**
-         *
+         * @override
+         * @param {BuildModuleAnnotation} buildModuleAnnotation
          */
-        scan: function() {
-            var _this                   = this;
-            var bugmeta                 = BugMeta.context();
-            var buildModuleAnnotations  = bugmeta.getAnnotationsByType("BuildModule");
-            if (buildModuleAnnotations) {
-                buildModuleAnnotations.forEach(function(annotation) {
-                    var buildModuleConstructor  = annotation.getAnnotationReference();
-                    var buildModuleName         = annotation.getName();
-                    var buildModule             = new buildModuleConstructor();
-                    _this.buildProject.registerModule(buildModuleName, buildModule);
-                });
+        process: function(buildModuleAnnotation) {
+            this.processBuildModuleAnnotation(buildModuleAnnotation);
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Private Methods
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @private
+         * @param {BuildModuleAnnotation} buildModuleAnnotation
+         */
+        processBuildModuleAnnotation: function(buildModuleAnnotation) {
+            if (!this.processedBuildModuleAnnotationSet.contains(buildModuleAnnotation)) {
+                var buildModuleConstructor  = buildModuleAnnotation.getAnnotationReference();
+                var buildModuleName         = buildModuleAnnotation.getName();
+                var buildModule             = /** @type {BuildModule} */(new buildModuleConstructor());
+                this.buildProject.registerModule(buildModuleName, buildModule);
+                this.processedBuildModuleAnnotationSet.add(buildModuleAnnotation);
             }
         }
     });
@@ -89,5 +115,5 @@ require('bugpack').context("*", function(bugpack) {
     // Exports
     //-------------------------------------------------------------------------------
 
-    bugpack.export('buildbug.BuildModuleScan', BuildModuleScan);
+    bugpack.export('buildbug.BuildModuleAnnotationProcessor', BuildModuleAnnotationProcessor);
 });

@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -8,141 +18,147 @@
 //@Require('bugflow.Task')
 //@Require('buildbug.BuildFlow')
 //@Require('buildbug.BuildProperties')
+//@Require('buildbug.BuildPropertiesChain')
 
 
 //-------------------------------------------------------------------------------
-// Common Modules
+// Context
 //-------------------------------------------------------------------------------
 
-var bugpack         = require('bugpack').context();
-
-
-//-------------------------------------------------------------------------------
-// BugPack
-//-------------------------------------------------------------------------------
-
-var Class           = bugpack.require('Class');
-var Task            = bugpack.require('bugflow.Task');
-var BuildFlow       = bugpack.require('buildbug.BuildFlow');
-var BuildProperties = bugpack.require('buildbug.BuildProperties');
-
-
-//-------------------------------------------------------------------------------
-// Declare Class
-//-------------------------------------------------------------------------------
-
-var ExecuteTarget = Class.extend(Task, {
+require('bugpack').context("*", function(bugpack) {
 
     //-------------------------------------------------------------------------------
-    // Constructor
+    // BugPack
+    //-------------------------------------------------------------------------------
+
+    var Class                   = bugpack.require('Class');
+    var Task                    = bugpack.require('bugflow.Task');
+    var BuildFlow               = bugpack.require('buildbug.BuildFlow');
+    var BuildProperties         = bugpack.require('buildbug.BuildProperties');
+    var BuildPropertiesChain    = bugpack.require('buildbug.BuildPropertiesChain');
+
+
+    //-------------------------------------------------------------------------------
+    // Declare Class
     //-------------------------------------------------------------------------------
 
     /**
-     * @constructs
-     * @param {BuildTask} buildTask
-     * @param {BuildProperties} taskProperties
-     * @param {function()} taskInitMethod
+     * @class
+     * @extends {Task}
      */
-    _constructor: function(buildTask, taskProperties, taskInitMethod) {
+    var ExecuteTarget = Class.extend(Task, {
 
-        this._super(buildTask.getTaskMethod(), buildTask.getTaskContext());
+        _name: "buildbug.ExecuteTarget",
 
 
         //-------------------------------------------------------------------------------
-        // Private Properties
+        // Constructor
         //-------------------------------------------------------------------------------
 
         /**
-         * @prvate
-         * @type {BuildTask}
+         * @constructs
+         * @param {BuildTask} buildTask
+         * @param {BuildProperties} taskProperties
+         * @param {function()} taskInitMethod
          */
-        this.buildTask = buildTask;
+        _constructor: function(buildTask, taskProperties, taskInitMethod) {
+
+            this._super(buildTask.getTaskMethod(), buildTask.getTaskContext());
+
+
+            //-------------------------------------------------------------------------------
+            // Private Properties
+            //-------------------------------------------------------------------------------
+
+            /**
+             * @prvate
+             * @type {BuildTask}
+             */
+            this.buildTask          = buildTask;
+
+            /**
+             * @private
+             * @type {function(Task, BuildProject, BuildProperties)}
+             */
+            this.taskInitMethod     = taskInitMethod;
+
+            /**
+             * @private
+             * @type {BuildProperties}
+             */
+            this.taskProperties     = taskProperties || new BuildProperties({});
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Flow Methods
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @protected
+         */
+        completeFlow: function() {
+            console.log("Completed task '" + this.buildTask.getTaskName() + "'");
+            this._super();
+        },
+
+        /**
+         * @param {Array<*>} args
+         */
+        executeFlow: function(args) {
+            console.log("Running task '" + this.buildTask.getTaskName() + "'");
+            var buildProject = args[0];
+            if (this.taskInitMethod) {
+                this.taskInitMethod(this, buildProject, this.taskProperties);
+            }
+            var propertiesChain = this.generateBuildPropertiesChain(buildProject);
+            this.executeTargetTask(buildProject, propertiesChain);
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Public Methods
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @param {Object} propertiesObject
+         */
+        updateProperties: function(propertiesObject) {
+            this.taskProperties.updateProperties(propertiesObject);
+            return this;
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Private Methods
+        //-------------------------------------------------------------------------------
 
         /**
          * @private
-         * @type {function()}
+         * @param {BuildProject} buildProject
+         * @param {PropertiesChain} taskProperties
          */
-        this.taskInitMethod = taskInitMethod;
+        executeTargetTask: function(buildProject, taskProperties) {
+            var _this = this;
+            this.getTaskMethod().call(this.getTaskContext(), buildProject, taskProperties, function(error) {
+                _this.complete(error);
+            });
+        },
 
         /**
          * @private
-         * @type {BuildProperties}
+         * @param {BuildProject} buildProject
+         * @return {BuildPropertiesChain}
          */
-        this.taskProperties = taskProperties || new BuildProperties({});
-    },
-
-
-    //-------------------------------------------------------------------------------
-    // Flow Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @protected
-     */
-    completeFlow: function() {
-        console.log("Completed task '" + this.buildTask.getTaskName() + "'");
-        this._super();
-    },
-
-    /**
-     * @param {Array<*>} args
-     */
-    executeFlow: function(args) {
-        console.log("Running task '" + this.buildTask.getTaskName() + "'");
-        var buildProject = args[0];
-        if (this.taskInitMethod) {
-            this.taskInitMethod(this, buildProject, this.taskProperties);
+        generateBuildPropertiesChain: function(buildProject) {
+            return new BuildPropertiesChain([this.taskProperties, buildProject.getProperties()]);
         }
-        var finalProperties = this.generateProperties(buildProject);
-        this.executeTargetTask(buildProject, finalProperties);
-    },
+    });
 
 
     //-------------------------------------------------------------------------------
-    // Public Methods
+    // Exports
     //-------------------------------------------------------------------------------
 
-    /**
-     * @param {Object} propertiesObject
-     */
-    updateProperties: function(propertiesObject) {
-        this.taskProperties.updateProperties(propertiesObject);
-        return this;
-    },
-
-
-    //-------------------------------------------------------------------------------
-    // Private Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @private
-     * @param {BuildProject} buildProject
-     * @param {BuildProperties} finalProperties
-     */
-    executeTargetTask: function(buildProject, finalProperties) {
-        var _this = this;
-        this.taskMethod.call(this.taskContext, buildProject, finalProperties, function(error) {
-            _this.complete(error);
-        });
-    },
-
-    /**
-     * @private
-     * @param {BuildProject} buildProject
-     * @return {BuildProperties}
-     */
-    generateProperties: function(buildProject) {
-        var projectProperties = buildProject.getProperties();
-        var finalProperties = new BuildProperties({});
-        finalProperties.merge([this.taskProperties, projectProperties]);
-        return finalProperties;
-    }
+    bugpack.export('buildbug.ExecuteTarget', ExecuteTarget);
 });
-
-
-//-------------------------------------------------------------------------------
-// Exports
-//-------------------------------------------------------------------------------
-
-bugpack.export('buildbug.ExecuteTarget', ExecuteTarget);

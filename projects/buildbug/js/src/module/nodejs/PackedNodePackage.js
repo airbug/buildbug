@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -11,128 +21,137 @@
 
 
 //-------------------------------------------------------------------------------
-// Common Modules
+// Context
 //-------------------------------------------------------------------------------
 
-var bugpack     = require('bugpack').context();
-var npm         = require('npm');
-var path        = require('path');
-
-
-//-------------------------------------------------------------------------------
-// BugPack
-//-------------------------------------------------------------------------------
-
-var Class       = bugpack.require('Class');
-var Exception   = bugpack.require('Exception');
-var Obj         = bugpack.require('Obj');
-var BugFs       = bugpack.require('bugfs.BugFs');
-
-
-//-------------------------------------------------------------------------------
-// Declare Class
-//-------------------------------------------------------------------------------
-
-/**
- * @class
- * @extends {Obj}
- */
-var PackedNodePackage = Class.extend(Obj, {
+require('bugpack').context("*", function(bugpack) {
 
     //-------------------------------------------------------------------------------
-    // Constructor
+    // Common Modules
+    //-------------------------------------------------------------------------------
+
+    var npm         = require('npm');
+    var path        = require('path');
+
+
+    //-------------------------------------------------------------------------------
+    // BugPack
+    //-------------------------------------------------------------------------------
+
+    var Class       = bugpack.require('Class');
+    var Exception   = bugpack.require('Exception');
+    var Obj         = bugpack.require('Obj');
+    var BugFs       = bugpack.require('bugfs.BugFs');
+
+
+    //-------------------------------------------------------------------------------
+    // Declare Class
     //-------------------------------------------------------------------------------
 
     /**
-     * @constructs
-     * @param {NodePackage} nodePackage
-     * @param {string} basePath
+     * @class
+     * @extends {Obj}
      */
-    _constructor: function(nodePackage, basePath) {
+    var PackedNodePackage = Class.extend(Obj, {
 
-        this._super();
+        _name: "buildbug.PackedNodePackage",
 
 
         //-------------------------------------------------------------------------------
-        // Private Properties
+        // Constructor
         //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {Path}
+         * @constructs
+         * @param {NodePackage} nodePackage
+         * @param {string} basePath
          */
-        this.filePath   = BugFs.path(basePath + path.sep + nodePackage.getName() + "-" +
-            nodePackage.getVersion() + ".tgz");
+        _constructor: function(nodePackage, basePath) {
+
+            this._super();
+
+
+            //-------------------------------------------------------------------------------
+            // Private Properties
+            //-------------------------------------------------------------------------------
+
+            /**
+             * @private
+             * @type {Path}
+             */
+            this.filePath   = BugFs.path(basePath + path.sep + nodePackage.getName() + "-" +
+                nodePackage.getVersion() + ".tgz");
+
+            /**
+             * @private
+             * @type {string}
+             */
+            this.name       = nodePackage.getName();
+
+            /**
+             * @private
+             * @type {string}
+             */
+            this.version    = nodePackage.getVersion();
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Getters and Setters
+        //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {string}
+         * @return {string}
          */
-        this.name       = nodePackage.getName();
+        getFileName: function() {
+            return this.filePath.getName();
+        },
 
         /**
-         * @private
-         * @type {string}
+         * @return {Path}
          */
-        this.version    = nodePackage.getVersion();
-    },
+        getFilePath: function() {
+            return this.filePath;
+        },
+
+        /**
+         * @return {string}
+         */
+        getName: function() {
+            return this.name;
+        },
+
+        /**
+         * @return {string}
+         */
+        getVersion: function() {
+            return this.version;
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Public Methods
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @param {function(Throwable=)} callback
+         */
+        publishPackage: function(callback) {
+            var packedPackagePath = this.filePath.getAbsolutePath();
+            npm.commands.publish([packedPackagePath], function (error, data) {
+                if (!error) {
+                    callback();
+                } else {
+                    callback(new Exception("NpmError", {}, "Error occurred in NPM", [error]));
+                }
+            });
+        }
+    });
 
 
     //-------------------------------------------------------------------------------
-    // Getters and Setters
+    // Exports
     //-------------------------------------------------------------------------------
 
-    /**
-     * @return {string}
-     */
-    getFileName: function() {
-        return this.filePath.getName();
-    },
-
-    /**
-     * @return {Path}
-     */
-    getFilePath: function() {
-        return this.filePath;
-    },
-
-    /**
-     * @return {string}
-     */
-    getName: function() {
-        return this.name;
-    },
-
-    /**
-     * @return {string}
-     */
-    getVersion: function() {
-        return this.version;
-    },
-
-
-    //-------------------------------------------------------------------------------
-    // Public Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @param {function(Throwable=)} callback
-     */
-    publishPackage: function(callback) {
-        var packedPackagePath = this.filePath.getAbsolutePath();
-        npm.commands.publish([packedPackagePath], function (error, data) {
-            if (!error) {
-                callback();
-            } else {
-                callback(new Exception("NpmError", {}, "Error occurred in NPM", [error]));
-            }
-        });
-    }
+    bugpack.export('buildbug.PackedNodePackage', PackedNodePackage);
 });
-
-
-//-------------------------------------------------------------------------------
-// Exports
-//-------------------------------------------------------------------------------
-
-bugpack.export('buildbug.PackedNodePackage', PackedNodePackage);

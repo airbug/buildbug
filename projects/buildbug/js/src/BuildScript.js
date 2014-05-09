@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -14,157 +24,166 @@
 
 
 //-------------------------------------------------------------------------------
-// Common Modules
+// Context
 //-------------------------------------------------------------------------------
 
-var bugpack             = require('bugpack').context();
-var child_process       = require('child_process');
-
-
-//-------------------------------------------------------------------------------
-// BugPack
-//-------------------------------------------------------------------------------
-
-var Bug                 = bugpack.require('Bug');
-var Class               = bugpack.require('Class');
-var Exception           = bugpack.require('Exception');
-var Obj                 = bugpack.require('Obj');
-var TypeUtil            = bugpack.require('TypeUtil');
-var BugFlow             = bugpack.require('bugflow.BugFlow');
-var BugFs               = bugpack.require('bugfs.BugFs');
-
-
-//-------------------------------------------------------------------------------
-// Simplify References
-//-------------------------------------------------------------------------------
-
-var $forEachParallel    = BugFlow.$forEachParallel;
-
-
-//-------------------------------------------------------------------------------
-// Declare Class
-//-------------------------------------------------------------------------------
-
-/**
- * @class
- * @extends {Obj}
- */
-var BuildScript = Class.extend(Obj, {
+require('bugpack').context("*", function(bugpack) {
 
     //-------------------------------------------------------------------------------
-    // Constructor
+    // Common Modules
+    //-------------------------------------------------------------------------------
+
+    var child_process       = require('child_process');
+
+
+    //-------------------------------------------------------------------------------
+    // BugPack
+    //-------------------------------------------------------------------------------
+
+    var Bug                 = bugpack.require('Bug');
+    var Class               = bugpack.require('Class');
+    var Exception           = bugpack.require('Exception');
+    var Obj                 = bugpack.require('Obj');
+    var TypeUtil            = bugpack.require('TypeUtil');
+    var BugFlow             = bugpack.require('bugflow.BugFlow');
+    var BugFs               = bugpack.require('bugfs.BugFs');
+
+
+    //-------------------------------------------------------------------------------
+    // Simplify References
+    //-------------------------------------------------------------------------------
+
+    var $forEachParallel    = BugFlow.$forEachParallel;
+
+
+    //-------------------------------------------------------------------------------
+    // Declare Class
     //-------------------------------------------------------------------------------
 
     /**
-     * @constructs
-     * @param {{
-     *      dependencies: Array.<string>,
-     *      script: (function() | string)
-     * }} scriptObject
+     * @class
+     * @extends {Obj}
      */
-    _constructor: function(scriptObject) {
+    var BuildScript = Class.extend(Obj, {
 
-        this._super();
+        _name: "buildbug.BuildScript",
 
 
         //-------------------------------------------------------------------------------
-        // Private Properties
+        // Constructor
         //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {BuildProject}
+         * @constructs
+         * @param {{
+         *      dependencies: Array.<string>,
+         *      script: (function() | string)
+         * }} scriptObject
          */
-        this.buildProject   = null;
+        _constructor: function(scriptObject) {
+
+            this._super();
+
+
+            //-------------------------------------------------------------------------------
+            // Private Properties
+            //-------------------------------------------------------------------------------
+
+            /**
+             * @private
+             * @type {BuildProject}
+             */
+            this.buildProject   = null;
+
+            /**
+             * @private
+             * @type {Array.<string>}
+             */
+            this.dependencies   = scriptObject.dependencies;
+
+            /**
+             * @private
+             * @type {(function() | string)}
+             */
+            this.script         = scriptObject.script;
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Getters and Setters
+        //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {Array.<string>}
+         * @return {BuildProject}
          */
-        this.dependencies   = scriptObject.dependencies;
+        getBuildProject: function() {
+            return this.buildProject;
+        },
 
         /**
-         * @private
-         * @type {(function() | string)}
+         * @param {BuildProject} buildProject
          */
-        this.script         = scriptObject.script;
-    },
+        setBuildProject: function(buildProject) {
+            this.buildProject = buildProject;
+        },
+
+        /**
+         * @return {Array.<string>}
+         */
+        getDependencies: function() {
+            return this.dependencies;
+        },
+
+        /**
+         * @return {(function() | string)}
+         */
+        getScript: function() {
+            return this.script
+        },
 
 
-    //-------------------------------------------------------------------------------
-    // Getters and Setters
-    //-------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------
+        // Public Methods
+        //-------------------------------------------------------------------------------
 
-    /**
-     * @return {BuildProject}
-     */
-    getBuildProject: function() {
-        return this.buildProject;
-    },
-
-    /**
-     * @param {BuildProject} buildProject
-     */
-    setBuildProject: function(buildProject) {
-        this.buildProject = buildProject;
-    },
-
-    /**
-     * @return {Array.<string>}
-     */
-    getDependencies: function() {
-        return this.dependencies;
-    },
-
-    /**
-     * @return {(function() | string)}
-     */
-    getScript: function() {
-        return this.script
-    },
-
-
-    //-------------------------------------------------------------------------------
-    // Public Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     *
-     */
-    runScript: function() {
-        if (TypeUtil.isString(this.script)) {
-            var scriptPath = BugFs.path(this.script);
-            if (!scriptPath.isGivenPathAbsolute()) {
-                scriptPath = BugFs.joinPaths([this.buildProject.getTargetPath(), scriptPath]);
-            }
-            require(scriptPath.getAbsolutePath());
-        } else if (TypeUtil.isFunction(this.script)) {
-            this.script();
-        } else {
-            throw new Bug("IllegalState", {}, "script property has not been set for buildScript");
-        }
-    },
-
-    /**
-     * @param {function(Throwable=)} callback
-     */
-    setupScript: function(callback) {
-        var _this = this;
-        $forEachParallel(this.dependencies, function(flow, dependency) {
-            child_process.exec('npm install ' + dependency, {cwd: _this.buildProject.getTargetPath().getAbsolutePath(), env: process.env}, function (error, stdout, stderr) {
-                if (!error) {
-                    flow.complete();
-                } else {
-                    flow.error(new Exception("BuildError", {}, "Error occurred while linking buildbug module", [error]));
+        /**
+         *
+         */
+        runScript: function() {
+            if (TypeUtil.isString(this.script)) {
+                var scriptPath = BugFs.path(this.script);
+                if (!scriptPath.isGivenPathAbsolute()) {
+                    scriptPath = BugFs.joinPaths([this.buildProject.getTargetPath(), scriptPath]);
                 }
-            });
-        }).execute(callback);
-    }
+                require(scriptPath.getAbsolutePath());
+            } else if (TypeUtil.isFunction(this.script)) {
+                this.script();
+            } else {
+                throw new Bug("IllegalState", {}, "script property has not been set for buildScript");
+            }
+        },
+
+        /**
+         * @param {function(Throwable=)} callback
+         */
+        setupScript: function(callback) {
+            var _this = this;
+            $forEachParallel(this.dependencies, function(flow, dependency) {
+                child_process.exec('npm install ' + dependency, {cwd: _this.buildProject.getTargetPath().getAbsolutePath(), env: process.env}, function (error, stdout, stderr) {
+                    if (!error) {
+                        flow.complete();
+                    } else {
+                        flow.error(new Exception("BuildError", {}, "Error occurred while linking buildbug module", [error]));
+                    }
+                });
+            }).execute(callback);
+        }
+    });
+
+
+    //-------------------------------------------------------------------------------
+    // Exports
+    //-------------------------------------------------------------------------------
+
+    bugpack.export('buildbug.BuildScript', BuildScript);
 });
-
-
-//-------------------------------------------------------------------------------
-// Exports
-//-------------------------------------------------------------------------------
-
-bugpack.export('buildbug.BuildScript', BuildScript);

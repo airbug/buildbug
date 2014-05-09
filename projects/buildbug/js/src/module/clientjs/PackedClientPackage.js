@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -10,98 +20,116 @@
 
 
 //-------------------------------------------------------------------------------
-// Common Modules
+// Context
 //-------------------------------------------------------------------------------
 
-var bugpack = require('bugpack').context();
-var path    = require('path');
-
-
-//-------------------------------------------------------------------------------
-// BugPack
-//-------------------------------------------------------------------------------
-
-var Class   = bugpack.require('Class');
-var Obj     = bugpack.require('Obj');
-var BugFs   = bugpack.require('bugfs.BugFs');
-
-
-//-------------------------------------------------------------------------------
-// Declare Class
-//-------------------------------------------------------------------------------
-
-var PackedClientPackage = Class.extend(Obj, {
+require('bugpack').context("*", function(bugpack) {
 
     //-------------------------------------------------------------------------------
-    // Constructor
+    // Common Modules
     //-------------------------------------------------------------------------------
 
-    _constructor: function(clientPackage, basePath) {
+    var path    = require('path');
 
-        this._super();
+
+    //-------------------------------------------------------------------------------
+    // BugPack
+    //-------------------------------------------------------------------------------
+
+    var Class   = bugpack.require('Class');
+    var Obj     = bugpack.require('Obj');
+    var BugFs   = bugpack.require('bugfs.BugFs');
+
+
+    //-------------------------------------------------------------------------------
+    // Declare Class
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @class
+     * @extends {Obj}
+     */
+    var PackedClientPackage = Class.extend(Obj, {
+
+        _name: "buildbug.PackedClientPackage",
 
 
         //-------------------------------------------------------------------------------
-        // Private Properties
+        // Constructor
         //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {Path}
+         * @constructs
+         * @param {ClientPackage} clientPackage
+         * @param {string} basePath
          */
-        this.filePath = BugFs.path(basePath + path.sep + clientPackage.getName() + "-" +
-            clientPackage.getVersion() + ".tgz");
+        _constructor: function(clientPackage, basePath) {
+
+            this._super();
+
+
+            //-------------------------------------------------------------------------------
+            // Private Properties
+            //-------------------------------------------------------------------------------
+
+            /**
+             * @private
+             * @type {Path}
+             */
+            this.filePath = BugFs.path(basePath + path.sep + clientPackage.getName() + "-" +
+                clientPackage.getVersion() + ".tgz");
+
+            /**
+             * @private
+             * @type {string}
+             */
+            this.name = clientPackage.getName();
+
+            /**
+             * @private
+             * @type {string}
+             */
+            this.version = clientPackage.getVersion();
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Getters and Setters
+        //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {string}
+         * @return {string}
          */
-        this.name = clientPackage.getName();
+        getFileName: function() {
+            return this.filePath.getName();
+        },
 
         /**
-         * @private
-         * @type {string}
+         * @return {Path}
          */
-        this.version = clientPackage.getVersion();
-    },
+        getFilePath: function() {
+            return this.filePath;
+        },
+
+        /**
+         * @return {string}
+         */
+        getName: function() {
+            return this.name;
+        },
+
+        /**
+         * @return {string}
+         */
+        getVersion: function() {
+            return this.version;
+        }
+    });
 
 
     //-------------------------------------------------------------------------------
-    // Getters and Setters
+    // Exports
     //-------------------------------------------------------------------------------
 
-    /**
-     * @return {string}
-     */
-    getFileName: function() {
-        return this.filePath.getName();
-    },
-
-    /**
-     * @return {Path}
-     */
-    getFilePath: function() {
-        return this.filePath;
-    },
-
-    /**
-     * @return {string}
-     */
-    getName: function() {
-        return this.name;
-    },
-
-    /**
-     * @return {string}
-     */
-    getVersion: function() {
-        return this.version;
-    }
+    bugpack.export('buildbug.PackedClientPackage', PackedClientPackage);
 });
-
-
-//-------------------------------------------------------------------------------
-// Exports
-//-------------------------------------------------------------------------------
-
-bugpack.export('buildbug.PackedClientPackage', PackedClientPackage);

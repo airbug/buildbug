@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -10,253 +20,256 @@
 
 
 //-------------------------------------------------------------------------------
-// Common Modules
+// Context
 //-------------------------------------------------------------------------------
 
-var bugpack             = require('bugpack').context();
-
-
-//-------------------------------------------------------------------------------
-// BugPack
-//-------------------------------------------------------------------------------
-
-var Class               = bugpack.require('Class');
-var Event               = bugpack.require('Event');
-var EventDispatcher     = bugpack.require('EventDispatcher');
-
-
-//-------------------------------------------------------------------------------
-// Declare Class
-//-------------------------------------------------------------------------------
-
-/**
- * @class
- * @extends {EventDispatcher}
- */
-var BuildModule = Class.extend(EventDispatcher, {
+require('bugpack').context("*", function(bugpack) {
 
     //-------------------------------------------------------------------------------
-    // Constructor
+    // BugPack
+    //-------------------------------------------------------------------------------
+
+    var Class               = bugpack.require('Class');
+    var Event               = bugpack.require('Event');
+    var EventDispatcher     = bugpack.require('EventDispatcher');
+
+
+    //-------------------------------------------------------------------------------
+    // Declare Class
     //-------------------------------------------------------------------------------
 
     /**
-     * @constructs
+     * @class
+     * @extends {EventDispatcher}
      */
-    _constructor: function() {
+    var BuildModule = Class.extend(EventDispatcher, {
 
-        this._super();
+        _name: "buildbug.BuildModule",
 
 
         //-------------------------------------------------------------------------------
-        // Private Properties
+        // Constructor
         //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {BuildProject}
+         * @constructs
          */
-        this.buildProject       = null;
+        _constructor: function() {
+
+            this._super();
+
+
+            //-------------------------------------------------------------------------------
+            // Private Properties
+            //-------------------------------------------------------------------------------
+
+            /**
+             * @private
+             * @type {BuildProject}
+             */
+            this.buildProject       = null;
+
+            /**
+             * @private
+             * @type {boolean}
+             */
+            this.enabled            = false;
+
+            /**
+             * @private
+             * @type {(BuildModule.InitializeStates|string)}
+             */
+            this.initializeState    = BuildModule.InitializeStates.DEINITIALIZED;
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Getters and Setters
+        //-------------------------------------------------------------------------------
 
         /**
-         * @private
-         * @type {boolean}
+         * @return {BuildProject}
          */
-        this.enabled            = false;
+        geBuildProject: function() {
+            return this.buildProject;
+        },
 
         /**
-         * @private
-         * @type {(BuildModule.InitializeStates|string)}
+         * @return {boolean}
          */
-        this.initializeState    = BuildModule.InitializeStates.DEINITIALIZED;
-    },
+        getEnabled: function() {
+            return this.enabled;
+        },
+
+        /**
+         * @return {BuildModule.InitializeStates|string}
+         */
+        getInitializeState: function() {
+            return this.initializeState;
+        },
 
 
-    //-------------------------------------------------------------------------------
-    // Getters and Setters
-    //-------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------
+        // Convenience Methods
+        //-------------------------------------------------------------------------------
 
-    /**
-     * @return {BuildProject}
-     */
-    geBuildProject: function() {
-        return this.buildProject;
-    },
+        /**
+         * @return {boolean}
+         */
+        isEnabled: function() {
+            return this.enabled;
+        },
 
-    /**
-     * @return {boolean}
-     */
-    getEnabled: function() {
-        return this.enabled;
-    },
+        /**
+         * @return {boolean}
+         */
+        isDeinitialized: function() {
+            return this.initializeState === BuildModule.InitializeStates.DEINITIALIZED;
+        },
 
-    /**
-     * @return {BuildModule.InitializeStates|string}
-     */
-    getInitializeState: function() {
-        return this.initializeState;
-    },
+        /**
+         * @return {boolean}
+         */
+        isDeinitializing: function() {
+            return this.initializeState === BuildModule.InitializeStates.DEINITIALIZING;
+        },
 
+        /**
+         * @return {boolean}
+         */
+        isInitialized: function() {
+            return this.initializeState === BuildModule.InitializeStates.INITIALIZED;
+        },
 
-    //-------------------------------------------------------------------------------
-    // Convenience Methods
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @return {boolean}
-     */
-    isEnabled: function() {
-        return this.enabled;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDeinitialized: function() {
-        return this.initializeState === BuildModule.InitializeStates.DEINITIALIZED;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDeinitializing: function() {
-        return this.initializeState === BuildModule.InitializeStates.DEINITIALIZING;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isInitialized: function() {
-        return this.initializeState === BuildModule.InitializeStates.INITIALIZED;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isInitializing: function() {
-        return this.initializeState === BuildModule.InitializeStates.INITIALIZING;
-    },
+        /**
+         * @return {boolean}
+         */
+        isInitializing: function() {
+            return this.initializeState === BuildModule.InitializeStates.INITIALIZING;
+        },
 
 
-    //-------------------------------------------------------------------------------
-    // Public Methods
-    //-------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------
+        // Public Methods
+        //-------------------------------------------------------------------------------
 
-    /**
-     *
-     */
-    deinitialize: function() {
-        if (this.isInitialized()) {
-            this.initializeState    = BuildModule.InitializeStates.DEINITIALIZING;
-            var deinitializeComplete  = this.deinitializeModule();
-            if (deinitializeComplete) {
-                this.deinitializeComplete();
+        /**
+         *
+         */
+        deinitialize: function() {
+            if (this.isInitialized()) {
+                this.initializeState    = BuildModule.InitializeStates.DEINITIALIZING;
+                var deinitializeComplete  = this.deinitializeModule();
+                if (deinitializeComplete) {
+                    this.deinitializeComplete();
+                }
             }
-        }
-    },
+        },
 
-    /**
-     * @param {BuildProject} buildProject
-     */
-    enable: function(buildProject) {
-        if (!this.isEnabled()) {
-            this.enabled = true;
-            this.buildProject = buildProject;
-            this.enableModule();
-        }
-    },
-
-    /**
-     *
-     */
-    initialize: function() {
-        if (this.isDeinitialized()) {
-            this.initializeState    = BuildModule.InitializeStates.INITIALIZING;
-            var initializeComplete  = this.initializeModule();
-            if (initializeComplete) {
-                this.initializeComplete();
+        /**
+         * @param {BuildProject} buildProject
+         */
+        enable: function(buildProject) {
+            if (!this.isEnabled()) {
+                this.enabled = true;
+                this.buildProject = buildProject;
+                this.enableModule();
             }
+        },
+
+        /**
+         *
+         */
+        initialize: function() {
+            if (this.isDeinitialized()) {
+                this.initializeState    = BuildModule.InitializeStates.INITIALIZING;
+                var initializeComplete  = this.initializeModule();
+                if (initializeComplete) {
+                    this.initializeComplete();
+                }
+            }
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Protected Methods
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @protected
+         */
+        deinitializeComplete: function() {
+            if (!this.isInitialized()) {
+                this.initializeState = BuildModule.InitializeStates.DEINITIALIZED;
+                this.dispatchEvent(new Event(BuildModule.EventTypes.MODULE_DEINITIALIZED));
+            }
+        },
+
+        /**
+         * @protected
+         * @return {boolean}
+         */
+        deinitializeModule: function() {
+            // Override this function
+            return true;
+        },
+
+        /**
+         * @protected
+         */
+        enableModule: function() {
+            // Override this function
+        },
+
+        /**
+         * @protected
+         */
+        initializeComplete: function() {
+            if (!this.isInitialized()) {
+                this.initializeState = BuildModule.InitializeStates.INITIALIZED;
+                this.dispatchEvent(new Event(BuildModule.EventTypes.MODULE_INITIALIZED));
+            }
+        },
+
+        /**
+         * @protected
+         * @return {boolean}
+         */
+        initializeModule: function() {
+            // Override this function
+            return true;
         }
-    },
+    });
 
 
     //-------------------------------------------------------------------------------
-    // Protected Methods
+    // Static Properties
     //-------------------------------------------------------------------------------
 
     /**
-     * @protected
+     * @static
+     * @enum {string}
      */
-    deinitializeComplete: function() {
-        if (!this.isInitialized()) {
-            this.initializeState = BuildModule.InitializeStates.DEINITIALIZED;
-            this.dispatchEvent(new Event(BuildModule.EventTypes.MODULE_DEINITIALIZED));
-        }
-    },
+    BuildModule.EventTypes = {
+        MODULE_DEINITIALIZED: "BuildModule:ModuleDeinitialized",
+        MODULE_INITIALIZED: "BuildModule:ModuleInitialized"
+    };
 
     /**
-     * @protected
-     * @return {boolean}
+     * @static
+     * @enum {string}
      */
-    deinitializeModule: function() {
-        // Override this function
-        return true;
-    },
+    BuildModule.InitializeStates = {
+        DEINITIALIZED: "BuildModule:Deinitialized",
+        DEINITIALIZING: "BuildModule:Deinitializing",
+        INITIALIZED: "BuildModule:Initialized",
+        INITIALIZING: "BuildModule:Initializing"
+    };
 
-    /**
-     * @protected
-     */
-    enableModule: function() {
-        // Override this function
-    },
 
-    /**
-     * @protected
-     */
-    initializeComplete: function() {
-        if (!this.isInitialized()) {
-            this.initializeState = BuildModule.InitializeStates.INITIALIZED;
-            this.dispatchEvent(new Event(BuildModule.EventTypes.MODULE_INITIALIZED));
-        }
-    },
+    //-------------------------------------------------------------------------------
+    // Exports
+    //-------------------------------------------------------------------------------
 
-    /**
-     * @protected
-     * @return {boolean}
-     */
-    initializeModule: function() {
-        // Override this function
-        return true;
-    }
+    bugpack.export('buildbug.BuildModule', BuildModule);
 });
-
-
-//-------------------------------------------------------------------------------
-// Static Variables
-//-------------------------------------------------------------------------------
-
-/**
- * @static
- * @enum {string}
- */
-BuildModule.EventTypes = {
-    MODULE_DEINITIALIZED: "BuildModule:ModuleDeinitialized",
-    MODULE_INITIALIZED: "BuildModule:ModuleInitialized"
-};
-
-/**
- * @static
- * @enum {string}
- */
-BuildModule.InitializeStates = {
-    DEINITIALIZED: "BuildModule:Deinitialized",
-    DEINITIALIZING: "BuildModule:Deinitializing",
-    INITIALIZED: "BuildModule:Initialized",
-    INITIALIZING: "BuildModule:Initializing"
-};
-
-
-//-------------------------------------------------------------------------------
-// Exports
-//-------------------------------------------------------------------------------
-
-bugpack.export('buildbug.BuildModule', BuildModule);

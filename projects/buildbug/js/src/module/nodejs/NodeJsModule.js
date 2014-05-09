@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -167,19 +177,19 @@ require('bugpack').context("*", function(bugpack) {
          *   testPaths: Array.<string>
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        createNodePackageTask: function(buildProject, properties, callback) {
-            var sourcePaths     = properties.getProperty("sourcePaths");
-            var testPaths       = properties.getProperty("testPaths");
-            var scriptPaths     = properties.getProperty("scriptPaths");
-            var binPaths        = properties.getProperty("binPaths");
-            var staticPaths     = properties.getProperty("staticPaths");
-            var resourcePaths   = properties.getProperty("resourcePaths");
-            var readmePath      = properties.getProperty("readmePath");
-            var packageJson     = properties.getProperty("packageJson");
-            var buildPath       = properties.getProperty("buildPath");
+        createNodePackageTask: function(buildProject, taskProperties, callback) {
+            var sourcePaths     = taskProperties.getProperty("sourcePaths");
+            var testPaths       = taskProperties.getProperty("testPaths");
+            var scriptPaths     = taskProperties.getProperty("scriptPaths");
+            var binPaths        = taskProperties.getProperty("binPaths");
+            var staticPaths     = taskProperties.getProperty("staticPaths");
+            var resourcePaths   = taskProperties.getProperty("resourcePaths");
+            var readmePath      = taskProperties.getProperty("readmePath");
+            var packageJson     = taskProperties.getProperty("packageJson");
+            var buildPath       = buildProject.getProperty("buildPath");
 
             var nodePackage     = this.generateNodePackage(packageJson, buildPath);
             var params          = {
@@ -196,20 +206,20 @@ require('bugpack').context("*", function(bugpack) {
 
         /**
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        npmAddUserTask: function(buildProject, properties, callback) {
+        npmAddUserTask: function(buildProject, taskProperties, callback) {
             this.npmAddUser(callback);
         },
 
         /**
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        npmConfigSetTask: function(buildProject, properties, callback) {
-            var config  = properties.getProperty("config");
+        npmConfigSetTask: function(buildProject, taskProperties, callback) {
+            var config  = taskProperties.getProperty("config");
             this.npmConfigSet(config, callback);
         },
 
@@ -220,12 +230,12 @@ require('bugpack').context("*", function(bugpack) {
          *   module: string
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        npmInstallTask: function(buildProject, properties, callback) {
-            var installPath = properties.getProperty("installPath") || process.cwd();
-            var module      = properties.getProperty("module");
+        npmInstallTask: function(buildProject, taskProperties, callback) {
+            var installPath = taskProperties.getProperty("installPath") || process.cwd();
+            var module      = taskProperties.getProperty("module");
             this.npmInstall(installPath, module, function(throwable, data) {
                 if (!throwable) {
                     console.log("Module installed to '" + data.installedPath + "'");
@@ -242,16 +252,16 @@ require('bugpack').context("*", function(bugpack) {
          *   distPath: string
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        packNodePackageTask: function(buildProject, properties, callback) {
-            var _this = this;
-            var packageName = properties.getProperty("packageName");
-            var packageVersion = properties.getProperty("packageVersion");
-            var nodePackage = this.findNodePackage(packageName, packageVersion);
+        packNodePackageTask: function(buildProject, taskProperties, callback) {
+            var _this           = this;
+            var packageName     = taskProperties.getProperty("packageName");
+            var packageVersion  = taskProperties.getProperty("packageVersion");
+            var nodePackage     = this.findNodePackage(packageName, packageVersion);
             var params = {
-                distPath: properties.getProperty("distPath")
+                distPath: taskProperties.getProperty("distPath")
             };
 
             if (nodePackage) {
@@ -279,13 +289,13 @@ require('bugpack').context("*", function(bugpack) {
          *   packageVersion: string,
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        publishNodePackageTask: function(buildProject, properties, callback) {
+        publishNodePackageTask: function(buildProject, taskProperties, callback) {
             var _this               = this;
-            var packageName         = properties.getProperty("packageName");
-            var packageVersion      = properties.getProperty("packageVersion");
+            var packageName         = taskProperties.getProperty("packageName");
+            var packageVersion      = taskProperties.getProperty("packageVersion");
             var packageNodePackage  = this.findPackedNodePackage(packageName, packageVersion);
 
             if (packageNodePackage) {

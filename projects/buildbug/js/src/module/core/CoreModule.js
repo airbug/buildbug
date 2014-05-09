@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 airbug Inc. All rights reserved.
+ *
+ * All software, both binary and source contained in this work is the exclusive property
+ * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
+ * the source code of this software is prohibited. This work is protected under the United
+ * States copyright law and other international copyright treaties and conventions.
+ */
+
+
 //-------------------------------------------------------------------------------
 // Annotations
 //-------------------------------------------------------------------------------
@@ -111,11 +121,11 @@ require('bugpack').context("*", function(bugpack) {
          *   packagePath: string
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        cleanTask: function(buildProject, properties, callback) {
-            var buildPath = properties.getProperty("buildPath");
+        cleanTask: function(buildProject, taskProperties, callback) {
+            var buildPath = taskProperties.getProperty("buildPath");
             BugFs.deleteDirectory(buildPath, function(throwable) {
                 callback(throwable);
             });
@@ -128,17 +138,17 @@ require('bugpack').context("*", function(bugpack) {
          *      !sources: (string|Path|Array.<(string|Path)>)
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        concatTask: function(buildProject, properties, callback) {
+        concatTask: function(buildProject, taskProperties, callback) {
             var _this       = this;
             var throwable   = null;
             var sources     = null;
             var outputFile  = null;
             try {
-                sources = this.validateAndConvertSourcesProperty(properties.getProperty("sources"));
-                outputFile = this.validateAndConvertOutputFileProperty(properties.getProperty("outputFile"));
+                sources = this.validateAndConvertSourcesProperty(taskProperties.getProperty("sources"));
+                outputFile = this.validateAndConvertOutputFileProperty(taskProperties.getProperty("outputFile"));
             } catch(thrown) {
                 throwable = thrown;
             }
@@ -172,10 +182,10 @@ require('bugpack').context("*", function(bugpack) {
          *      intoPath: (string |Path)
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        copyContentsTask: function(buildProject, properties, callback) {
+        copyContentsTask: function(buildProject, taskProperties, callback) {
             var _this       = this;
             var throwable   = null;
             var fromPaths   = null;
@@ -185,8 +195,8 @@ require('bugpack').context("*", function(bugpack) {
 
             var recursive   = true;
             try {
-                fromPaths       = this.validateAndConvertFromPathsProperty(properties.getProperty("fromPaths"));
-                intoPath        = this.validateAndConvertIntoPathProperty(properties.getProperty("intoPath"));
+                fromPaths       = this.validateAndConvertFromPathsProperty(taskProperties.getProperty("fromPaths"));
+                intoPath        = this.validateAndConvertIntoPathProperty(taskProperties.getProperty("intoPath"));
             } catch(thrown) {
                 throwable = thrown;
             }
@@ -211,10 +221,10 @@ require('bugpack').context("*", function(bugpack) {
          *      intoPath: (string |Path)
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        copyTask: function(buildProject, properties, callback) {
+        copyTask: function(buildProject, taskProperties, callback) {
             var _this       = this;
             var throwable   = null;
             var fromPaths   = null;
@@ -224,8 +234,8 @@ require('bugpack').context("*", function(bugpack) {
 
             var recursive   = true;
             try {
-                fromPaths       = this.validateAndConvertFromPathsProperty(properties.getProperty("fromPaths"));
-                intoPath        = this.validateAndConvertIntoPathProperty(properties.getProperty("intoPath"));
+                fromPaths       = this.validateAndConvertFromPathsProperty(taskProperties.getProperty("fromPaths"));
+                intoPath        = this.validateAndConvertIntoPathProperty(taskProperties.getProperty("intoPath"));
             } catch(thrown) {
                 throwable = thrown;
             }
@@ -251,12 +261,12 @@ require('bugpack').context("*", function(bugpack) {
          *      filePaths: (Array.<string | Path>)
          * }
          * @param {BuildProject} buildProject
-         * @param {BuildProperties} properties
+         * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
-        replaceTokensTask: function(buildProject, properties, callback) {
+        replaceTokensTask: function(buildProject, taskProperties, callback) {
             var _this = this;
-            var tokenObjects = properties.getProperty("tokenObjects");
+            var tokenObjects = taskProperties.getProperty("tokenObjects");
 
             $forEachSeries(tokenObjects, function(flow, tokenObject){
                 $forEachParallel(tokenObject.filePaths, function(flow, filePath){
