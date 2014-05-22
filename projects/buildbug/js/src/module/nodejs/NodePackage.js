@@ -57,6 +57,7 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var $forEachSeries      = BugFlow.$forEachSeries;
+    var $forInSeries        = BugFlow.$forInSeries;
     var $parallel           = BugFlow.$parallel;
     var $series             = BugFlow.$series;
     var $task               = BugFlow.$task;
@@ -113,43 +114,7 @@ require('bugpack').context("*", function(bugpack) {
              * @private
              * @type {Path}
              */
-            this.binPath                = null;
-
-            /**
-             * @private
-             * @type {Path}
-             */
             this.buildPath              = null;
-
-            /**
-             * @private
-             * @type {Path}
-             */
-            this.libPath                = null;
-
-            /**
-             * @private
-             * @type {Path}
-             */
-            this.resourcesPath          = null;
-
-            /**
-             * @private
-             * @type {Path}
-             */
-            this.scriptsPath            = null;
-
-            /**
-             * @private
-             * @type {Path}
-             */
-            this.staticPath             = null;
-
-            /**
-             * @private
-             * @type {Path}
-             */
-            this.testPath               = null;
 
             /**
              * @private
@@ -176,22 +141,8 @@ require('bugpack').context("*", function(bugpack) {
         /**
          * @return {Path}
          */
-        getBinPath: function() {
-            return this.binPath;
-        },
-
-        /**
-         * @return {Path}
-         */
         getBuildPath: function() {
             return this.buildPath;
-        },
-
-        /**
-         * @return {Path}
-         */
-        getLibPath: function() {
-            return this.libPath;
         },
 
         /**
@@ -221,34 +172,6 @@ require('bugpack').context("*", function(bugpack) {
         /**
          * @return {string}
          */
-        getResourcesPath: function() {
-            return this.resourcesPath;
-        },
-
-        /**
-         * @return {Path}
-         */
-        getScriptsPath: function() {
-            return this.scriptsPath;
-        },
-
-        /**
-         * @return {Path}
-         */
-        getStaticPath: function() {
-            return this.staticPath;
-        },
-
-        /**
-         * @return {Path}
-         */
-        getTestPath: function() {
-            return this.testPath;
-        },
-
-        /**
-         * @return {string}
-         */
         getVersion: function() {
             return this.packageJson.version;
         },
@@ -259,124 +182,29 @@ require('bugpack').context("*", function(bugpack) {
         //-------------------------------------------------------------------------------
 
         /**
-         * @param {{
-         *   binPaths: Array.<string>,
-         *   buildPath: string,
-         *   packageJson: {
-         *       name: string,
-         *       version: string,
-         *       main: string,
-         *       dependencies: Object
-         *   },
-         *   readmePath: string,
-         *   resourcePaths: Array.<string>,
-         *   scriptPaths: Array.<string>,
-         *   sourcePaths: Array.<string>,
-         *   staticPaths: Array.<string>,
-         *   testPaths: Array.<string>
-         * }} params
+         * @param {Object.<string, Array.<string>> } packagePaths
          * @param {function(Throwable=)} callback
          */
-        buildPackage: function(params, callback) {
+        buildPackage: function(packagePaths, callback) {
             var _this = this;
             this.validatePackageJson();
-
-            var sourcePaths     = params.sourcePaths;
-            var testPaths       = params.testPaths;
-            var scriptPaths     = params.scriptPaths;
-            var binPaths        = params.binPaths;
-            var staticPaths     = params.staticPaths;
-            var resourcePaths   = params.resourcePaths;
-            var readmePath      = params.readmePath;
-
             this.createPackageBuildPaths();
 
             $series([
-                $parallel([
-                    $task(function(flow) {
-                        if (binPaths) {
-                            $forEachSeries(binPaths, function(flow, binPath) {
-                                BugFs.copyContents(binPath, _this.getBinPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
-                                    flow.complete(throwable);
-                                });
-                            }).execute(function(throwable) {
-                                flow.complete(throwable);
-                            });
-                        } else {
-                            flow.complete();
-                        }
-                    }),
-                    $task(function(flow) {
+                $task(function(flow) {
+                    $forInSeries(packagePaths, function(flow, packagePath, sourcePaths) {
+                        packagePath = _this.buildPath.joinPaths([packagePath]);
                         $forEachSeries(sourcePaths, function(flow, sourcePath) {
-                            BugFs.copyContents(sourcePath, _this.getLibPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
+                            BugFs.copyContents(sourcePath, packagePath, true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
                                 flow.complete(throwable);
                             });
                         }).execute(function(throwable) {
                             flow.complete(throwable);
                         });
-                    }),
-                    $task(function(flow) {
-                        if (testPaths) {
-                            $forEachSeries(testPaths, function(flow, testPath) {
-                                BugFs.copyContents(testPath, _this.getTestPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
-                                    flow.complete(throwable);
-                                });
-                            }).execute(function(throwable) {
-                                flow.complete(throwable);
-                            });
-                        } else {
-                            flow.complete();
-                        }
-                    }),
-                    $task(function(flow) {
-                        if (scriptPaths) {
-                            $forEachSeries(scriptPaths, function(flow, scriptPath) {
-                                BugFs.copyContents(scriptPath, _this.getScriptsPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
-                                    flow.complete(throwable);
-                                });
-                            }).execute(function(throwable) {
-                                flow.complete(throwable);
-                            });
-                        } else {
-                            flow.complete();
-                        }
-                    }),
-                    $task(function(flow) {
-                        if (staticPaths) {
-                            $forEachSeries(staticPaths, function(flow, staticPath) {
-                                BugFs.copyContents(staticPath, _this.getStaticPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
-                                    flow.complete(throwable);
-                                });
-                            }).execute(function(throwable) {
-                                flow.complete(throwable);
-                            });
-                        } else {
-                            flow.complete();
-                        }
-                    }),
-                    $task(function(flow) {
-                        if (resourcePaths) {
-                            $forEachSeries(resourcePaths, function(flow, resourcePath) {
-                                BugFs.copyContents(resourcePath, _this.getResourcesPath(), true, Path.SyncMode.MERGE_REPLACE, function(throwable) {
-                                    flow.complete(throwable);
-                                });
-                            }).execute(function(throwable) {
-                                    flow.complete(throwable);
-                                });
-                        } else {
-                            flow.complete();
-                        }
-                    }),
-                    $task(function(flow) {
-                        if (readmePath) {
-                            BugFs.copyFile(readmePath, _this.getBuildPath(), Path.SyncMode.MERGE_REPLACE, function(throwable) {
-                                flow.complete(throwable);
-                            });
-                        } else {
-                            flow.complete();
-                        }
-                    })
-                ]),
+                    }).execute(function(throwable) {
+                        flow.complete(throwable);
+                    });
+                }),
                 $task(function(flow) {
                     _this.writePackageJson(function(throwable) {
                         flow.complete(throwable);
@@ -419,12 +247,6 @@ require('bugpack').context("*", function(bugpack) {
          */
         createPackageBuildPaths: function() {
             this.buildPath = BugFs.joinPaths([this.baseBuildPathString, this.getName(), this.getVersion()]);
-            this.binPath = this.buildPath.joinPaths(["bin"]);
-            this.libPath = this.buildPath.joinPaths(["lib"]);
-            this.testPath = this.buildPath.joinPaths(["test"]);
-            this.scriptsPath = this.buildPath.joinPaths(["scripts"]);
-            this.staticPath = this.buildPath.joinPaths(["static"]);
-            this.resourcesPath = this.buildPath.joinPaths(["resources"]);
         },
 
         /**

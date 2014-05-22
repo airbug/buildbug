@@ -44,14 +44,14 @@ var nodejs                  = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.10";
+var version             = "0.1.11";
 var dependencies        = {
     "aws-sdk": "1.9.x",
     "bugpack-registry": "0.1.6",
     bugpack: "0.1.12",
     bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.2.tgz",
     deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
-    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.6.tgz",
+    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.7.tgz",
     "uglify-js": "2.3.x",
     npm: "1.4.x",
     tar: "git://github.com/airbug/node-tar.git#master",
@@ -149,14 +149,16 @@ buildTarget('local').buildFlow(
             targetTask('createNodePackage', {
                 properties: {
                     packageJson: buildProject.getProperty("buildbug.packageJson"),
-                    sourcePaths: buildProject.getProperty("buildbug.sourcePaths").concat(
-                        buildProject.getProperty("buildbug.unitTest.sourcePaths")
-                    ),
-                    scriptPaths: buildProject.getProperty("buildbug.scriptPaths").concat(
-                        buildProject.getProperty("buildbug.unitTest.scriptPaths")
-                    ),
-                    testPaths: buildProject.getProperty("buildbug.unitTest.testPaths"),
-                    binPaths: buildProject.getProperty("buildbug.binPaths")
+                    packagePaths: {
+                        "./bin": buildProject.getProperty("buildbug.binPaths"),
+                        "./lib": buildProject.getProperty("buildbug.sourcePaths").concat(
+                            buildProject.getProperty("buildbug.unitTest.sourcePaths")
+                        ),
+                        "./scripts": buildProject.getProperty("buildbug.scriptPaths").concat(
+                            buildProject.getProperty("buildbug.unitTest.scriptPaths")
+                        ),
+                        "./tests": buildProject.getProperty("buildbug.unitTest.testPaths")
+                    }
                 }
             }),
             targetTask('generateBugPackRegistry', {
@@ -183,7 +185,7 @@ buildTarget('local').buildFlow(
                         buildProject.getProperty("buildbug.packageJson.version")
                     );
                     task.updateProperties({
-                        modulePath: packedNodePackage.getFilePath(),
+                        modulePath: packedNodePackage.getFilePath()
                         //checkCoverage: true
                     });
                 }
@@ -226,14 +228,16 @@ buildTarget("prod").buildFlow(
                 targetTask("createNodePackage", {
                     properties: {
                         packageJson: buildProject.getProperty("buildbug.packageJson"),
-                        sourcePaths: buildProject.getProperty("buildbug.sourcePaths").concat(
-                            buildProject.getProperty("buildbug.unitTest.sourcePaths")
-                        ),
-                        scriptPaths: buildProject.getProperty("buildbug.scriptPaths").concat(
-                            buildProject.getProperty("buildbug.unitTest.scriptPaths")
-                        ),
-                        testPaths: buildProject.getProperty("buildbug.unitTest.testPaths"),
-                        binPaths: buildProject.getProperty("buildbug.binPaths")
+                        packagePaths: {
+                            "./bin": buildProject.getProperty("buildbug.binPaths"),
+                            "./lib": buildProject.getProperty("buildbug.sourcePaths").concat(
+                                buildProject.getProperty("buildbug.unitTest.sourcePaths")
+                            ),
+                            "./scripts": buildProject.getProperty("buildbug.scriptPaths").concat(
+                                buildProject.getProperty("buildbug.unitTest.scriptPaths")
+                            ),
+                            "./tests": buildProject.getProperty("buildbug.unitTest.testPaths")
+                        }
                     }
                 }),
                 targetTask("generateBugPackRegistry", {
@@ -273,9 +277,11 @@ buildTarget("prod").buildFlow(
                 targetTask("createNodePackage", {
                     properties: {
                         packageJson: buildProject.getProperty("buildbug.packageJson"),
-                        sourcePaths: buildProject.getProperty("buildbug.sourcePaths"),
-                        scriptPaths: buildProject.getProperty("buildbug.scriptPaths"),
-                        binPaths: buildProject.getProperty("buildbug.binPaths")
+                        packagePaths: {
+                            "./bin": buildProject.getProperty("buildbug.binPaths"),
+                            "./lib": buildProject.getProperty("buildbug.sourcePaths"),
+                            "./scripts": buildProject.getProperty("buildbug.scriptPaths")
+                        }
                     }
                 }),
                 targetTask("generateBugPackRegistry", {

@@ -161,7 +161,6 @@ require('bugpack').context("*", function(bugpack) {
         /**
          * Available Properties
          * {
-         *   binPaths: Array.<string>,
          *   buildPath: string,
          *   packageJson: {
          *       name: string,
@@ -169,39 +168,18 @@ require('bugpack').context("*", function(bugpack) {
          *       main: string,
          *       dependencies: Object
          *   },
-         *   readmePath: string,
-         *   resourcePaths: Array.<string>,
-         *   scriptPaths: Array.<string>,
-         *   sourcePaths: Array.<string>,
-         *   staticPaths: Array.<string>,
-         *   testPaths: Array.<string>
+         *   packagePaths: Object.<string, Array.<string>>
          * }
          * @param {BuildProject} buildProject
          * @param {BuildPropertiesChain} taskProperties
          * @param {function(Throwable=)} callback
          */
         createNodePackageTask: function(buildProject, taskProperties, callback) {
-            var sourcePaths     = taskProperties.getProperty("sourcePaths");
-            var testPaths       = taskProperties.getProperty("testPaths");
-            var scriptPaths     = taskProperties.getProperty("scriptPaths");
-            var binPaths        = taskProperties.getProperty("binPaths");
-            var staticPaths     = taskProperties.getProperty("staticPaths");
-            var resourcePaths   = taskProperties.getProperty("resourcePaths");
-            var readmePath      = taskProperties.getProperty("readmePath");
             var packageJson     = taskProperties.getProperty("packageJson");
+            var packagePaths    = taskProperties.getProperty("packagePaths");
             var buildPath       = buildProject.getProperty("buildPath");
-
             var nodePackage     = this.generateNodePackage(packageJson, buildPath);
-            var params          = {
-                sourcePaths: sourcePaths,
-                testPaths: testPaths,
-                scriptPaths: scriptPaths,
-                binPaths: binPaths,
-                staticPaths: staticPaths,
-                resourcePaths: resourcePaths,
-                readmePath: readmePath
-            };
-            nodePackage.buildPackage(params, callback);
+            nodePackage.buildPackage(packagePaths, callback);
         },
 
         /**
