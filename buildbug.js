@@ -12,32 +12,34 @@
 // Requires
 //-------------------------------------------------------------------------------
 
-var buildbug                = require('buildbug');
+var buildbug            = require('buildbug');
 
 
 //-------------------------------------------------------------------------------
 // Simplify References
 //-------------------------------------------------------------------------------
 
-var buildProject            = buildbug.buildProject;
-var buildProperties         = buildbug.buildProperties;
-var buildTarget             = buildbug.buildTarget;
-var enableModule            = buildbug.enableModule;
-var parallel                = buildbug.parallel;
-var series                  = buildbug.series;
-var targetTask              = buildbug.targetTask;
+var buildProject        = buildbug.buildProject;
+var buildProperties     = buildbug.buildProperties;
+var buildScript         = buildbug.buildScript;
+var buildTarget         = buildbug.buildTarget;
+var enableModule        = buildbug.enableModule;
+var parallel            = buildbug.parallel;
+var series              = buildbug.series;
+var targetTask          = buildbug.targetTask;
 
 
 //-------------------------------------------------------------------------------
 // Enable Modules
 //-------------------------------------------------------------------------------
 
-var aws                     = enableModule("aws");
-var bugpack                 = enableModule('bugpack');
-var bugunit                 = enableModule('bugunit');
-var clientjs                = enableModule('clientjs');
-var core                    = enableModule('core');
-var nodejs                  = enableModule('nodejs');
+var aws                 = enableModule("aws");
+var bugpack             = enableModule('bugpack');
+var bugunit             = enableModule('bugunit');
+var clientjs            = enableModule('clientjs');
+var core                = enableModule('core');
+var lintbug             = enableModule("lintbug");
+var nodejs              = enableModule('nodejs');
 
 
 //-------------------------------------------------------------------------------
@@ -119,6 +121,17 @@ buildProperties({
                 "./projects/buildbug/js/test"
             ]
         }
+    },
+    lint: {
+        targetPaths: [
+            "."
+        ],
+        ignorePatterns: [
+            ".*\\.buildbug$",
+            ".*\\.bugunit$",
+            ".*\\.git$",
+            ".*node_modules$"
+        ]
     }
 });
 
@@ -145,6 +158,15 @@ buildTarget('local').buildFlow(
         // old source files are removed. We should figure out a better way of doing that.
 
         targetTask('clean'),
+        targetTask('lint', {
+            properties: {
+                targetPaths: buildProject.getProperty("lint.targetPaths"),
+                ignores: buildProject.getProperty("lint.ignorePatterns"),
+                lintTasks: [
+                    "updateCopyright"
+                ]
+            }
+        }),
         series([
             targetTask('createNodePackage', {
                 properties: {
@@ -223,6 +245,15 @@ buildTarget("prod").buildFlow(
         // old source files are removed. We should figure out a better way of doing that.
 
         targetTask("clean"),
+        targetTask('lint', {
+            properties: {
+                targetPaths: buildProject.getProperty("lint.targetPaths"),
+                ignores: buildProject.getProperty("lint.ignorePatterns"),
+                lintTasks: [
+                    "updateCopyright"
+                ]
+            }
+        }),
         parallel([
             series([
                 targetTask("createNodePackage", {
@@ -324,3 +355,17 @@ buildTarget("prod").buildFlow(
         ])
     ])
 );
+
+
+//-------------------------------------------------------------------------------
+// Build Scripts
+//-------------------------------------------------------------------------------
+
+buildScript({
+    dependencies: [
+        "bugcore",
+        "bugflow",
+        "bugfs"
+    ],
+    script: "./lintbug.js"
+});
