@@ -12,11 +12,11 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Export('buildbug.BuildModuleAnnotationScan')
+//@Export('buildbug.BuildModuleTagScan')
 
 //@Require('Class')
-//@Require('bugmeta.AnnotationScan')
-//@Require('buildbug.BuildModuleAnnotation')
+//@Require('bugmeta.TagScan')
+//@Require('buildbug.BuildModuleTag')
 
 
 //-------------------------------------------------------------------------------
@@ -30,8 +30,8 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var Class                   = bugpack.require('Class');
-    var AnnotationScan          = bugpack.require('bugmeta.AnnotationScan');
-    var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
+    var TagScan          = bugpack.require('bugmeta.TagScan');
+    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
@@ -40,11 +40,11 @@ require('bugpack').context("*", function(bugpack) {
 
     /**
      * @class
-     * @extends {AnnotationScan}
+     * @extends {TagScan}
      */
-    var BuildModuleAnnotationScan = Class.extend(AnnotationScan, {
+    var BuildModuleTagScan = Class.extend(TagScan, {
 
-        _name: "buildbug.BuildModuleAnnotationScan",
+        _name: "buildbug.BuildModuleTagScan",
 
 
         //-------------------------------------------------------------------------------
@@ -54,10 +54,10 @@ require('bugpack').context("*", function(bugpack) {
         /**
          * @constructs
          * @param {MetaContext} metaContext
-         * @param {EntityManagerAnnotationProcessor} processor
+         * @param {EntityManagerTagProcessor} processor
          */
         _constructor: function(metaContext, processor) {
-            this._super(metaContext, processor, BuildModuleAnnotation.TYPE);
+            this._super(metaContext, processor, BuildModuleTag.TYPE);
         }
     });
 
@@ -66,5 +66,5 @@ require('bugpack').context("*", function(bugpack) {
     // Exports
     //-------------------------------------------------------------------------------
 
-    bugpack.export('buildbug.BuildModuleAnnotationScan', BuildModuleAnnotationScan);
+    bugpack.export('buildbug.BuildModuleTagScan', BuildModuleTagScan);
 });

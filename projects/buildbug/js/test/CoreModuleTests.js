@@ -17,7 +17,7 @@
 //@Require('Set')
 //@Require('buildbug.CoreModule')
 //@Require('bugmeta.BugMeta')
-//@Require('bugunit.TestAnnotation')
+//@Require('bugunit.TestTag')
 
 
 //-------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ require('bugpack').context("*", function(bugpack) {
     var Set                 = bugpack.require('Set');
     var CoreModule          = bugpack.require('buildbug.CoreModule');
     var BugMeta             = bugpack.require('bugmeta.BugMeta');
-    var TestAnnotation      = bugpack.require('bugunit.TestAnnotation');
+    var TestTag      = bugpack.require('bugunit.TestTag');
 
 
     //-------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var bugmeta             = BugMeta.context();
-    var test                = TestAnnotation.test;
+    var test                = TestTag.test;
 
 
     //-------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ require('bugpack').context("*", function(bugpack) {
             });
         }
     };
-    bugmeta.annotate(coreModuleConcatSourcesWithNewLineTest).with(
+    bugmeta.tag(coreModuleConcatSourcesWithNewLineTest).with(
         test().name("CoreModule - concat sources with new line test")
     );
 
@@ -113,7 +113,7 @@ require('bugpack').context("*", function(bugpack) {
             });
         }
     };
-    bugmeta.annotate(coreModuleReplaceTokenInFilePathOrDirectoryTest).with(
+    bugmeta.tag(coreModuleReplaceTokenInFilePathOrDirectoryTest).with(
         test().name("CoreModule - replace token in file path test")
     );
 });

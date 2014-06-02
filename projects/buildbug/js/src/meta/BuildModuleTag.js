@@ -12,11 +12,10 @@
 // Annotations
 //-------------------------------------------------------------------------------
 
-//@Export('buildbug.BuildModuleAnnotationProcessor')
+//@Export('buildbug.BuildModuleTag')
 
 //@Require('Class')
-//@Require('Obj')
-//@Require('Set')
+//@Require('bugmeta.Tag')
 
 
 //-------------------------------------------------------------------------------
@@ -29,9 +28,8 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class       = bugpack.require('Class');
-    var Obj         = bugpack.require('Obj');
-    var Set         = bugpack.require('Set');
+    var Class           = bugpack.require('Class');
+    var Tag      = bugpack.require('bugmeta.Tag');
 
 
     //-------------------------------------------------------------------------------
@@ -40,11 +38,11 @@ require('bugpack').context("*", function(bugpack) {
 
     /**
      * @class
-     * @extends {Obj}
+     * @extends {Tag}
      */
-    var BuildModuleAnnotationProcessor = Class.extend(Obj, {
+    var BuildModuleTag = Class.extend(Tag, {
 
-        _name: "buildbug.BuildModuleAnnotationProcessor",
+        _name: "buildbug.BuildModuleTag",
 
 
         //-------------------------------------------------------------------------------
@@ -53,11 +51,11 @@ require('bugpack').context("*", function(bugpack) {
 
         /**
          * @constructs
-         * @param {BuildProject} buildProject
+         * @param {string} buildModuleName
          */
-        _constructor: function(buildProject) {
+        _constructor: function(buildModuleName) {
 
-            this._super();
+            this._super(BuildModuleTag.TYPE);
 
 
             //-------------------------------------------------------------------------------
@@ -66,54 +64,53 @@ require('bugpack').context("*", function(bugpack) {
 
             /**
              * @private
-             * @type {BuildProject}
+             * @type {string}
              */
-            this.buildProject                       = buildProject;
-
-            /**
-             * @private
-             * @type {Set.<BuildModuleAnnotation>}
-             */
-            this.processedBuildModuleAnnotationSet  = new Set();
+            this.buildModuleName = buildModuleName;
         },
 
 
         //-------------------------------------------------------------------------------
-        // Public Methods
+        // Getters and Setters
         //-------------------------------------------------------------------------------
 
         /**
-         * @override
-         * @param {BuildModuleAnnotation} buildModuleAnnotation
+         * @return {string}
          */
-        process: function(buildModuleAnnotation) {
-            this.processBuildModuleAnnotation(buildModuleAnnotation);
-        },
-
-
-        //-------------------------------------------------------------------------------
-        // Private Methods
-        //-------------------------------------------------------------------------------
-
-        /**
-         * @private
-         * @param {BuildModuleAnnotation} buildModuleAnnotation
-         */
-        processBuildModuleAnnotation: function(buildModuleAnnotation) {
-            if (!this.processedBuildModuleAnnotationSet.contains(buildModuleAnnotation)) {
-                var buildModuleConstructor  = buildModuleAnnotation.getAnnotationReference();
-                var buildModuleName         = buildModuleAnnotation.getName();
-                var buildModule             = /** @type {BuildModule} */(new buildModuleConstructor());
-                this.buildProject.registerModule(buildModuleName, buildModule);
-                this.processedBuildModuleAnnotationSet.add(buildModuleAnnotation);
-            }
+        getName: function() {
+            return this.buildModuleName;
         }
     });
+
+
+    //-------------------------------------------------------------------------------
+    // Static Properties
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @static
+     * @const {string}
+     */
+    BuildModuleTag.TYPE = "BuildModule";
+
+
+    //-------------------------------------------------------------------------------
+    // Static Methods
+    //-------------------------------------------------------------------------------
+
+    /**
+     * @static
+     * @param {string} buildModuleName
+     * @return {BuildModuleTag}
+     */
+    BuildModuleTag.buildModule = function(buildModuleName) {
+        return new BuildModuleTag(buildModuleName);
+    };
 
 
     //-------------------------------------------------------------------------------
     // Exports
     //-------------------------------------------------------------------------------
 
-    bugpack.export('buildbug.BuildModuleAnnotationProcessor', BuildModuleAnnotationProcessor);
+    bugpack.export('buildbug.BuildModuleTag', BuildModuleTag);
 });

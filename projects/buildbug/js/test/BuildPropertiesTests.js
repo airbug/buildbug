@@ -17,7 +17,7 @@
 //@Require('TypeUtil')
 //@Require('buildbug.BuildProperties')
 //@Require('bugmeta.BugMeta')
-//@Require('bugunit.TestAnnotation')
+//@Require('bugunit.TestTag')
 
 
 //-------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ require('bugpack').context("*", function(bugpack) {
     var TypeUtil            = bugpack.require('TypeUtil');
     var BuildProperties     = bugpack.require('buildbug.BuildProperties');
     var BugMeta             = bugpack.require('bugmeta.BugMeta');
-    var TestAnnotation      = bugpack.require('bugunit.TestAnnotation');
+    var TestTag      = bugpack.require('bugunit.TestTag');
 
 
     //-------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var bugmeta             = BugMeta.context();
-    var test                = TestAnnotation.test;
+    var test                = TestTag.test;
 
 
     //-------------------------------------------------------------------------------
@@ -261,25 +261,25 @@ require('bugpack').context("*", function(bugpack) {
     // BugMeta
     //-------------------------------------------------------------------------------
 
-    bugmeta.annotate(buildPropertiesSimpleTokenStringTest).with(
+    bugmeta.tag(buildPropertiesSimpleTokenStringTest).with(
         test().name("BuildProperties - simple token string test")
     );
-    bugmeta.annotate(buildPropertiesSimpleTokenNumberTest).with(
+    bugmeta.tag(buildPropertiesSimpleTokenNumberTest).with(
         test().name("BuildProperties - simple token number test")
     );
-    bugmeta.annotate(buildPropertiesSimpleTokenBooleanTest).with(
+    bugmeta.tag(buildPropertiesSimpleTokenBooleanTest).with(
         test().name("BuildProperties - simple token boolean test")
     );
-    bugmeta.annotate(buildPropertiesSimpleTokenWithDashTest).with(
+    bugmeta.tag(buildPropertiesSimpleTokenWithDashTest).with(
         test().name("BuildProperties - simple token with dash test")
     );
-    bugmeta.annotate(buildPropertiesTokenObjectReplaceTest).with(
+    bugmeta.tag(buildPropertiesTokenObjectReplaceTest).with(
         test().name("BuildProperties - token object replace test")
     );
-    bugmeta.annotate(buildPropertiesTokenObjectDuplicateNameReplaceTest).with(
+    bugmeta.tag(buildPropertiesTokenObjectDuplicateNameReplaceTest).with(
         test().name("BuildProperties - token object duplicate property name replace test")
     );
-    bugmeta.annotate(buildPropertiesTokenArrayReplaceTest).with(
+    bugmeta.tag(buildPropertiesTokenArrayReplaceTest).with(
         test().name("BuildProperties - token array replace test")
     );
 });

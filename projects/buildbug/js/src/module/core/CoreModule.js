@@ -30,7 +30,7 @@
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
-//@Require('buildbug.BuildModuleAnnotation')
+//@Require('buildbug.BuildModuleTag')
 
 
 //-------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ require('bugpack').context("*", function(bugpack) {
     var BugMeta                 = bugpack.require('bugmeta.BugMeta');
     var BuildBug                = bugpack.require('buildbug.BuildBug');
     var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
+    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleAnnotation.buildModule;
+    var buildModule             = BuildModuleTag.buildModule;
     var buildTask               = BuildBug.buildTask;
     var $iterableParallel       = BugFlow.$iterableParallel;
     var $forEachParallel        = BugFlow.$forEachParallel;
@@ -538,7 +538,7 @@ require('bugpack').context("*", function(bugpack) {
     // BugMeta
     //-------------------------------------------------------------------------------
 
-    bugmeta.annotate(CoreModule).with(
+    bugmeta.tag(CoreModule).with(
         buildModule("core")
     );
 

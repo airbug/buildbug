@@ -20,8 +20,8 @@
 //@Require('bugfs.BugFs')
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
-//@Require('buildbug.BuildModuleAnnotationProcessor')
-//@Require('buildbug.BuildModuleAnnotationScan')
+//@Require('buildbug.BuildModuleTagProcessor')
+//@Require('buildbug.BuildModuleTagScan')
 
 
 //-------------------------------------------------------------------------------
@@ -40,8 +40,8 @@ require('bugpack').context("*", function(bugpack) {
     var BugFs                               = bugpack.require('bugfs.BugFs');
     var BugMeta                             = bugpack.require('bugmeta.BugMeta');
     var BuildBug                            = bugpack.require('buildbug.BuildBug');
-    var BuildModuleAnnotationProcessor      = bugpack.require('buildbug.BuildModuleAnnotationProcessor');
-    var BuildModuleAnnotationScan           = bugpack.require('buildbug.BuildModuleAnnotationScan');
+    var BuildModuleTagProcessor      = bugpack.require('buildbug.BuildModuleTagProcessor');
+    var BuildModuleTagScan           = bugpack.require('buildbug.BuildModuleTagScan');
 
 
     //-------------------------------------------------------------------------------
@@ -120,8 +120,8 @@ require('bugpack').context("*", function(bugpack) {
         runBuild: function(callback) {
             var _this = this;
             var buildProject                = BuildBug.generateBuildProject(this.targetPath);
-            var buildModuleAnnotationScan   = new BuildModuleAnnotationScan(BugMeta.context(), new BuildModuleAnnotationProcessor(buildProject));
-            buildModuleAnnotationScan.scanAll();
+            var buildModuleTagScan   = new BuildModuleTagScan(BugMeta.context(), new BuildModuleTagProcessor(buildProject));
+            buildModuleTagScan.scanAll();
 
             $series([
                 $task(function(flow) {

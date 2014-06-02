@@ -23,7 +23,7 @@
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
-//@Require('buildbug.BuildModuleAnnotation')
+//@Require('buildbug.BuildModuleTag')
 //@Require('buildbug.NodePackage')
 //@Require('npm.Npm')
 
@@ -54,7 +54,7 @@ require('bugpack').context("*", function(bugpack) {
     var BugMeta                 = bugpack.require('bugmeta.BugMeta');
     var BuildBug                = bugpack.require('buildbug.BuildBug');
     var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleAnnotation   = bugpack.require('buildbug.BuildModuleAnnotation');
+    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
     var NodePackage             = bugpack.require('buildbug.NodePackage');
     var Npm                     = bugpack.require('npm.Npm');
 
@@ -67,7 +67,7 @@ require('bugpack').context("*", function(bugpack) {
     var $series                 = BugFlow.$series;
     var $task                   = BugFlow.$task;
     var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleAnnotation.buildModule;
+    var buildModule             = BuildModuleTag.buildModule;
     var buildTask               = BuildBug.buildTask;
 
 
@@ -447,7 +447,7 @@ require('bugpack').context("*", function(bugpack) {
     // BugMeta
     //-------------------------------------------------------------------------------
 
-    bugmeta.annotate(NodeJsModule).with(
+    bugmeta.tag(NodeJsModule).with(
         buildModule("nodejs")
     );
 
