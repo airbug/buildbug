@@ -15,7 +15,7 @@
 //@Export('buildbug.BuildModuleTagScan')
 
 //@Require('Class')
-//@Require('bugmeta.TagScan')
+//@Require('bugmeta.TagClassTagScan')
 //@Require('buildbug.BuildModuleTag')
 
 
@@ -29,9 +29,9 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                   = bugpack.require('Class');
-    var TagScan          = bugpack.require('bugmeta.TagScan');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
+    var Class               = bugpack.require('Class');
+    var TagClassTagScan     = bugpack.require('bugmeta.TagClassTagScan');
+    var BuildModuleTag      = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
@@ -40,9 +40,9 @@ require('bugpack').context("*", function(bugpack) {
 
     /**
      * @class
-     * @extends {TagScan}
+     * @extends {TagClassTagScan}
      */
-    var BuildModuleTagScan = Class.extend(TagScan, {
+    var BuildModuleTagScan = Class.extend(TagClassTagScan, {
 
         _name: "buildbug.BuildModuleTagScan",
 
@@ -57,7 +57,7 @@ require('bugpack').context("*", function(bugpack) {
          * @param {EntityManagerTagProcessor} processor
          */
         _constructor: function(metaContext, processor) {
-            this._super(metaContext, processor, BuildModuleTag.TYPE);
+            this._super(metaContext, processor, BuildModuleTag.getClass());
         }
     });
 

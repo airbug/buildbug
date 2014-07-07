@@ -55,7 +55,7 @@ require('bugpack').context("*", function(bugpack) {
          */
         _constructor: function(buildModuleName) {
 
-            this._super(BuildModuleTag.TYPE);
+            this._super();
 
 
             //-------------------------------------------------------------------------------
@@ -81,17 +81,6 @@ require('bugpack').context("*", function(bugpack) {
             return this.buildModuleName;
         }
     });
-
-
-    //-------------------------------------------------------------------------------
-    // Static Properties
-    //-------------------------------------------------------------------------------
-
-    /**
-     * @static
-     * @const {string}
-     */
-    BuildModuleTag.TYPE = "BuildModule";
 
 
     //-------------------------------------------------------------------------------
