@@ -15,9 +15,9 @@
 //@TestFile
 
 //@Require('TypeUtil')
-//@Require('buildbug.BuildProperties')
 //@Require('bugmeta.BugMeta')
 //@Require('bugunit.TestTag')
+//@Require('buildbug.BuildProperties')
 
 
 //-------------------------------------------------------------------------------
@@ -31,9 +31,9 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var TypeUtil            = bugpack.require('TypeUtil');
-    var BuildProperties     = bugpack.require('buildbug.BuildProperties');
     var BugMeta             = bugpack.require('bugmeta.BugMeta');
-    var TestTag      = bugpack.require('bugunit.TestTag');
+    var TestTag             = bugpack.require('bugunit.TestTag');
+    var BuildProperties     = bugpack.require('buildbug.BuildProperties');
 
 
     //-------------------------------------------------------------------------------

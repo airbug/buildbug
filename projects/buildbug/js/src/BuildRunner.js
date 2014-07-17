@@ -15,8 +15,8 @@
 //@Export('buildbug.BuildRunner')
 
 //@Require('Class')
+//@Require('Flows')
 //@Require('Obj')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
@@ -34,22 +34,22 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                               = bugpack.require('Class');
-    var Obj                                 = bugpack.require('Obj');
-    var BugFlow                             = bugpack.require('bugflow.BugFlow');
-    var BugFs                               = bugpack.require('bugfs.BugFs');
-    var BugMeta                             = bugpack.require('bugmeta.BugMeta');
-    var BuildBug                            = bugpack.require('buildbug.BuildBug');
-    var BuildModuleTagProcessor      = bugpack.require('buildbug.BuildModuleTagProcessor');
-    var BuildModuleTagScan           = bugpack.require('buildbug.BuildModuleTagScan');
+    var Class                       = bugpack.require('Class');
+    var Flows                       = bugpack.require('Flows');
+    var Obj                         = bugpack.require('Obj');
+    var BugFs                       = bugpack.require('bugfs.BugFs');
+    var BugMeta                     = bugpack.require('bugmeta.BugMeta');
+    var BuildBug                    = bugpack.require('buildbug.BuildBug');
+    var BuildModuleTagProcessor     = bugpack.require('buildbug.BuildModuleTagProcessor');
+    var BuildModuleTagScan          = bugpack.require('buildbug.BuildModuleTagScan');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $series                             = BugFlow.$series;
-    var $task                               = BugFlow.$task;
+    var $series                     = Flows.$series;
+    var $task                       = Flows.$task;
 
 
     //-------------------------------------------------------------------------------

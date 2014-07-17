@@ -17,11 +17,11 @@
 
 //@Require('Class')
 //@Require('Map')
+//@Require('Tracer')
 //@Require('TypeUtil')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
 //@Require('bugmeta.BugMeta')
-//@Require('bugtrace.BugTrace')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleTag')
@@ -37,34 +37,34 @@ require('bugpack').context("*", function(bugpack) {
     // Common Modules
     //-------------------------------------------------------------------------------
 
-    var bugpack_registry        = require('bugpack-registry');
-    var path                    = require('path');
+    var bugpack_registry    = require('bugpack-registry');
+    var path                = require('path');
 
 
     //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                   = bugpack.require('Class');
-    var Map                     = bugpack.require('Map');
-    var TypeUtil                = bugpack.require('TypeUtil');
-    var BugFs                   = bugpack.require('bugfs.BugFs');
-    var Path                    = bugpack.require('bugfs.Path');
-    var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-    var BugTrace                = bugpack.require('bugtrace.BugTrace');
-    var BuildBug                = bugpack.require('buildbug.BuildBug');
-    var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
+    var Class               = bugpack.require('Class');
+    var Map                 = bugpack.require('Map');
+    var Tracer              = bugpack.require('Tracer');
+    var TypeUtil            = bugpack.require('TypeUtil');
+    var BugFs               = bugpack.require('bugfs.BugFs');
+    var Path                = bugpack.require('bugfs.Path');
+    var BugMeta             = bugpack.require('bugmeta.BugMeta');
+    var BuildBug            = bugpack.require('buildbug.BuildBug');
+    var BuildModule         = bugpack.require('buildbug.BuildModule');
+    var BuildModuleTag      = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleTag.buildModule;
-    var buildTask               = BuildBug.buildTask;
-    var $traceWithError         = BugTrace.$traceWithError;
+    var bugmeta             = BugMeta.context();
+    var buildModule         = BuildModuleTag.buildModule;
+    var buildTask           = BuildBug.buildTask;
+    var $traceWithError     = Tracer.$traceWithError;
 
 
     //-------------------------------------------------------------------------------

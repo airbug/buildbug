@@ -17,10 +17,10 @@
 //@Require('Bug')
 //@Require('Class')
 //@Require('EventDispatcher')
+//@Require('Flows')
 //@Require('Map')
 //@Require('Set')
 //@Require('TypeUtil')
-//@Require('bugflow.BugFlow')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildProperties')
 //@Require('buildbug.BuildScript')
@@ -41,10 +41,10 @@ require('bugpack').context("*", function(bugpack) {
     var Bug                 = bugpack.require('Bug');
     var Class               = bugpack.require('Class');
     var EventDispatcher     = bugpack.require('EventDispatcher');
+    var Flows               = bugpack.require('Flows');
     var Map                 = bugpack.require('Map');
     var Set                 = bugpack.require('Set');
     var TypeUtil            = bugpack.require('TypeUtil');
-    var BugFlow             = bugpack.require('bugflow.BugFlow');
     var BuildModule         = bugpack.require('buildbug.BuildModule');
     var BuildProperties     = bugpack.require('buildbug.BuildProperties');
     var BuildScript         = bugpack.require('buildbug.BuildScript');
@@ -56,10 +56,10 @@ require('bugpack').context("*", function(bugpack) {
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $forEachSeries      = BugFlow.$forEachSeries;
-    var $iterableParallel   = BugFlow.$iterableParallel;
-    var $series             = BugFlow.$series;
-    var $task               = BugFlow.$task;
+    var $forEachSeries      = Flows.$forEachSeries;
+    var $iterableParallel   = Flows.$iterableParallel;
+    var $series             = Flows.$series;
+    var $task               = Flows.$task;
 
 
     //-------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ require('bugpack').context("*", function(bugpack) {
 
 
         //-------------------------------------------------------------------------------
-        // Public Class Methods
+        // Public Methods
         //-------------------------------------------------------------------------------
 
         /**

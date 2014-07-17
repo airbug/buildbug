@@ -15,9 +15,9 @@
 //@TestFile
 
 //@Require('Set')
-//@Require('buildbug.CoreModule')
 //@Require('bugmeta.BugMeta')
 //@Require('bugunit.TestTag')
+//@Require('buildbug.CoreModule')
 
 
 //-------------------------------------------------------------------------------
@@ -30,18 +30,18 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Set                 = bugpack.require('Set');
-    var CoreModule          = bugpack.require('buildbug.CoreModule');
-    var BugMeta             = bugpack.require('bugmeta.BugMeta');
-    var TestTag      = bugpack.require('bugunit.TestTag');
+    var Set         = bugpack.require('Set');
+    var BugMeta     = bugpack.require('bugmeta.BugMeta');
+    var TestTag     = bugpack.require('bugunit.TestTag');
+    var CoreModule  = bugpack.require('buildbug.CoreModule');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var bugmeta             = BugMeta.context();
-    var test                = TestTag.test;
+    var bugmeta     = BugMeta.context();
+    var test        = TestTag.test;
 
 
     //-------------------------------------------------------------------------------

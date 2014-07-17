@@ -15,8 +15,8 @@
 //@Export('buildbug.ClientPackage')
 
 //@Require('Class')
+//@Require('Flows')
 //@Require('Obj')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
 //@Require('buildbug.PackedClientPackage')
@@ -43,8 +43,8 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var Class                   = bugpack.require('Class');
+    var Flows                   = bugpack.require('Flows');
     var Obj                     = bugpack.require('Obj');
-    var BugFlow                 = bugpack.require('bugflow.BugFlow');
     var BugFs                   = bugpack.require('bugfs.BugFs');
     var Path                    = bugpack.require('bugfs.Path');
     var PackedClientPackage     = bugpack.require('buildbug.PackedClientPackage');
@@ -54,10 +54,10 @@ require('bugpack').context("*", function(bugpack) {
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $forEachSeries          = BugFlow.$forEachSeries;
-    var $parallel               = BugFlow.$parallel;
-    var $series                 = BugFlow.$series;
-    var $task                   = BugFlow.$task;
+    var $forEachSeries          = Flows.$forEachSeries;
+    var $parallel               = Flows.$parallel;
+    var $series                 = Flows.$series;
+    var $task                   = Flows.$task;
 
 
     //-------------------------------------------------------------------------------

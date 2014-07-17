@@ -15,8 +15,8 @@
 //@Export('buildbug.BuildTarget')
 
 //@Require('Class')
+//@Require('Flow')
 //@Require('Obj')
-//@Require('bugflow.Flow')
 
 
 //-------------------------------------------------------------------------------
@@ -29,9 +29,9 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class       = bugpack.require('Class');
-    var Obj         = bugpack.require('Obj');
-    var Flow        = bugpack.require('bugflow.Flow');
+    var Class   = bugpack.require('Class');
+    var Flow    = bugpack.require('Flow');
+    var Obj     = bugpack.require('Obj');
 
 
     //-------------------------------------------------------------------------------

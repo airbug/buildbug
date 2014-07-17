@@ -54,7 +54,7 @@ require('bugpack').context("*", function(bugpack) {
         /**
          * @constructs
          * @param {MetaContext} metaContext
-         * @param {EntityManagerTagProcessor} processor
+         * @param {BuildModuleTagProcessor} processor
          */
         _constructor: function(metaContext, processor) {
             this._super(metaContext, processor, BuildModuleTag.getClass());

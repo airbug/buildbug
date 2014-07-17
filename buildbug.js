@@ -46,18 +46,18 @@ var nodejs              = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.11";
+var version             = "0.1.12";
 var dependencies        = {
-    "aws-sdk": "1.9.x",
-    "bugpack-registry": "0.1.6",
-    bugpack: "0.1.12",
-    bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.2.tgz",
+    "aws-sdk": "2.0.8",
+    "bugpack-registry": "0.1.7",
+    bugpack: "0.1.14",
+    bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.3.tgz",
     deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
-    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.7.tgz",
-    "uglify-js": "2.3.x",
-    npm: "1.4.x",
-    tar: "git://github.com/airbug/node-tar.git#master",
-    fstream: "0.1.x"
+    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.8.tgz",
+    "uglify-js": "2.4.15",
+    npm: "1.4.21",
+    tar: "0.1.20",
+    fstream: "0.1.28"
 };
 
 
@@ -77,13 +77,11 @@ buildProperties({
         },
         sourcePaths: [
             "../bugcore/projects/bugcore/js/src",
-            "../bugflow/projects/bugflow/js/src",
             "../bugfs/projects/bugfs/js/src",
             "../bugjs/projects/aws/js/src",
             "../bugjs/projects/bugcli/js/src",
             "../bugjs/projects/npm/js/src",
             "../bugmeta/projects/bugmeta/js/src",
-            "../bugtrace/projects/bugtrace/js/src",
             "./projects/buildbug/js/src"
         ],
         scriptPaths: [
@@ -113,11 +111,9 @@ buildProperties({
             ],
             testPaths: [
                 "../bugcore/projects/bugcore/js/test",
-                "../bugflow/projects/bugflow/js/test",
                 "../bugfs/projects/bugfs/js/test",
                 "../bugjs/projects/bugcli/js/test",
                 "../bugmeta/projects/bugmeta/js/test",
-                "../bugtrace/projects/bugtrace/js/test",
                 "./projects/buildbug/js/test"
             ]
         }
@@ -163,6 +159,11 @@ buildTarget('local').buildFlow(
                 targetPaths: buildProject.getProperty("lint.targetPaths"),
                 ignores: buildProject.getProperty("lint.ignorePatterns"),
                 lintTasks: [
+                    "cleanupExtraSpacingAtEndOfLines",
+                    "ensureNewLineEnding",
+                    "indentEqualSignsForPreClassVars",
+                    "orderBugpackRequires",
+                    "orderRequireAnnotations",
                     "updateCopyright"
                 ]
             }
@@ -250,6 +251,11 @@ buildTarget("prod").buildFlow(
                 targetPaths: buildProject.getProperty("lint.targetPaths"),
                 ignores: buildProject.getProperty("lint.ignorePatterns"),
                 lintTasks: [
+                    "cleanupExtraSpacingAtEndOfLines",
+                    "ensureNewLineEnding",
+                    "indentEqualSignsForPreClassVars",
+                    "orderBugpackRequires",
+                    "orderRequireAnnotations",
                     "updateCopyright"
                 ]
             }

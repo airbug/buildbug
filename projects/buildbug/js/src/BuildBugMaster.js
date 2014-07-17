@@ -16,10 +16,10 @@
 
 //@Require('Class')
 //@Require('Exception')
+//@Require('Flows')
 //@Require('Map')
 //@Require('Obj')
 //@Require('StringUtil')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 
 
@@ -33,28 +33,28 @@ require('bugpack').context("*", function(bugpack) {
     // Common Modules
     //-------------------------------------------------------------------------------
 
-    var child_process       = require('child_process');
+    var child_process   = require('child_process');
 
 
     //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class               = bugpack.require('Class');
-    var Exception           = bugpack.require('Exception');
-    var Map                 = bugpack.require('Map');
-    var Obj                 = bugpack.require('Obj');
-    var StringUtil          = bugpack.require('StringUtil');
-    var BugFlow             = bugpack.require('bugflow.BugFlow');
-    var BugFs               = bugpack.require('bugfs.BugFs');
+    var Class           = bugpack.require('Class');
+    var Exception       = bugpack.require('Exception');
+    var Flows           = bugpack.require('Flows');
+    var Map             = bugpack.require('Map');
+    var Obj             = bugpack.require('Obj');
+    var StringUtil      = bugpack.require('StringUtil');
+    var BugFs           = bugpack.require('bugfs.BugFs');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $series             = BugFlow.$series;
-    var $task               = BugFlow.$task;
+    var $series         = Flows.$series;
+    var $task           = Flows.$task;
 
 
     //-------------------------------------------------------------------------------

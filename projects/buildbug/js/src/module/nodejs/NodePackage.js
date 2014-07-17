@@ -17,8 +17,9 @@
 //@Require('Bug')
 //@Require('Class')
 //@Require('Exception')
+//@Require('Flows')
 //@Require('Obj')
-//@Require('bugflow.BugFlow')
+//@Require('TypeUtil')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
 //@Require('buildbug.PackedNodePackage')
@@ -45,8 +46,9 @@ require('bugpack').context("*", function(bugpack) {
     var Bug                 = bugpack.require('Bug');
     var Class               = bugpack.require('Class');
     var Exception           = bugpack.require('Exception');
+    var Flows               = bugpack.require('Flows');
     var Obj                 = bugpack.require('Obj');
-    var BugFlow             = bugpack.require('bugflow.BugFlow');
+    var TypeUtil            = bugpack.require('TypeUtil');
     var BugFs               = bugpack.require('bugfs.BugFs');
     var Path                = bugpack.require('bugfs.Path');
     var PackedNodePackage   = bugpack.require('buildbug.PackedNodePackage');
@@ -56,11 +58,10 @@ require('bugpack').context("*", function(bugpack) {
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $forEachSeries      = BugFlow.$forEachSeries;
-    var $forInSeries        = BugFlow.$forInSeries;
-    var $parallel           = BugFlow.$parallel;
-    var $series             = BugFlow.$series;
-    var $task               = BugFlow.$task;
+    var $forEachSeries      = Flows.$forEachSeries;
+    var $forInSeries        = Flows.$forInSeries;
+    var $series             = Flows.$series;
+    var $task               = Flows.$task;
 
 
     //-------------------------------------------------------------------------------
@@ -182,7 +183,7 @@ require('bugpack').context("*", function(bugpack) {
         //-------------------------------------------------------------------------------
 
         /**
-         * @param {Object.<string, Array.<string>> } packagePaths
+         * @param {Object.<string, (Array.<string> | string)> } packagePaths
          * @param {function(Throwable=)} callback
          */
         buildPackage: function(packagePaths, callback) {
@@ -193,6 +194,15 @@ require('bugpack').context("*", function(bugpack) {
             $series([
                 $task(function(flow) {
                     $forInSeries(packagePaths, function(flow, packagePath, sourcePaths) {
+                        if (!packagePath) {
+                            return flow.complete(new Exception("IllegalArgument", {}, "Package path must be specified"));
+                        }
+                        if (TypeUtil.isString(sourcePaths)) {
+                            sourcePaths = [sourcePaths];
+                        }
+                        if (!TypeUtil.isArray(sourcePaths)) {
+                            return flow.complete(new Exception("IllegalArgument", {}, "sourcePaths must be an array"));
+                        }
                         packagePath = _this.buildPath.joinPaths([packagePath]);
                         $forEachSeries(sourcePaths, function(flow, sourcePath) {
                             BugFs.copyContents(sourcePath, packagePath, true, Path.SyncMode.MERGE_REPLACE, function(throwable) {

@@ -15,7 +15,7 @@
 //@Export('buildbug.BuildParallel')
 
 //@Require('Class')
-//@Require('bugflow.Parallel')
+//@Require('Parallel')
 //@Require('buildbug.BuildFlow')
 
 
@@ -31,7 +31,7 @@ require('bugpack').context("*", function(bugpack) {
 
 
     var Class       = bugpack.require('Class');
-    var Parallel    = bugpack.require('bugflow.Parallel');
+    var Parallel    = bugpack.require('Parallel');
     var BuildFlow   = bugpack.require('buildbug.BuildFlow');
 
 

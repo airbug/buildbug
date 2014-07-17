@@ -34,22 +34,22 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                   = bugpack.require('Class');
-    var Map                     = bugpack.require('Map');
-    var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-    var BuildBug                = bugpack.require('buildbug.BuildBug');
-    var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
-    var ClientPackage           = bugpack.require('buildbug.ClientPackage');
+    var Class           = bugpack.require('Class');
+    var Map             = bugpack.require('Map');
+    var BugMeta         = bugpack.require('bugmeta.BugMeta');
+    var BuildBug        = bugpack.require('buildbug.BuildBug');
+    var BuildModule     = bugpack.require('buildbug.BuildModule');
+    var BuildModuleTag  = bugpack.require('buildbug.BuildModuleTag');
+    var ClientPackage   = bugpack.require('buildbug.ClientPackage');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleTag.buildModule;
-    var buildTask               = BuildBug.buildTask;
+    var bugmeta         = BugMeta.context();
+    var buildModule     = BuildModuleTag.buildModule;
+    var buildTask       = BuildBug.buildTask;
 
 
     //-------------------------------------------------------------------------------

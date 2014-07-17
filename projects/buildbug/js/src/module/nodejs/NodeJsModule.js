@@ -17,8 +17,8 @@
 
 //@Require('Class')
 //@Require('Exception')
+//@Require('Flows')
 //@Require('Map')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
@@ -38,37 +38,37 @@ require('bugpack').context("*", function(bugpack) {
     // Common Modules
     //-------------------------------------------------------------------------------
 
-    var fs                      = require('fs');
-    var npm                     = require('npm');
+    var fs              = require('fs');
+    var npm             = require('npm');
 
 
     //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                   = bugpack.require('Class');
-    var Exception               = bugpack.require('Exception');
-    var Map                     = bugpack.require('Map');
-    var BugFlow                 = bugpack.require('bugflow.BugFlow');
-    var BugFs                   = bugpack.require('bugfs.BugFs');
-    var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-    var BuildBug                = bugpack.require('buildbug.BuildBug');
-    var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
-    var NodePackage             = bugpack.require('buildbug.NodePackage');
-    var Npm                     = bugpack.require('npm.Npm');
+    var Class           = bugpack.require('Class');
+    var Exception       = bugpack.require('Exception');
+    var Flows           = bugpack.require('Flows');
+    var Map             = bugpack.require('Map');
+    var BugFs           = bugpack.require('bugfs.BugFs');
+    var BugMeta         = bugpack.require('bugmeta.BugMeta');
+    var BuildBug        = bugpack.require('buildbug.BuildBug');
+    var BuildModule     = bugpack.require('buildbug.BuildModule');
+    var BuildModuleTag  = bugpack.require('buildbug.BuildModuleTag');
+    var NodePackage     = bugpack.require('buildbug.NodePackage');
+    var Npm             = bugpack.require('npm.Npm');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $forInParallel          = BugFlow.$forInParallel;
-    var $series                 = BugFlow.$series;
-    var $task                   = BugFlow.$task;
-    var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleTag.buildModule;
-    var buildTask               = BuildBug.buildTask;
+    var $forInParallel  = Flows.$forInParallel;
+    var $series         = Flows.$series;
+    var $task           = Flows.$task;
+    var bugmeta         = BugMeta.context();
+    var buildModule     = BuildModuleTag.buildModule;
+    var buildTask       = BuildBug.buildTask;
 
 
     //-------------------------------------------------------------------------------

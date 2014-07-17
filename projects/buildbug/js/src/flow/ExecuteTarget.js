@@ -15,7 +15,7 @@
 //@Export('buildbug.ExecuteTarget')
 
 //@Require('Class')
-//@Require('bugflow.Task')
+//@Require('Task')
 //@Require('buildbug.BuildFlow')
 //@Require('buildbug.BuildProperties')
 //@Require('buildbug.BuildPropertiesChain')
@@ -32,7 +32,7 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var Class                   = bugpack.require('Class');
-    var Task                    = bugpack.require('bugflow.Task');
+    var Task                    = bugpack.require('Task');
     var BuildFlow               = bugpack.require('buildbug.BuildFlow');
     var BuildProperties         = bugpack.require('buildbug.BuildProperties');
     var BuildPropertiesChain    = bugpack.require('buildbug.BuildPropertiesChain');

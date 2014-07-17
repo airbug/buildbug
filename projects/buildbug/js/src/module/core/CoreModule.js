@@ -19,12 +19,12 @@
 //@Require('Bug')
 //@Require('Class')
 //@Require('Exception')
+//@Require('Flows')
 //@Require('ICollection')
 //@Require('List')
 //@Require('Map')
 //@Require('Set')
 //@Require('TypeUtil')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
 //@Require('bugmeta.BugMeta')
@@ -43,36 +43,36 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var ArgumentBug             = bugpack.require('ArgumentBug');
-    var Bug                     = bugpack.require('Bug');
-    var Class                   = bugpack.require('Class');
-    var Exception               = bugpack.require('Exception');
-    var ICollection             = bugpack.require('ICollection');
-    var List                    = bugpack.require('List');
-    var Map                     = bugpack.require('Map');
-    var Set                     = bugpack.require('Set');
-    var TypeUtil                = bugpack.require('TypeUtil');
-    var BugFlow                 = bugpack.require('bugflow.BugFlow');
-    var BugFs                   = bugpack.require('bugfs.BugFs');
-    var Path                    = bugpack.require('bugfs.Path');
-    var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-    var BuildBug                = bugpack.require('buildbug.BuildBug');
-    var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
+    var ArgumentBug         = bugpack.require('ArgumentBug');
+    var Bug                 = bugpack.require('Bug');
+    var Class               = bugpack.require('Class');
+    var Exception           = bugpack.require('Exception');
+    var Flows               = bugpack.require('Flows');
+    var ICollection         = bugpack.require('ICollection');
+    var List                = bugpack.require('List');
+    var Map                 = bugpack.require('Map');
+    var Set                 = bugpack.require('Set');
+    var TypeUtil            = bugpack.require('TypeUtil');
+    var BugFs               = bugpack.require('bugfs.BugFs');
+    var Path                = bugpack.require('bugfs.Path');
+    var BugMeta             = bugpack.require('bugmeta.BugMeta');
+    var BuildBug            = bugpack.require('buildbug.BuildBug');
+    var BuildModule         = bugpack.require('buildbug.BuildModule');
+    var BuildModuleTag      = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleTag.buildModule;
-    var buildTask               = BuildBug.buildTask;
-    var $iterableParallel       = BugFlow.$iterableParallel;
-    var $forEachParallel        = BugFlow.$forEachParallel;
-    var $forEachSeries          = BugFlow.$forEachSeries;
-    var $series                 = BugFlow.$series;
-    var $task                   = BugFlow.$task;
+    var bugmeta             = BugMeta.context();
+    var buildModule         = BuildModuleTag.buildModule;
+    var buildTask           = BuildBug.buildTask;
+    var $iterableParallel   = Flows.$iterableParallel;
+    var $forEachParallel    = Flows.$forEachParallel;
+    var $forEachSeries      = Flows.$forEachSeries;
+    var $series             = Flows.$series;
+    var $task               = Flows.$task;
 
 
     //-------------------------------------------------------------------------------

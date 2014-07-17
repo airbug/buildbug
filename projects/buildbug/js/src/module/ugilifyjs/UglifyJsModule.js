@@ -16,12 +16,12 @@
 //@Autoload
 
 //@Require('Class')
+//@Require('Flows')
+//@Require('Tracer')
 //@Require('TypeUtil')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugfs.Path')
 //@Require('bugmeta.BugMeta')
-//@Require('bugtrace.BugTrace')
 //@Require('buildbug.BuildBug')
 //@Require('buildbug.BuildModule')
 //@Require('buildbug.BuildModuleTag')
@@ -37,35 +37,35 @@ require('bugpack').context("*", function(bugpack) {
     // Common Modules
     //-------------------------------------------------------------------------------
 
-    var uglify_js               = require("uglify-js");
+    var uglify_js           = require("uglify-js");
 
 
     //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                   = bugpack.require('Class');
-    var TypeUtil                = bugpack.require('TypeUtil');
-    var BugFlow                 = bugpack.require('bugflow.BugFlow');
-    var BugFs                   = bugpack.require('bugfs.BugFs');
-    var Path                    = bugpack.require('bugfs.Path');
-    var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-    var BugTrace                = bugpack.require('bugtrace.BugTrace');
-    var BuildBug                = bugpack.require('buildbug.BuildBug');
-    var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
+    var Class               = bugpack.require('Class');
+    var Flows               = bugpack.require('Flows');
+    var Tracer              = bugpack.require('Tracer');
+    var TypeUtil            = bugpack.require('TypeUtil');
+    var BugFs               = bugpack.require('bugfs.BugFs');
+    var Path                = bugpack.require('bugfs.Path');
+    var BugMeta             = bugpack.require('bugmeta.BugMeta');
+    var BuildBug            = bugpack.require('buildbug.BuildBug');
+    var BuildModule         = bugpack.require('buildbug.BuildModule');
+    var BuildModuleTag      = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleTag.buildModule;
-    var buildTask               = BuildBug.buildTask;
-    var $series                 = BugFlow.$series;
-    var $task                   = BugFlow.$task;
-    var $traceWithError         = BugTrace.$traceWithError;
+    var bugmeta             = BugMeta.context();
+    var buildModule         = BuildModuleTag.buildModule;
+    var buildTask           = BuildBug.buildTask;
+    var $series             = Flows.$series;
+    var $task               = Flows.$task;
+    var $traceWithError     = Tracer.$traceWithError;
 
 
     //-------------------------------------------------------------------------------

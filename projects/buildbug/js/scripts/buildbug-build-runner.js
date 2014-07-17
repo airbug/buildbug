@@ -21,8 +21,8 @@ require("bugpack").loadContext(module, function(error, bugpack) {
                 // BugPack
                 //-------------------------------------------------------------------------------
 
-                var BuildRunner     = bugpack.require('buildbug.BuildRunner');
                 var BugFs           = bugpack.require('bugfs.BugFs');
+                var BuildRunner     = bugpack.require('buildbug.BuildRunner');
 
 
                 //-------------------------------------------------------------------------------

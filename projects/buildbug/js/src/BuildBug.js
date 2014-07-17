@@ -17,12 +17,11 @@
 //@Require('Class')
 //@Require('Map')
 //@Require('Obj')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('buildbug.BuildParallel')
 //@Require('buildbug.BuildProject')
-//@Require('buildbug.BuildSeries')
 //@Require('buildbug.BuildScript')
+//@Require('buildbug.BuildSeries')
 //@Require('buildbug.BuildTarget')
 //@Require('buildbug.BuildTask')
 //@Require('buildbug.TargetTask')
@@ -38,34 +37,25 @@ require('bugpack').context("*", function(bugpack) {
     // Common Modules
     //-------------------------------------------------------------------------------
 
-    var child_process       = require('child_process');
-    var path                = require('path');
+    var child_process   = require('child_process');
+    var path            = require('path');
 
 
     //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class               = bugpack.require('Class');
-    var Map                 = bugpack.require('Map');
-    var Obj                 = bugpack.require('Obj');
-    var BugFlow             = bugpack.require('bugflow.BugFlow');
-    var BugFs               = bugpack.require('bugfs.BugFs');
-    var BuildParallel       = bugpack.require('buildbug.BuildParallel');
-    var BuildProject        = bugpack.require('buildbug.BuildProject');
-    var BuildSeries         = bugpack.require('buildbug.BuildSeries');
-    var BuildScript         = bugpack.require('buildbug.BuildScript');
-    var BuildTarget         = bugpack.require('buildbug.BuildTarget');
-    var BuildTask           = bugpack.require('buildbug.BuildTask');
-    var TargetTask          = bugpack.require('buildbug.TargetTask');
-
-
-    //-------------------------------------------------------------------------------
-    // Simplify References
-    //-------------------------------------------------------------------------------
-
-    var $series             = BugFlow.$series;
-    var $task               = BugFlow.$task;
+    var Class           = bugpack.require('Class');
+    var Map             = bugpack.require('Map');
+    var Obj             = bugpack.require('Obj');
+    var BugFs           = bugpack.require('bugfs.BugFs');
+    var BuildParallel   = bugpack.require('buildbug.BuildParallel');
+    var BuildProject    = bugpack.require('buildbug.BuildProject');
+    var BuildScript     = bugpack.require('buildbug.BuildScript');
+    var BuildSeries     = bugpack.require('buildbug.BuildSeries');
+    var BuildTarget     = bugpack.require('buildbug.BuildTarget');
+    var BuildTask       = bugpack.require('buildbug.BuildTask');
+    var TargetTask      = bugpack.require('buildbug.TargetTask');
 
 
     //-------------------------------------------------------------------------------

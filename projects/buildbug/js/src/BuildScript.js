@@ -17,9 +17,9 @@
 //@Require('Bug')
 //@Require('Class')
 //@Require('Exception')
+//@Require('Flows')
 //@Require('Obj')
 //@Require('TypeUtil')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 
 
@@ -43,9 +43,9 @@ require('bugpack').context("*", function(bugpack) {
     var Bug                 = bugpack.require('Bug');
     var Class               = bugpack.require('Class');
     var Exception           = bugpack.require('Exception');
+    var Flows               = bugpack.require('Flows');
     var Obj                 = bugpack.require('Obj');
     var TypeUtil            = bugpack.require('TypeUtil');
-    var BugFlow             = bugpack.require('bugflow.BugFlow');
     var BugFs               = bugpack.require('bugfs.BugFs');
 
 
@@ -53,7 +53,7 @@ require('bugpack').context("*", function(bugpack) {
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var $forEachParallel    = BugFlow.$forEachParallel;
+    var $forEachParallel    = Flows.$forEachParallel;
 
 
     //-------------------------------------------------------------------------------

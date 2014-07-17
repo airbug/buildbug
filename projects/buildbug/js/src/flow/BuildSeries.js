@@ -15,7 +15,7 @@
 //@Export('buildbug.BuildSeries')
 
 //@Require('Class')
-//@Require('bugflow.Series')
+//@Require('Series')
 //@Require('buildbug.BuildFlow')
 
 
@@ -29,9 +29,9 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class           = bugpack.require('Class');
-    var Series          = bugpack.require('bugflow.Series');
-    var BuildFlow       = bugpack.require('buildbug.BuildFlow');
+    var Class       = bugpack.require('Class');
+    var Series      = bugpack.require('Series');
+    var BuildFlow   = bugpack.require('buildbug.BuildFlow');
 
 
     //-------------------------------------------------------------------------------

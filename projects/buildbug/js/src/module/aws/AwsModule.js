@@ -17,13 +17,13 @@
 
 //@Require('Class')
 //@Require('Exception')
+//@Require('Flows')
 //@Require('Map')
 //@Require('Obj')
 //@Require('TypeUtil')
 //@Require('aws.AwsConfig')
 //@Require('aws.S3Api')
 //@Require('aws.S3Bucket')
-//@Require('bugflow.BugFlow')
 //@Require('bugfs.BugFs')
 //@Require('bugmeta.BugMeta')
 //@Require('buildbug.BuildBug')
@@ -41,39 +41,38 @@ require('bugpack').context("*", function(bugpack) {
     // Common Modules
     //-------------------------------------------------------------------------------
 
-    var AWS                     = require('aws-sdk');
+    var AWS             = require('aws-sdk');
 
 
     //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                   = bugpack.require('Class');
-    var Exception               = bugpack.require('Exception');
-    var Map                     = bugpack.require('Map');
-    var Obj                     = bugpack.require('Obj');
-    var TypeUtil                = bugpack.require('TypeUtil');
-    var AwsConfig               = bugpack.require('aws.AwsConfig');
-    var S3Api                   = bugpack.require('aws.S3Api');
-    var S3Bucket                = bugpack.require('aws.S3Bucket');
-    var BugFlow                 = bugpack.require('bugflow.BugFlow');
-    var BugFs                   = bugpack.require('bugfs.BugFs');
-    var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-    var BuildBug                = bugpack.require('buildbug.BuildBug');
-    var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
+    var Class           = bugpack.require('Class');
+    var Exception       = bugpack.require('Exception');
+    var Flows           = bugpack.require('Flows');
+    var Map             = bugpack.require('Map');
+    var Obj             = bugpack.require('Obj');
+    var TypeUtil        = bugpack.require('TypeUtil');
+    var AwsConfig       = bugpack.require('aws.AwsConfig');
+    var S3Api           = bugpack.require('aws.S3Api');
+    var S3Bucket        = bugpack.require('aws.S3Bucket');
+    var BugFs           = bugpack.require('bugfs.BugFs');
+    var BugMeta         = bugpack.require('bugmeta.BugMeta');
+    var BuildBug        = bugpack.require('buildbug.BuildBug');
+    var BuildModule     = bugpack.require('buildbug.BuildModule');
+    var BuildModuleTag  = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleTag.buildModule;
-    var buildTask               = BuildBug.buildTask;
-    var $if                     = BugFlow.$if;
-    var $series                 = BugFlow.$series;
-    var $task                   = BugFlow.$task;
+    var bugmeta         = BugMeta.context();
+    var buildModule     = BuildModuleTag.buildModule;
+    var buildTask       = BuildBug.buildTask;
+    var $if             = Flows.$if;
+    var $task           = Flows.$task;
 
 
     //-------------------------------------------------------------------------------

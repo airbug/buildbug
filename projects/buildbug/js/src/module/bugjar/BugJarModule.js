@@ -31,27 +31,27 @@ require('bugpack').context("*", function(bugpack) {
     // Common Modules
     //-------------------------------------------------------------------------------
 
-    var bugjar                  = require('bugjar');
+    var bugjar          = require('bugjar');
 
 
     //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
-    var Class                   = bugpack.require('Class');
-    var BugMeta                 = bugpack.require('bugmeta.BugMeta');
-    var BuildBug                = bugpack.require('buildbug.BuildBug');
-    var BuildModule             = bugpack.require('buildbug.BuildModule');
-    var BuildModuleTag   = bugpack.require('buildbug.BuildModuleTag');
+    var Class           = bugpack.require('Class');
+    var BugMeta         = bugpack.require('bugmeta.BugMeta');
+    var BuildBug        = bugpack.require('buildbug.BuildBug');
+    var BuildModule     = bugpack.require('buildbug.BuildModule');
+    var BuildModuleTag  = bugpack.require('buildbug.BuildModuleTag');
 
 
     //-------------------------------------------------------------------------------
     // Simplify References
     //-------------------------------------------------------------------------------
 
-    var bugmeta                 = BugMeta.context();
-    var buildModule             = BuildModuleTag.buildModule;
-    var buildTask               = BuildBug.buildTask;
+    var bugmeta         = BugMeta.context();
+    var buildModule     = BuildModuleTag.buildModule;
+    var buildTask       = BuildBug.buildTask;
 
 
     //-------------------------------------------------------------------------------
