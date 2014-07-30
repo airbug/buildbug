@@ -46,7 +46,7 @@ var nodejs              = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.12";
+var version             = "0.1.14";
 var dependencies        = {
     "aws-sdk": "2.0.8",
     "bugpack-registry": "0.1.7",
@@ -76,7 +76,7 @@ buildProperties({
             dependencies: dependencies
         },
         sourcePaths: [
-            "../bugcore/projects/bugcore/js/src",
+            "../bugcore/libraries/bugcore/js/src",
             "../bugfs/projects/bugfs/js/src",
             "../bugjs/projects/aws/js/src",
             "../bugjs/projects/bugcli/js/src",
@@ -101,16 +101,16 @@ buildProperties({
             },
             sourcePaths: [
                 "../buganno/projects/buganno/js/src",
-                "../bugjs/projects/bugyarn/js/src",
                 "../bugunit/projects/bugdouble/js/src",
-                "../bugunit/projects/bugunit/js/src"
+                "../bugunit/projects/bugunit/js/src",
+                "../bugyarn/libraries/bugyarn/js/src"
             ],
             scriptPaths: [
                 "../buganno/projects/buganno/js/scripts",
                 "../bugunit/projects/bugunit/js/scripts"
             ],
             testPaths: [
-                "../bugcore/projects/bugcore/js/test",
+                "../bugcore/libraries/bugcore/js/test",
                 "../bugfs/projects/bugfs/js/test",
                 "../bugjs/projects/bugcli/js/test",
                 "../bugmeta/projects/bugmeta/js/test",

@@ -371,10 +371,11 @@ require('bugpack').context("*", function(bugpack) {
          */
         npmAddUser: function(callback) {
             var registry    = npm.registry;
+            var uri         = npm.config.get("registry");
             var username    = npm.config.get("username");
             var password    = npm.config.get("_password");
             var email       = npm.config.get("email");
-            registry.adduser(username, password, email, function(error) {
+            registry.adduser(uri, username, password, email, function(error) {
                 if (!error) {
                     registry.username = username;
                     registry.password = password;
