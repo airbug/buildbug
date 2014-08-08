@@ -1,10 +1,7 @@
 /*
  * Copyright (c) 2014 airbug Inc. All rights reserved.
  *
- * All software, both binary and source contained in this work is the exclusive property
- * of airbug Inc. Modification, decompilation, disassembly, or any other means of discovering
- * the source code of this software is prohibited. This work is protected under the United
- * States copyright law and other international copyright treaties and conventions.
+ * buildbug may be freely distributed under the MIT license.
  */
 
 
@@ -46,14 +43,14 @@ var nodejs              = enableModule('nodejs');
 // Values
 //-------------------------------------------------------------------------------
 
-var version             = "0.1.14";
+var name                = "buildbug";
+var version             = "0.2.0";
 var dependencies        = {
     "aws-sdk": "2.0.8",
     "bugpack-registry": "0.1.7",
     bugpack: "0.1.14",
-    bugunit: "https://s3.amazonaws.com/deploy-airbug/bugunit-0.1.3.tgz",
-    deploybug: "https://s3.amazonaws.com/deploy-airbug/deploybug-0.0.4.tgz",
-    lintbug: "https://s3.amazonaws.com/deploy-airbug/lintbug-0.0.8.tgz",
+    bugunit: "0.1.4",
+    lintbug: "0.1.0",
     "uglify-js": "2.4.15",
     npm: "1.4.21",
     tar: "0.1.20",
@@ -66,55 +63,79 @@ var dependencies        = {
 //-------------------------------------------------------------------------------
 
 buildProperties({
-    buildbug: {
+    name: name,
+    version: version
+});
+
+buildProperties({
+    node: {
         packageJson: {
-            name: "buildbug",
-            version: version,
-            private: true,
-            main: "./scripts/buildbug-module.js",
+            name: "{{name}}",
+            version: "{{version}}",
+            main: "./scripts/buildbug-node.js",
             bin: "bin/buildbug",
-            dependencies: dependencies
+            dependencies: dependencies,
+            author: "Brian Neisler <brian@airbug.com>",
+            repository: {
+                type: "git",
+                url: "https://github.com/airbug/buildbug.git"
+            },
+            bugs: {
+                url: "https://github.com/airbug/buildbug/issues"
+            },
+            licenses: [
+                {
+                    type : "MIT",
+                    url : "https://raw.githubusercontent.com/airbug/buildbug/master/LICENSE"
+                }
+            ]
         },
+        readmePath: "./README.md",
         sourcePaths: [
+            "../bugaws/libraries/bugaws/js/src",
+            "../bugcli/libraries/bugcli/js/src",
             "../bugcore/libraries/bugcore/js/src",
-            "../bugfs/projects/bugfs/js/src",
-            "../bugjs/projects/aws/js/src",
-            "../bugjs/projects/bugcli/js/src",
-            "../bugjs/projects/npm/js/src",
-            "../bugmeta/projects/bugmeta/js/src",
-            "./projects/buildbug/js/src"
+            "../bugfs/libraries/bugfs/js/src",
+            "../bugmeta/libraries/bugmeta/js/src",
+            "../bugnpm/libraries/bugnpm/js/src",
+            "./libraries/buildbug/js/src",
+            "./projects/buildbug-node/js/src",
         ],
         scriptPaths: [
-            "./projects/buildbug/js/scripts"
+            "./libraries/buildbug/js/scripts",
+            "./projects/buildbug-node/js/scripts"
         ],
         binPaths: [
-            "./projects/buildbug/bin"
+            "./projects/buildbug-node/bin"
         ],
         unitTest: {
             packageJson: {
                 name: "buildbug-test",
                 version: version,
                 private: true,
-                main: "./scripts/buildbug-module.js",
+                main: "./scripts/buildbug-node.js",
                 bin: "bin/buildbug",
-                dependencies: dependencies
+                dependencies: dependencies,
+                scripts: {
+                    test: "node ./test/scripts/bugunit-run.js"
+                }
             },
             sourcePaths: [
-                "../buganno/projects/buganno/js/src",
-                "../bugunit/projects/bugdouble/js/src",
-                "../bugunit/projects/bugunit/js/src",
+                "../buganno/libraries/buganno/js/src",
+                "../bugdouble/libraries/bugdouble/js/src",
+                "../bugunit/libraries/bugunit/js/src",
                 "../bugyarn/libraries/bugyarn/js/src"
             ],
             scriptPaths: [
-                "../buganno/projects/buganno/js/scripts",
-                "../bugunit/projects/bugunit/js/scripts"
+                "../buganno/libraries/buganno/js/scripts",
+                "../bugunit/libraries/bugunit/js/scripts"
             ],
             testPaths: [
+                "../bugcli/libraries/bugcli/js/test",
                 "../bugcore/libraries/bugcore/js/test",
-                "../bugfs/projects/bugfs/js/test",
-                "../bugjs/projects/bugcli/js/test",
-                "../bugmeta/projects/bugmeta/js/test",
-                "./projects/buildbug/js/test"
+                "../bugfs/libraries/bugfs/js/test",
+                "../bugmeta/libraries/bugmeta/js/test",
+                "./libraries/buildbug/js/test"
             ]
         }
     },
@@ -171,24 +192,23 @@ buildTarget('local').buildFlow(
         series([
             targetTask('createNodePackage', {
                 properties: {
-                    packageJson: buildProject.getProperty("buildbug.packageJson"),
+                    packageJson: buildProject.getProperty("node.packageJson"),
                     packagePaths: {
-                        "./bin": buildProject.getProperty("buildbug.binPaths"),
-                        "./lib": buildProject.getProperty("buildbug.sourcePaths").concat(
-                            buildProject.getProperty("buildbug.unitTest.sourcePaths")
-                        ),
-                        "./scripts": buildProject.getProperty("buildbug.scriptPaths").concat(
-                            buildProject.getProperty("buildbug.unitTest.scriptPaths")
-                        ),
-                        "./tests": buildProject.getProperty("buildbug.unitTest.testPaths")
+                        "./": [buildProject.getProperty("node.readmePath")],
+                        "./bin": buildProject.getProperty("node.binPaths"),
+                        "./lib": buildProject.getProperty("node.sourcePaths"),
+                        "./scripts": buildProject.getProperty("node.scriptPaths"),
+                        "./test": buildProject.getProperty("node.unitTest.testPaths"),
+                        "./test/lib": buildProject.getProperty("node.unitTest.sourcePaths"),
+                        "./test/scripts": buildProject.getProperty("node.unitTest.scriptPaths")
                     }
                 }
             }),
             targetTask('generateBugPackRegistry', {
                 init: function(task, buildProject, properties) {
                     var nodePackage = nodejs.findNodePackage(
-                        buildProject.getProperty("buildbug.packageJson.name"),
-                        buildProject.getProperty("buildbug.packageJson.version")
+                        buildProject.getProperty("node.packageJson.name"),
+                        buildProject.getProperty("node.packageJson.version")
                     );
                     task.updateProperties({
                         sourceRoot: nodePackage.getBuildPath()
@@ -197,15 +217,15 @@ buildTarget('local').buildFlow(
             }),
             targetTask('packNodePackage', {
                 properties: {
-                    packageName: buildProject.getProperty("buildbug.packageJson.name"),
-                    packageVersion: buildProject.getProperty("buildbug.packageJson.version")
+                    packageName: buildProject.getProperty("node.packageJson.name"),
+                    packageVersion: buildProject.getProperty("node.packageJson.version")
                 }
             }),
             targetTask('startNodeModuleTests', {
                 init: function(task, buildProject, properties) {
                     var packedNodePackage = nodejs.findPackedNodePackage(
-                        buildProject.getProperty("buildbug.packageJson.name"),
-                        buildProject.getProperty("buildbug.packageJson.version")
+                        buildProject.getProperty("node.packageJson.name"),
+                        buildProject.getProperty("node.packageJson.version")
                     );
                     task.updateProperties({
                         modulePath: packedNodePackage.getFilePath()
@@ -215,8 +235,8 @@ buildTarget('local').buildFlow(
             }),
             targetTask("s3PutFile", {
                 init: function(task, buildProject) {
-                    var packedNodePackage = nodejs.findPackedNodePackage(buildProject.getProperty("buildbug.packageJson.name"),
-                        buildProject.getProperty("buildbug.packageJson.version"));
+                    var packedNodePackage = nodejs.findPackedNodePackage(buildProject.getProperty("node.packageJson.name"),
+                        buildProject.getProperty("node.packageJson.version"));
                     task.updateProperties({
                         file: packedNodePackage.getFilePath(),
                         options: {
@@ -264,24 +284,23 @@ buildTarget("prod").buildFlow(
             series([
                 targetTask("createNodePackage", {
                     properties: {
-                        packageJson: buildProject.getProperty("buildbug.packageJson"),
+                        packageJson: buildProject.getProperty("node.packageJson"),
                         packagePaths: {
-                            "./bin": buildProject.getProperty("buildbug.binPaths"),
-                            "./lib": buildProject.getProperty("buildbug.sourcePaths").concat(
-                                buildProject.getProperty("buildbug.unitTest.sourcePaths")
-                            ),
-                            "./scripts": buildProject.getProperty("buildbug.scriptPaths").concat(
-                                buildProject.getProperty("buildbug.unitTest.scriptPaths")
-                            ),
-                            "./tests": buildProject.getProperty("buildbug.unitTest.testPaths")
+                            "./": [buildProject.getProperty("node.readmePath")],
+                            "./bin": buildProject.getProperty("node.binPaths"),
+                            "./lib": buildProject.getProperty("node.sourcePaths"),
+                            "./scripts": buildProject.getProperty("node.scriptPaths"),
+                            "./test": buildProject.getProperty("node.unitTest.testPaths"),
+                            "./test/lib": buildProject.getProperty("node.unitTest.sourcePaths"),
+                            "./test/scripts": buildProject.getProperty("node.unitTest.scriptPaths")
                         }
                     }
                 }),
                 targetTask("generateBugPackRegistry", {
                     init: function(task, buildProject, properties) {
                         var nodePackage = nodejs.findNodePackage(
-                            buildProject.getProperty("buildbug.packageJson.name"),
-                            buildProject.getProperty("buildbug.packageJson.version")
+                            buildProject.getProperty("node.packageJson.name"),
+                            buildProject.getProperty("node.packageJson.version")
                         );
                         task.updateProperties({
                             sourceRoot: nodePackage.getBuildPath()
@@ -290,15 +309,15 @@ buildTarget("prod").buildFlow(
                 }),
                 targetTask("packNodePackage", {
                     properties: {
-                        packageName: buildProject.getProperty("buildbug.packageJson.name"),
-                        packageVersion: buildProject.getProperty("buildbug.packageJson.version")
+                        packageName: buildProject.getProperty("node.packageJson.name"),
+                        packageVersion: buildProject.getProperty("node.packageJson.version")
                     }
                 }),
                 targetTask("startNodeModuleTests", {
                     init: function(task, buildProject, properties) {
                         var packedNodePackage = nodejs.findPackedNodePackage(
-                            buildProject.getProperty("buildbug.packageJson.name"),
-                            buildProject.getProperty("buildbug.packageJson.version")
+                            buildProject.getProperty("node.packageJson.name"),
+                            buildProject.getProperty("node.packageJson.version")
                         );
                         task.updateProperties({
                             modulePath: packedNodePackage.getFilePath(),
@@ -313,19 +332,20 @@ buildTarget("prod").buildFlow(
             series([
                 targetTask("createNodePackage", {
                     properties: {
-                        packageJson: buildProject.getProperty("buildbug.packageJson"),
+                        packageJson: buildProject.getProperty("node.packageJson"),
                         packagePaths: {
-                            "./bin": buildProject.getProperty("buildbug.binPaths"),
-                            "./lib": buildProject.getProperty("buildbug.sourcePaths"),
-                            "./scripts": buildProject.getProperty("buildbug.scriptPaths")
+                            "./": [buildProject.getProperty("node.readmePath")],
+                            "./bin": buildProject.getProperty("node.binPaths"),
+                            "./lib": buildProject.getProperty("node.sourcePaths"),
+                            "./scripts": buildProject.getProperty("node.scriptPaths")
                         }
                     }
                 }),
                 targetTask("generateBugPackRegistry", {
                     init: function(task, buildProject) {
                         var nodePackage = nodejs.findNodePackage(
-                            buildProject.getProperty("buildbug.packageJson.name"),
-                            buildProject.getProperty("buildbug.packageJson.version")
+                            buildProject.getProperty("node.packageJson.name"),
+                            buildProject.getProperty("node.packageJson.version")
                         );
                         task.updateProperties({
                             sourceRoot: nodePackage.getBuildPath()
@@ -334,14 +354,14 @@ buildTarget("prod").buildFlow(
                 }),
                 targetTask("packNodePackage", {
                     properties: {
-                        packageName: buildProject.getProperty("buildbug.packageJson.name"),
-                        packageVersion: buildProject.getProperty("buildbug.packageJson.version")
+                        packageName: buildProject.getProperty("node.packageJson.name"),
+                        packageVersion: buildProject.getProperty("node.packageJson.version")
                     }
                 }),
                 targetTask("s3PutFile", {
                     init: function(task, buildProject, properties) {
-                        var packedNodePackage = nodejs.findPackedNodePackage(buildProject.getProperty("buildbug.packageJson.name"),
-                            buildProject.getProperty("buildbug.packageJson.version"));
+                        var packedNodePackage = nodejs.findPackedNodePackage(buildProject.getProperty("node.packageJson.name"),
+                            buildProject.getProperty("node.packageJson.version"));
                         task.updateProperties({
                             file: packedNodePackage.getFilePath(),
                             options: {
@@ -354,7 +374,19 @@ buildTarget("prod").buildFlow(
                         });
                     },
                     properties: {
-                        bucket: "{{prod-deploy-bucket}}"
+                        bucket: "{{public-bucket}}"
+                    }
+                }),
+                targetTask('npmConfigSet', {
+                    properties: {
+                        config: buildProject.getProperty("npmConfig")
+                    }
+                }),
+                targetTask('npmAddUser'),
+                targetTask('publishNodePackage', {
+                    properties: {
+                        packageName: "{{node.packageJson.name}}",
+                        packageVersion: "{{node.packageJson.version}}"
                     }
                 })
             ])
