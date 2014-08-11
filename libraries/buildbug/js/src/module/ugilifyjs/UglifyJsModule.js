@@ -12,8 +12,11 @@
 //@Export('buildbug.UglifyJsModule')
 //@Autoload
 
+//@Require('ArgumentBug')
 //@Require('Class')
+//@Require('Exception')
 //@Require('Flows')
+//@Require('ObjectUtil')
 //@Require('Tracer')
 //@Require('TypeUtil')
 //@Require('bugfs.BugFs')
@@ -41,8 +44,11 @@ require('bugpack').context("*", function(bugpack) {
     // BugPack
     //-------------------------------------------------------------------------------
 
+    var ArgumentBug         = bugpack.require('ArgumentBug');
     var Class               = bugpack.require('Class');
+    var Exception           = bugpack.require('Exception');
     var Flows               = bugpack.require('Flows');
+    var ObjectUtil          = bugpack.require('ObjectUtil');
     var Tracer              = bugpack.require('Tracer');
     var TypeUtil            = bugpack.require('TypeUtil');
     var BugFs               = bugpack.require('bugfs.BugFs');
@@ -125,7 +131,7 @@ require('bugpack').context("*", function(bugpack) {
                 outputFile      = this.validateAndConvertOutputFile(outputFile);
                 result          = this.minifySources(sources);
             } catch(err) {
-               error = err;
+                error = err;
             }
 
             if (!error) {
@@ -146,7 +152,17 @@ require('bugpack').context("*", function(bugpack) {
          * @return {string}
          */
         minifySources: function(sources) {
-            var result = uglify_js.minify(sources);
+            var result = null;
+            try {
+                result = uglify_js.minify(sources);
+            } catch(error) {
+                if (ObjectUtil.toConstructorName(error) === "JS_Parse_Error") {
+                    throw new Exception("UglifyJSParseError", {},
+                            error.message + " (line: " + error.line + ", col: " + error.col + ", pos: " + error.pos + ")");
+                } else {
+                    throw error;
+                }
+            }
             return result.code;
         },
 
@@ -158,8 +174,8 @@ require('bugpack').context("*", function(bugpack) {
          */
         validateAndConvertOutputFile: function(outputFile) {
             if (!TypeUtil.isString(outputFile) && !Class.doesExtend(outputFile, Path)) {
-                throw new Error("uglifyjsMinify task expects 'outputFile' to be a string or Path. Instead found " +
-                    "'" + outputFile + "'");
+                throw new ArgumentBug(ArgumentBug.ILLEGAL, "outputFile", outputFile,
+                    "uglifyjsMinify task expects 'outputFile' to be a string or Path.");
             }
             return BugFs.path(outputFile);
         },
@@ -179,8 +195,8 @@ require('bugpack').context("*", function(bugpack) {
                     } else if (TypeUtil.isString(source)) {
                         files.push(BugFs.path(source).getAbsolutePath());
                     } else {
-                        throw new Error("uglifyjsMinify task expects 'sources' array to contain strings or " +
-                            "Paths. Instead found '" + source + "'");
+                        throw new ArgumentBug(ArgumentBug.ILLEGAL, "sources", sources,
+                            "uglifyjsMinify task expects 'sources' parameter to contain strings or Paths");
                     }
                 });
             } else if (TypeUtil.isString(sources)) {
@@ -188,8 +204,8 @@ require('bugpack').context("*", function(bugpack) {
             } else if (Class.doesExtend(sources, Path)) {
                 files.push(sources.getAbsolutePath());
             } else {
-                throw new Error("uglifyjsMinify task expects 'sources' to be an array of strings and " +
-                    "Paths or a string. Instead found '" + sources + "'");
+                throw new ArgumentBug(ArgumentBug.ILLEGAL, "sources", sources,
+                    "uglifyjsMinify task expects 'sources' to be an array of strings and Paths or a string.");
             }
             return files;
         },
