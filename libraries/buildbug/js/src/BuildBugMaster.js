@@ -19,6 +19,7 @@
 //@Require('ObjectUtil')
 //@Require('StringUtil')
 //@Require('bugfs.BugFs')
+//@Require('bugnpm.Npm')
 
 
 //-------------------------------------------------------------------------------
@@ -46,6 +47,7 @@ require('bugpack').context("*", function(bugpack) {
     var ObjectUtil      = bugpack.require('ObjectUtil');
     var StringUtil      = bugpack.require('StringUtil');
     var BugFs           = bugpack.require('bugfs.BugFs');
+    var Npm             = bugpack.require('bugnpm.Npm');
 
 
     //-------------------------------------------------------------------------------
@@ -67,6 +69,36 @@ require('bugpack').context("*", function(bugpack) {
     var BuildBugMaster = Class.extend(Obj, {
 
         _name: "buildbug.BuildBugMaster",
+
+
+        //-------------------------------------------------------------------------------
+        // Constructor
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @constructs
+         */
+        _constructor: function() {
+
+            this._super();
+
+
+            //-------------------------------------------------------------------------------
+            // Private Properties
+            //-------------------------------------------------------------------------------
+
+            /**
+             * @private
+             * @type {{}}
+             */
+            this.buildbugModuleData = null;
+
+            /**
+             * @private
+             * @type {Npm}
+             */
+            this.npm                = new Npm();
+        },
 
 
         //-------------------------------------------------------------------------------
@@ -107,6 +139,30 @@ require('bugpack').context("*", function(bugpack) {
                     });
                 })
             ]).execute(callback);
+        },
+
+        /**
+         * @param {function(Throwable, number=)} callback
+         */
+        findBuildbugVersion: function(callback) {
+            var _this = this;
+            var buildbugModulePath = BugFs.resolvePaths([__dirname + "/.."]);
+            $series([
+                $task(function(flow) {
+                    _this.npm.getModuleData(buildbugModulePath, function(throwable, moduleData) {
+                        if (!throwable) {
+                            _this.buildbugModuleData = moduleData;
+                        }
+                        flow.complete(throwable);
+                    });
+                })
+            ]).execute(function(throwable) {
+                if (!throwable) {
+                    callback(null, _this.buildbugModuleData.version);
+                } else {
+                    callback(throwable);
+                }
+            });
         },
 
 

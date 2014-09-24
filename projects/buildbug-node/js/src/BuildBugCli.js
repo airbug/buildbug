@@ -88,8 +88,10 @@ require('bugpack').context("*", function(bugpack) {
                             var targetOption    = cliBuild.getOption("target");
                             /** @type {CliOptionInstance} */
                             var debugOption     = cliBuild.getOption("debug");
+                            /** @type {CliOptionInstance} */
+                            var versionOption   = cliBuild.getOption("version");
                             /** @type {Array.<string>} */
-                            var targetNames      = [];
+                            var targetNames     = [];
                             /** @type {boolean} */
                             var debug           = false;
 
@@ -102,7 +104,16 @@ require('bugpack').context("*", function(bugpack) {
                             }
                             var buildPath       = process.cwd();
                             var buildBugMaster  = new BuildBugMaster();
-                            buildBugMaster.build(buildPath, {targetNames: targetNames, debug: debug}, callback);
+                            if (versionOption) {
+                                buildBugMaster.findBuildbugVersion(function(throwable, version) {
+                                    if (!throwable) {
+                                        console.log("Buildbug version " + version);
+                                    }
+                                    callback(throwable);
+                                })
+                            } else {
+                                buildBugMaster.build(buildPath, {targetNames: targetNames, debug: debug}, callback);
+                            }
                         }
                     });
 
@@ -124,6 +135,14 @@ require('bugpack').context("*", function(bugpack) {
                         flags: [
                             '-d',
                             '--debug'
+                        ]
+                    });
+
+                    _this.registerCliOption({
+                        name: 'version',
+                        flags: [
+                            '-v',
+                            '--version'
                         ]
                     });
 
