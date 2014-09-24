@@ -48,8 +48,8 @@ var version             = "0.2.1";
 var dependencies        = {
     "aws-sdk": "2.0.8",
     "bugpack-registry": "0.1.7",
-    bugpack: "0.1.14",
-    bugunit: "0.1.4",
+    bugpack: "0.2.0",
+    bugunit: "0.1.5",
     lintbug: "0.1.0",
     "uglify-js": "2.4.15",
     npm: "1.4.21",
