@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 airbug Inc. All rights reserved.
+ * Copyright (c) 2015 airbug Inc. All rights reserved.
  *
  * buildbug may be freely distributed under the MIT license.
  */

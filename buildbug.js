@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 airbug Inc. All rights reserved.
+ * Copyright (c) 2015 airbug Inc. All rights reserved.
  *
  * buildbug may be freely distributed under the MIT license.
  */
@@ -44,7 +44,7 @@ var nodejs              = enableModule('nodejs');
 //-------------------------------------------------------------------------------
 
 var name                = "buildbug";
-var version             = "0.2.2";
+var version             = "0.2.3";
 var dependencies        = {
     "aws-sdk": "2.0.8",
     "bugpack-registry": "0.1.7",
