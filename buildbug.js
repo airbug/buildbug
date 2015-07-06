@@ -36,7 +36,9 @@ var bugunit             = enableModule('bugunit');
 var clientjs            = enableModule('clientjs');
 var core                = enableModule('core');
 var lintbug             = enableModule("lintbug");
-var nodejs              = enableModule('nodejs');
+var nodejs              = enableModule('nodejs', {
+    npmConfig: buildProject.getProperty("npmConfig")
+});
 
 
 //-------------------------------------------------------------------------------
@@ -73,7 +75,10 @@ buildProperties({
             name: "{{name}}",
             version: "{{version}}",
             main: "./scripts/buildbug-node.js",
-            bin: "bin/buildbug",
+            bin: {
+                buildbug: "bin/buildbug",
+                buildbugdaemon: "bin/buildbugdaemon"
+            },
             dependencies: dependencies,
             author: "Brian Neisler <brian@airbug.com>",
             repository: {

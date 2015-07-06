@@ -77,6 +77,12 @@ require('bugpack').context("*", function(bugpack) {
              * @type {(BuildModule.InitializeStates|string)}
              */
             this.initializeState    = BuildModule.InitializeStates.DEINITIALIZED;
+
+            /**
+             * @private
+             * @type {Object}
+             */
+            this.moduleConfig       = null;
         },
 
 
@@ -103,6 +109,13 @@ require('bugpack').context("*", function(bugpack) {
          */
         getInitializeState: function() {
             return this.initializeState;
+        },
+
+        /**
+         * @return {Object}
+         */
+        getModuleConfig: function() {
+            return this.moduleConfig;
         },
 
 
@@ -165,10 +178,12 @@ require('bugpack').context("*", function(bugpack) {
 
         /**
          * @param {BuildProject} buildProject
+         * @param {Object} moduleConfig
          */
-        enable: function(buildProject) {
+        enable: function(buildProject, moduleConfig) {
             if (!this.isEnabled()) {
                 this.enabled = true;
+                this.moduleConfig = moduleConfig;
                 this.buildProject = buildProject;
                 this.enableModule();
             }

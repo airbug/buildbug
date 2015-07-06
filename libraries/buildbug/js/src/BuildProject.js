@@ -231,16 +231,17 @@ require('bugpack').context("*", function(bugpack) {
 
         /**
          * @param {string} moduleName
+         * @param {Object} moduleConfig
          * @return {BuildModule}
          */
-        enableModule: function(moduleName) {
+        enableModule: function(moduleName, moduleConfig) {
             if (this.moduleNameToBuildModuleMap.containsKey(moduleName)) {
                 var buildModule = this.moduleNameToBuildModuleMap.get(moduleName);
                 if (!buildModule.isEnabled()) {
                     console.log("Enabling module '" + moduleName + "'");
                     this.numberEnabledModules++;
                     buildModule.setParentPropagator(this);
-                    buildModule.enable(this);
+                    buildModule.enable(this, moduleConfig);
                 }
 
                 // NOTE BRN: It's very possible that a module might try to be enabled multiple times. Thus, we don't throw an

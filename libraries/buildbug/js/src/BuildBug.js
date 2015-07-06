@@ -130,10 +130,11 @@ require('bugpack').context("*", function(bugpack) {
     /**
      * @static
      * @param {string} moduleName
+     * @param {Object} moduleConfig
      * @return {BuildModule}
      */
-    BuildBug.enableModule = function(moduleName) {
-        return BuildBug.buildProject.enableModule(moduleName);
+    BuildBug.enableModule = function(moduleName, moduleConfig) {
+        return BuildBug.buildProject.enableModule(moduleName, moduleConfig);
     };
 
     /**

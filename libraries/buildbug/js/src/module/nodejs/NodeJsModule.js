@@ -352,7 +352,9 @@ require('bugpack').context("*", function(bugpack) {
             var _this = this;
             if (!this.npmLoaded) {
                 this.npmLoaded = true;
-                npm.load({}, function (err) {
+                var moduleConfig = this.getModuleConfig();
+                var npmConfig = moduleConfig.npmConfig || {};
+                npm.load(npmConfig, function (err) {
                     if (err) {
                         process.exit(1);
                         return;
@@ -367,7 +369,9 @@ require('bugpack').context("*", function(bugpack) {
          * @param {function(Throwable=)} callback
          */
         npmAddUser: function(callback) {
-            var registry    = npm.registry;
+            //TODO BRN: Fix this.... does not seem to be working with the latest version of NPM. No user is being added to config
+
+            /*var registry    = npm.registry;
             var uri         = npm.config.get("registry");
             var username    = npm.config.get("username");
             var password    = npm.config.get("_password");
@@ -385,7 +389,7 @@ require('bugpack').context("*", function(bugpack) {
                 } else {
                     callback(error);
                 }
-            });
+            });*/
         },
 
         /**
