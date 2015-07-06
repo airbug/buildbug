@@ -12,7 +12,6 @@
 //@Export('buildbug.BuildBugCli')
 
 //@Require('Class')
-//@Require('Flows')
 //@Require('bugcli.BugCli')
 //@Require('buildbug.BuildBugMaster')
 
@@ -35,17 +34,9 @@ require('bugpack').context("*", function(bugpack) {
     //-------------------------------------------------------------------------------
 
     var Class           = bugpack.require('Class');
-    var Flows           = bugpack.require('Flows');
     var BugCli          = bugpack.require('bugcli.BugCli');
     var BuildBugMaster  = bugpack.require('buildbug.BuildBugMaster');
 
-
-    //-------------------------------------------------------------------------------
-    // Simplify References
-    //-------------------------------------------------------------------------------
-
-    var $series         = Flows.$series;
-    var $task           = Flows.$task;
 
 
     //-------------------------------------------------------------------------------
@@ -62,63 +53,87 @@ require('bugpack').context("*", function(bugpack) {
 
 
         //-------------------------------------------------------------------------------
+        // Constructor
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @constructs
+         */
+        _constructor: function() {
+
+            this._super();
+
+
+            //-------------------------------------------------------------------------------
+            // Private Properties
+            //-------------------------------------------------------------------------------
+
+            /**
+             * @private
+             * @type {BuildBugMaster}
+             */
+            this.buildBugMaster     = new BuildBugMaster();
+        },
+
+
+        //-------------------------------------------------------------------------------
+        // Getters and Setters
+        //-------------------------------------------------------------------------------
+
+        /**
+         * @return {BuildBugMaster}
+         */
+        getBuildBugMaster: function() {
+            return this.buildBugMaster;
+        },
+
+
+        //-------------------------------------------------------------------------------
         // BugCli Methods
         //-------------------------------------------------------------------------------
 
         /**
          *
          */
-        configure: function(callback) {
+        doConfigure: function(callback) {
             var _this = this;
-            $series([
-                $task(function(flow) {
-                    _this._super(function(error) {
-                        flow.complete(error);
-                    });
-                }),
-                $task(function(flow) {
-                    _this.registerCliAction({
-                        name: 'build',
-                        default: true,
+
+            this.action({
+                command: "help",
+                default: true,
+                options: [
+                    {
+                        name: "version",
+                        required: false,
                         flags: [
-                            'build'
-                        ],
-                        executeMethod: function(cliBuild, cliAction, callback) {
-                            /** @type {CliOptionInstance} */
-                            var targetOption    = cliBuild.getOption("target");
-                            /** @type {CliOptionInstance} */
-                            var debugOption     = cliBuild.getOption("debug");
-                            /** @type {CliOptionInstance} */
-                            var versionOption   = cliBuild.getOption("version");
-                            /** @type {Array.<string>} */
-                            var targetNames     = [];
-                            /** @type {boolean} */
-                            var debug           = false;
+                            '-v',
+                            '--version'
+                        ]
+                    }
+                ],
+                executeMethod: function(action, callback) {
+                    /** @type {CliOptionInstance} */
+                    var versionOption   = action.getOption("version");
+                    if (versionOption) {
+                        _this.getBuildBugMaster().findBuildbugVersion(function(throwable, version) {
+                            if (!throwable) {
+                                console.log("Buildbug version " + version);
+                            }
+                            callback(throwable);
+                        })
+                    } else {
+                        console.log(_this.generateHelpText());
+                        callback();
+                    }
+                }
+            });
 
-                            if (targetOption) {
-                                var targetNamesString = targetOption.getParameter("targetNames");
-                                targetNames = targetNamesString.split(",");
-                            }
-                            if (debugOption) {
-                                debug = true;
-                            }
-                            var buildPath       = process.cwd();
-                            var buildBugMaster  = new BuildBugMaster();
-                            if (versionOption) {
-                                buildBugMaster.findBuildbugVersion(function(throwable, version) {
-                                    if (!throwable) {
-                                        console.log("Buildbug version " + version);
-                                    }
-                                    callback(throwable);
-                                })
-                            } else {
-                                buildBugMaster.build(buildPath, {targetNames: targetNames, debug: debug}, callback);
-                            }
-                        }
-                    });
-
-                    _this.registerCliOption({
-                        name: 'target',
+            this.action({
+                command: 'build',
+                options: [
+                    {
+                        name: "target",
+                        required: false,
                         flags: [
                             '-t',
                             '--target'
@@ -128,27 +143,39 @@ require('bugpack').context("*", function(bugpack) {
                                 name: "targetNames"
                             }
                         ]
-                    });
-
-                    _this.registerCliOption({
+                    },
+                    {
                         name: 'debug',
                         flags: [
                             '-d',
                             '--debug'
                         ]
-                    });
+                    }
+                ],
+                executeMethod: function(cliBuild, cliAction, callback) {
+                    /** @type {CliOptionInstance} */
+                    var targetOption    = cliBuild.getOption("target");
+                    /** @type {CliOptionInstance} */
+                    var debugOption     = cliBuild.getOption("debug");
+                    /** @type {Array.<string>} */
+                    var targetNames     = [];
+                    /** @type {boolean} */
+                    var debug           = false;
 
-                    _this.registerCliOption({
-                        name: 'version',
-                        flags: [
-                            '-v',
-                            '--version'
-                        ]
-                    });
+                    if (targetOption) {
+                        var targetNamesString = targetOption.getParameter("targetNames");
+                        targetNames = targetNamesString.split(",");
+                    }
+                    if (debugOption) {
+                        debug = true;
+                    }
+                    var buildPath       = process.cwd();
+                    var buildBugMaster  = new BuildBugMaster();
+                    buildBugMaster.build(buildPath, {targetNames: targetNames, debug: debug}, callback);
+                }
+            });
 
-                    flow.complete();
-                })
-            ]).execute(callback);
+            callback();
         }
     });
 
