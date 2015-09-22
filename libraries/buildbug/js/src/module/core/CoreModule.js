@@ -37,6 +37,14 @@
 require('bugpack').context("*", function(bugpack) {
 
     //-------------------------------------------------------------------------------
+    // Node Modules
+    //-------------------------------------------------------------------------------
+
+    var jszip               = require('jszip');
+    var tar                 = require('tar');
+
+
+    //-------------------------------------------------------------------------------
     // BugPack
     //-------------------------------------------------------------------------------
 
@@ -99,6 +107,8 @@ require('bugpack').context("*", function(bugpack) {
             buildTask('copy', this.copyTask, this);
             buildTask('copyContents', this.copyContentsTask, this);
             buildTask('replaceTokens', this.replaceTokensTask, this)
+            buildTask('tar', this.tarTask, this);
+            buildTask('zip', this.zipTask, this);
         },
 
 
@@ -278,6 +288,34 @@ require('bugpack').context("*", function(bugpack) {
             });
         },
 
+        /**
+         * Available Properties
+         * {
+         * }
+         * @param {BuildProject} buildProject
+         * @param {BuildPropertiesChain} taskProperties
+         * @param {function(Throwable=)} callback
+         */
+        tarTask: function(buildProject, taskProperties, callback) {
+            var filePaths   = taskProperties.getProperty("filePaths");
+            var tarFile     = taskProperties.getProperty("tarFile");
+            this.generateTarFile(filePaths, tarFile, callback);
+        },
+
+        /**
+         * Available Properties
+         * {
+         * }
+         * @param {BuildProject} buildProject
+         * @param {BuildPropertiesChain} taskProperties
+         * @param {function(Throwable=)} callback
+         */
+        zipTask: function(buildProject, taskProperties, callback) {
+            var filePaths   = taskProperties.getProperty("filePaths");
+            var zipFile     = taskProperties.getProperty("zipFile");
+            this.generateZipFile(filePaths, zipFile, callback);
+        },
+
 
         //-------------------------------------------------------------------------------
         // Private Methods
@@ -393,6 +431,47 @@ require('bugpack').context("*", function(bugpack) {
                 files.add(this.generatePath(paths));
             }
             return files;
+        },
+
+        /**
+         * @private
+         * @param {(string | Path | Array.<(string | Path)> | ICollection.<(string | Path)>)} filePaths
+         * @param {(string | Path)} zipPath
+         * @param {function(Throwable=)} callback
+         */
+        generateZipFile: function(filePaths, zipPath, callback) {
+            filePaths = this.generateSetOfPaths(filePaths);
+            zipPath = this.generatePath(zipPath);
+            var zip = new jszip();
+
+            $series([
+                $iterableParallel(filePaths, function(flow, filePath) {
+                    $if(function(assertion) {
+                        filePath.isFile(assertion);
+                    }, function(flow) {})
+                    filePath.readFile('utf8', function(throwable, data) {
+                        if (!throwable) {
+
+                        }
+                        flow.complete(throwable);
+                    });
+                }),
+                function() {
+                    return zipPath.createFile(true);
+                },
+                function() {
+                    var buffer = zip.generate({type:"nodebuffer", compression: "DEFLATE"});
+                    zipPath.writeFile(bu)
+                }
+            ]).execute(callback);
+// zip.file("file", content);
+// ... and other manipulations
+
+
+
+            fs.writeFile("test.zip", buffer, function(err) {
+                if (err) throw err;
+            });
         },
 
         /**

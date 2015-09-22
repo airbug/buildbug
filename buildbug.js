@@ -52,6 +52,7 @@ var dependencies        = {
     "bugpack-registry": "0.1.7",
     bugpack: "0.2.0",
     bugunit: "0.1.5",
+    jszip: "2.5.0",
     lintbug: "0.1.0",
     "uglify-js": "2.4.15",
     npm: "1.4.21",
